@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>index</title>
+</head>
+
+<body>
+<div id="header">
+  <!--Introduction-->
+  <h1>EpiAlignment: chromosomal similarity searching engine</h1>
+  EpiAlignment is a tool that can align genomic regions with both sequence and epigenomic information. For more theoretical details please see our PloS computational biology paper. </div>
+  <!--alignment steps-->
+<form method="post" enctype="multipart/form-data" action="/form_upload">
+  <!--step1-->
+  <div id="step1" class="stepbox">
+    <div class="stepleft">
+      <h2> STEP1 </h2>
+    </div>
+    <div class="stepright">
+      <div>
+        <h3>Select the alignment mode:</h3>
+      </div>
+      <div>
+        <input type="radio" name="alignMode" value="promoter" checked>
+        Promoter<br>
+        <input type="radio" name="alignMode" value="enhancer">
+        Enhancer </div>
+      <div> Which mode should I choose? </div>
+    </div>
+  </div>
+  <!--step2-->
+  <div id="step2" class="stepbox">
+    <div class="stepleft">
+      <h2> STEP2 </h2>
+    </div>
+    <div class="stepright">
+      <div>
+        <h3>Upload data</h3>
+      </div>
+      <!--query region-->
+      <div class="speciesData">
+        <h4>Query regions</h4>
+        <div> Genome assembly:
+          <select name="genomeAssembly[]">
+            <option value="hg38" selected>hg38</option>
+            <option value="mm10">mm10</option>
+          </select>
+        </div>
+        <div> Peak regions:
+          <input type="file" name="speciesPeak[]">
+        </div>
+        <div> Input regions:<br>
+          <textarea name="speciesText[]">Upload a bed file or a genelist.</textarea>
+          <br>
+          Or uploaded a file:
+          <input type="file" name="speciesInput[]"><br>
+          Specify promoter region ranges: upstream from TSSs <input type="text" name="promoterUp" value="500"> downstream from TSSs <input type="text" name="promoterDown" value="1000">
+        </div>
+      </div>
+      <!--searching region-->
+      <div class="speciesData">
+        <h4>Searching region</h4>
+        <div> Genome assembly:
+          <select name="genomeAssembly[]">
+            <option value="hg38">hg38</option>
+            <option value="mm10" selected>mm10</option>
+          </select>
+        </div>
+        <div> Peak regions:
+          <input type="file" name="speciesPeak[]">
+        </div>
+        <!--type of searching regions-->
+        <div>
+          <!--promoter mode-->
+          <input type="radio" name="promSearchRegion" value="genomregion">
+          Define searching regions with bed files / genelists.
+          <div> Input regions:<br>
+            <textarea name="speciesText[]">Upload a bed file or a genelist.</textarea>
+            <br>
+            Or uploaded a file:
+            <input type="file" name="speciesInput[]">
+          </div>
+          <input type="radio" name="promSearchRegion" value="genetype">Search a specific type of genes.
+          <div>
+            <select name="genetypeSelect[]">
+              <option value="protein-coding gene" selected>protein-coding gene</option>
+              <option value="lincRNA">lincRNA</option>
+              <option value="pseudogene">pseudogene</option>
+            </select>
+          </div>
+          <input type="radio" name="promSearchRegion" value="genecluster">Search a specific gene cluster.
+          <div>
+            <input list="clusters">
+            <datalist>
+              <option value="cluster1">
+              <option value="cluster2">
+              <option value="cluster3">
+            </datalist>
+          </div>
+          <!--enhancer mode-->
+          <input type="radio" name="promSearchRegion" value="homoregion">Use homologous regions in this species (liftOver MinMatch = 0.1).
+          <div>
+            Upstream: <input type="text" name="enhancerUp" value=20000>
+            Downstream: <input type="text" name="enhancerDown" value=20000>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--step 3-->
+  <div id="step3" class="stepbox">
+    <div class="stepleft">
+      <h2> STEP3 </h2>
+    </div>
+    <div class="stepright">
+      <div>
+        <h3>Set the alignment parameters</h3>
+        <button type="button">Show more parameters...</button>
+      </div>
+      <div> Weights:<br>
+        Sequence weight:
+        <input type="text" name="seqweight" value=0.9>
+        Epigenome weight:
+        <input type="text" name="epiweight">
+        <br>
+        Alignment parameters:<br>
+        s:
+        <input type="text" name="paras">
+        <br>
+        &#956:
+        <input type="text" name="paramu">
+        <br>
+        &#954:
+        <input type="text" name="parak">
+        <br>
+        &#960<sub>A</sub>:
+        <input type="text" name="piA">
+        &#960<sub>C</sub>:
+        <input type="text" name="piC">
+        &#960<sub>G</sub>:
+        <input type="text" name="piG">
+        &#960<sub>T</sub>:
+        <input type="text" name="piT">
+        <br>
+        &#960<sub>1</sub>:
+        <input type="text" name="pi1">
+      </div>
+    </div>
+  </div>
+  <!--step 4-->
+  <div id="step4" class="stepbox">
+    <div class="stepleft">
+      <h2> STEP4 </h2>
+    </div>
+    <div class="stepright">
+      <div>
+        <h3>Submit data</h3>
+      </div>
+      <div>
+        <input type="checkbox" name="emailNote">
+        Notify me by email when the job is done.<br>
+        Email:
+        <input type="text" name="mail" value="your email">
+        <br>
+        <input type="submit" value="Submit">
+      </div>
+    </div>
+  </div>
+</form>
+</body>
+</html>

@@ -50,7 +50,7 @@ def ParsePeaks(of_name, json_files, runid):
   '''
   Creak peak files.
   '''
-  with open(of_name + "peaks_" + runid) as fpeak:
+  with open(of_name + "peaks_" + runid, "w") as fpeak:
     print >> fpeak, "@species1"
     print >> fpeak, of_name + json_files["speciesPeak[]"][0]["filename"]
     print >> fpeak, "@species2"
@@ -65,12 +65,12 @@ def CreateInputBeds(of_name, json_dict):
   return: names of the two bed files.
   '''
 
-  input1 = json_dict["files"]["speciesInput[]"][0]["filename"]
+  input1 = of_name + json_dict["files"]["speciesInput[]"][0]["filename"]
 
-  if web_json["body"]["searchRegionMode"] == "genomregion":
+  if json_dict["body"]["searchRegionMode"] == "genomregion":
     # Mode 1: define search regions with bed files or gene lists.
-    input2 = json_dict["files"]["speciesInput[]"][1]["filename"]
-    if CheckFileLength(ofname + input1, of_name + input2):
+    input2 = of_name + json_dict["files"]["speciesInput[]"][1]["filename"]
+    if CheckFileLength(input1, input2):
       intype1 = CheckFileType(input1)
       intype2 = CheckFileType(input2)
       if intype1 == "bed" and intype2 == "bed":
@@ -100,10 +100,11 @@ def CreateInputBeds(of_name, json_dict):
   return bed1, bed2
 
 
-def BedToFa(bed1, bed2, out_folder, sp_list, epiName_list, runid):
+def BedToFa(bed1, bed2, out_folder, sp_list, epiName, runid):
   '''
   Run InputToFastq_bed2.py to convert the bed file pair to a fastq-like file.
   '''
+  epiName_list = epiName.split(",")
   cmd_list = ["python", "InputToFastq_bed2.py", bed1, bed2, "-s"] + sp_list +\
   ["--bg", out_folder + "peaks_" + runid] +\
   ["--histone"] + epiName_list +\
@@ -121,13 +122,27 @@ def InputParas(of_name, json_body, runid):
   '''
   Create input parameter file for EpiAlignment.
   '''
-  with open(of_name + "parameters_" + runid) as fpara:
+  # Check if parameters are not positive.
+  parak_list = [float(x) for x in json_body["parak"].split(",")]
+  if float(json_body["paras"]) <= 0 or float(json_body["paramu"]) <= 0 or min(parak_list) <= 0:
+    print >> sys.stderr, "Parameters should be positive values."
+    sys.exit(206)
+
+  seq_pi_list = [float(json_body["piA"]), float(json_body["piC"]), float(json_body["piG"]), float(json_body["piT"])]
+  kappa_list1 = [float(k) for k in json_body["pi1"].split(",")]
+  weight_list = [float(w) for w in json_body["epiweight"].split(",")]
+  para_list = seq_pi_list + kappa_list1 + weight_list
+  if min(para_list) <= 0 or max(para_list) >= 1:
+    print >> sys.stderr, "Equilibrium probabilities (pi) must be values between 0 and 1."
+    sys.exit(206)
+
+
+  with open(of_name + "parameters_" + runid, "w") as fpara:
     print >> fpara, json_body["paras"]
     print >> fpara, json_body["paramu"]
     print >> fpara, "\n".join(json_body["parak"].split(","))
     print >> fpara, "A:" + json_body["piA"] + "\t" + "C:" + json_body["piC"] + "\t" +\
     "G:" + json_body["piG"] + "\t" + "T:" + json_body["piT"]
-    kappa_list1 = [int(k) for k in json_body["pi1"].split(",")]
     kappa_list0 = [1 - k for k in kappa_list1]
     for p0, p1 in zip(kappa_list0, kappa_list1):
       print >> fpara, "0:" + str(p0) + "\t" + "1:" + str(p1)
@@ -138,10 +153,10 @@ def ExeEpiAlignment(of_name, runid):
   '''
   Execute EpiAlignment
   '''
-  cmd_list = ["python", "EpiAlignment.py", out_folder + "Input_" + runid] +\
-  ["-e", out_folder + "parameters_" + runid] +\
+  cmd_list = ["python", "EpiAlignment.py", of_name + "Input_" + runid] +\
+  ["-e", of_name + "parameters_" + runid] +\
   ["-p", "140"] +\
-  ["-o", out_folder + "epialign_result_" + runid]
+  ["-o", of_name + "epialign_result_" + runid]
 
   exit_code = subprocess.call(cmd_list)
 
@@ -153,10 +168,12 @@ def ExeEpiAlignment(of_name, runid):
 def Main():
   # Parse the json string passed by node js. 
   web_json = ParseJson()
+  print web_json
   # Output folder name
+  runid = web_json["runid"].split("_")[1]
   out_folder = web_json["runid"] + "/"
+  print runid
   # Move all uploaded files to the output folder.
-  print web_json["files"]
   MoveUploadFiles(out_folder, web_json["files"])
 
   # Generate input data
@@ -165,7 +182,7 @@ def Main():
   # Create a pair of bed files.
   bed1, bed2 = CreateInputBeds(out_folder, web_json)
   # Generate the input fastq-like file.
-  BedToFa(bed1, bed2, out_folder, web_json["body"]["genomeAssembly"], web_json["body"]["epiName"], web_json["body"]["runid"])
+  BedToFa(bed1, bed2, out_folder, web_json["body"]["genomeAssembly"], web_json["body"]["epiName"], runid)
   # Generate parameter file
   InputParas(out_folder, web_json["body"], runid)
 

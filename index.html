@@ -40,8 +40,9 @@
       <div>
         <h3>Upload data</h3>
       </div>
-      <div>
-        Epigenomic modification names: <input type="text" name="epiName" value="H3K4me3">  
+      <div class="flexRow flexCenter flexWrap">
+        <div class="elemLabel"> Epigenomic modification names:</div>
+        <input class="flex" type="text" name="epiName" value="H3K4me3">
       </div>
       <!--query region-->
       <div class="speciesData flexColumn flexStretch">
@@ -57,18 +58,17 @@
           <div class="elemLabel">Peak regions:</div>
           <input class="flex" type="file" name="speciesPeak[]">
         </div>
-        <div id="inputRegionContainer" class="flexColumn flexStretch">
-          <div class="flexRow flexStart flexWrap">
-            <div class="elemLabel">Input regions:</div>
-			<div class="flexColumn flexStretch flex">
-				<span>Paste BED data or gene names:</span>
-				<textarea name="speciesText[]"></textarea></div>
-          <div class="flexRow flexStart flexWrap">
-            <div class="elemLabel">or upload a file:</div>
-            <input class="flex" type="file" name="speciesInput[]">
+        <div class="flexRow flexStart flexWrap">
+          <div class="elemLabel">Input regions:</div>
+          <div class="flexColumn flexStretch flex">
+            <div>Paste BED data or gene names:</div>
+            <textarea name="speciesText[]"></textarea>
+            <div class="flexRow flexStart flexWrap">
+              <div class="subElemLabel">or upload a file:</div>
+              <input class="flex" type="file" name="speciesInput[]">
+            </div>
           </div>
-         </div>
-         </div>
+        </div>
         <div class="flexRow flexStart flexWrap">
           <div class="elemLabel">Specify promoter region ranges:</div>
           <div> <span class="shortInputContainer nobr">
@@ -98,12 +98,10 @@
           <div class="flexRow flexStart flexWrap">
             <div class="elemLabel flexRow flexStart flexNoWrap">
               <input type="radio" name="promSearchRegion" value="genomregion" id="bedPromSearch">
-              <label for="bedPromSearch"> Define searching regions with bed files / gene lists.</label>
+              <label for="bedPromSearch"> Define searching regions with a BED file / a gene list.</label>
             </div>
-            <div class="flexColumn flexStretch flex">
-              <span>Paste BED data or gene names:</span>
-              
-                <textarea name="speciesText[]">Upload a bed file or a genelist.</textarea>
+            <div class="flexColumn flexStretch flex"> <span>Paste BED data or gene names:</span>
+              <textarea name="speciesText[]"></textarea>
               <div class="flexRow flexStart flexWrap">
                 <div class="subElemLabel">or upload a file:</div>
                 <input class="flex" type="file" name="speciesInput[]">
@@ -159,21 +157,21 @@
       <h2> STEP 3 </h2>
     </div>
     <div class="stepright flexColumn flexStretch">
-      <div class="flexRow flexCenter flexWrap">
+      <div>
         <h3>Set the alignment parameters</h3>
-        <button type="button">Show more parameters...</button>
       </div>
       <div class="flexRow flexCenter flexWrap">
-          <div class="flexRow flexNoWrap shortInputContainer">
-            <div class="subElemLabel">Sequence weight:</div>
-            <input type="text" name="seqweight" value="0.9">
-          </div>
-          <div class="flexRow flexNoWrap shortInputContainer">
-            <div class="subElemLabel">Epigenome weight:</div>
-            <input type="text" name="epiweight" value="0.1">
-          </div>
+        <div class="flexRow flexNoWrap shortInputContainer">
+          <div class="subElemLabel">Sequence weight:</div>
+          <input type="text" name="seqweight" value="0.9">
+        </div>
+        <div class="flexRow flexNoWrap shortInputContainer">
+          <div class="subElemLabel">Epigenome weight:</div>
+          <input type="text" name="epiweight" value="0.1">
+        </div>
       </div>
-      <div class="flexRow flexStart flexWrap">
+      <button type="button" class="selfAlignStart">Show more parameters...</button>
+      <div class="speciesData flexRow flexStart flexWrap">
         <div class="elemLabel">Alignment parameters:</div>
         <div class="parameterContainer flexColumn flexStretch">
           <div class="flexRow flexStart flexWrap">

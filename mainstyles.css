@@ -28,6 +28,11 @@ form {
 	padding: 1em 0.5em;
 }
 
+input[type="text"] {
+	padding: 0.1em 0.2em;
+	box-sizing: border-box;
+}
+
 .nobr {
 	white-space: nowrap;
 }
@@ -38,7 +43,7 @@ form {
 }
 
 .flexRow > *:not(:last-child) {
-	margin-right: 1.5em;
+	margin-right: 1em;
 }
 
 .flexColumn {
@@ -72,6 +77,16 @@ form {
 
 .flexNoWrap {
 	flex-wrap: nowrap;
+}
+
+.selfAlignStart {
+	align-self: flex-start;
+}
+
+div.speciesData {
+	border: 0.5px dashed #5E5E5E;
+	padding: 0.5em 1em;
+	background: #EEEEEE;
 }
 
 div.stepbox > div {

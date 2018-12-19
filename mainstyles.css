@@ -93,6 +93,10 @@ div.stepbox > div {
 	padding: 1em;
 }
 
+div.stepbox:not(:last-of-type) {
+	border-bottom: 1px dashed #727272;
+}
+
 div.stepleft {
 	width: 5em;
 	flex: none;

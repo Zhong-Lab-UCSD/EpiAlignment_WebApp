@@ -12,7 +12,7 @@ body {
 }
 
 div#header {
-	background: #363636;
+	background: linear-gradient(150deg, #002d7a 0%, #01775e 100%);
 	color: #FFFFFF;
 	padding: 1.5em;
 }
@@ -32,6 +32,15 @@ form {
 input[type="text"] {
 	padding: 0.1em 0.2em;
 	box-sizing: border-box;
+}
+
+input[type="submit"] {
+	font-size: 18px;
+	padding: 0.5em 2em;
+	font-weight: bold;
+	background: linear-gradient(to bottom, #0095ff, #0d74dd);
+	color: #FFFFFF;
+	border-radius: 10px;
 }
 
 .nobr {

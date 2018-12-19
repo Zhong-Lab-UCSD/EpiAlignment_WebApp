@@ -2,6 +2,7 @@ import subprocess
 import json
 import shutil
 import sys
+import os
 
 def ParseJson():
   '''
@@ -45,34 +46,131 @@ def CheckFileType(file1):
       print >> sys.stderr, "Input files have to be bed6 files or genelists."
       sys.exit(201)
 
+def StripDigits(qstr):
+  '''
+  Remove all digits in qstr.
+  '''
+  return ''.join([i for i in qstr if not i.isdigit()])
+
 
 def ParsePeaks(of_name, json_files, runid):
   '''
   Creak peak files.
   '''
+  if "speciesPeak1[]" not in json_files or "speciesPeak2[]" not in json_files :
+    print >> sys.stderr, "No peak files found!"
+    sys.exit(207)
+
   with open(of_name + "peaks_" + runid, "w") as fpeak:
     print >> fpeak, "@species1"
-    print >> fpeak, of_name + json_files["speciesPeak[]"][0]["filename"]
+    print >> fpeak, of_name + json_files["speciesPeak1[]"][0]["filename"]
     print >> fpeak, "@species2"
-    print >> fpeak, of_name + json_files["speciesPeak[]"][1]["filename"]
+    print >> fpeak, of_name + json_files["speciesPeak2[]"][0]["filename"]
+
+def FileOrTextarea(textarea_input, json_files, key, of_name, runid):
+  '''
+  Determine if input was pasted into the textarea or uploaded as a file.
+  textarea_input: a string. Text in textarea.
+  json_files: json "files" value.
+  key: key value of the file.
+  of_name: output folder name.
+  return: a string and file type. If a file was uploaded, simply return file name. If data was pasted into the textarea,
+  write the data into a new file.
+  '''
+  if key in json_files:
+    # uploaded file
+    fname = of_name + json_files[key][0]["filename"]
+    return fname, intype
+  elif textarea_input != "":
+    # paste data
+    fname = of_name + key + "_" + runid
+    with open(fname, "w") as fsp:
+      print >> fsp, textarea_input.rstrip("\n")
+  else:
+    # no data provided.
+    print >> sys.stderr, "No input regions provided."
+    sys.exit(200)
+
+  intype = CheckFileType(fname)
+  return fname, intype
+
+#######################
+## Mode 4: liftOver  ##
+#######################
+def ExtendBed(fname, enhUp, enhDown):
+  '''
+  Extend the input bed file for liftOver.
+  return: extbed, name of the file with extended regions.
+  '''
+  with open(fname, "r") as fin, open(fname + ".extend", "w") as fout:
+    for line in fin:
+      line = line.strip().split("\t")
+      if line[5] == "+":
+        line[1] = str(int(line[1]) - enhUp)
+        line[2] = str(int(line[2]) + enhDown)
+      elif line[5] == "-":
+        line[1] = str(int(line[1]) - enhDown)
+        line[2] = str(int(line[2]) + enhUp)
+      print >> fout, "\t".join(line)
+
+  return fname + ".extend"
 
 
-def CreateInputBeds(of_name, json_dict):
+def LiftOver(input_bed, genAssem):
+  '''
+  Call liftOver to remap regions.
+  '''
+  chain_name = genAssem[0] + "To" + genAssem[1].capitalize() + ".over.chain"
+  cmd_list = ["liftOver", input_bed, "Annotation/AnnotationFiles/" + chain_name, input_bed + ".lift", input_bed + ".unlift" ,"-minMatch=0.1"]
+  p = subprocess.Popen(cmd_list, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+  (std_out, std_err) = p.communicate()
+  exit_code = p.returncode
+
+  if exit_code != 0:
+    print >> sys.stderr, "Failed to generate the input file. Exit code: " + str(exit_code)
+    sys.exit(exit_code)
+  return input_bed + ".lift"
+
+def RemoveNonlift(input_bed, lift_bed):
+  '''
+  Remove non-remappable lines from the input_bed.
+  '''
+  i = 0
+  with open(input_bed, "r") as fin1, open(lift_bed, "r") as fin2, open(input_bed + ".clean", "w") as fout:
+    while True:
+      line2 = fin2.readline().strip()
+      if line2 == "":
+        if i == 0:
+          # lift_bed is empty
+          print >> sys.stderr, "None of the input regions were remappable."
+          sys.exit(209)
+        break
+      i += 1
+      line2 = line2.split("\t")
+
+      while True:
+        line1 = fin1.readline().strip().split("\t")
+        if line1[3] == line2[3]:
+          print >> fout, "\t".join(line1) 
+          break
+  return input_bed + ".clean"
+
+
+def CreateInputBeds(of_name, json_dict, runid):
   '''
   Create a pair of bed files.
   of_name: output folder name.
   json_dict: the json dictionary.
   return: names of the two bed files.
   '''
-
-  input1 = of_name + json_dict["files"]["speciesInput[]"][0]["filename"]
+  # Is input1 a file or a pasted text?
+  input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", of_name, runid)
 
   if json_dict["body"]["searchRegionMode"] == "genomregion":
     # Mode 1: define search regions with bed files or gene lists.
-    input2 = of_name + json_dict["files"]["speciesInput[]"][1]["filename"]
+    # Is input2 a file or a pasted text?
+    input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", of_name, runid)
     if CheckFileLength(input1, input2):
-      intype1 = CheckFileType(input1)
-      intype2 = CheckFileType(input2)
       if intype1 == "bed" and intype2 == "bed":
         # Two input files are all bed6:
         bed1 = input1
@@ -81,21 +179,34 @@ def CreateInputBeds(of_name, json_dict):
         # at least one file is a gene list. Cut the promoter regions.
         pass
 
-
-
-
   else:    
-    if web_json["body"]["searchRegionMode"] == "genetype" and web_json["body"]["alignMode"] == "promoter":
+    if json_dict["body"]["searchRegionMode"] == "genetype" and json_dict["body"]["alignMode"] == "promoter":
       # Mode 2: search the promoter regions of a specific type of gene.
       pass
-    elif web_json["body"]["searchRegionMode"] == "genecluster" and web_json["body"]["alignMode"] == "promoter":
+
+    elif json_dict["body"]["searchRegionMode"] == "genecluster" and json_dict["body"]["alignMode"] == "promoter":
       # Mode 3: search a specific gene cluster.
       pass
 
-    elif web_json["body"]["searchRegionMode"] == "homoregion" and web_json["body"]["alignMode"] == "enhancer":
+    elif json_dict["body"]["searchRegionMode"] == "homoregion" and json_dict["body"]["alignMode"] == "enhancer":
       # Mode 4 (enhancer mode 2): use homologous regions. 
       # species must be different!
-      pass
+      if StripDigits(json_dict["body"]["genomeAssembly"][0]) == StripDigits(json_dict["body"]["genomeAssembly"][1]):
+        print >> sys.stderr, "The two species must be different to use this mode."
+        sys.exit(208)
+      # Extend the input bed file1. extbed: extended bed file name.
+      if intype1 == "name":
+        # genelist. Convert to bed file.
+        pass
+      extbed = ExtendBed(input1, int(json_dict["body"]["enhancerUp"]), int(json_dict["body"]["enhancerDown"]))
+      # LiftOver
+      liftbed = LiftOver(extbed, json_dict["body"]["genomeAssembly"])
+      # Remove non-remappable regions. Return a pair of bed file names.
+      cleanbed = RemoveNonlift(input1, liftbed)
+      os.remove(extbed)
+      os.remove(extbed + ".unlift")
+      bed1 = cleanbed
+      bed2 = liftbed
 
   return bed1, bed2
 
@@ -168,7 +279,9 @@ def ExeEpiAlignment(of_name, runid):
 def Main():
   # Parse the json string passed by node js. 
   web_json = ParseJson()
-  print web_json
+  print web_json["body"]
+  print "\n"
+  print web_json["files"]
   # Output folder name
   runid = web_json["runid"].split("_")[1]
   out_folder = web_json["runid"] + "/"
@@ -180,7 +293,7 @@ def Main():
   # Parse peak files.
   ParsePeaks(out_folder, web_json["files"], runid)
   # Create a pair of bed files.
-  bed1, bed2 = CreateInputBeds(out_folder, web_json)
+  bed1, bed2 = CreateInputBeds(out_folder, web_json, runid)
   # Generate the input fastq-like file.
   BedToFa(bed1, bed2, out_folder, web_json["body"]["genomeAssembly"], web_json["body"]["epiName"], runid)
   # Generate parameter file

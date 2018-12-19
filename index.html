@@ -3,169 +3,240 @@
 <head>
 <meta charset="UTF-8">
 <title>index</title>
+<link href="mainstyles.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
-<div id="header">
+<div id="header"> 
   <!--Introduction-->
   <h1>EpiAlignment: chromosomal similarity searching engine</h1>
   EpiAlignment is a tool that can align genomic regions with both sequence and epigenomic information. For more theoretical details please see our PloS computational biology paper. </div>
-  <!--alignment steps-->
+<!--alignment steps-->
 <form method="post" enctype="multipart/form-data" action="/form_upload">
   <!--step1-->
-  <div id="step1" class="stepbox">
+  <div id="step1" class="stepbox flexRow flexStart flex">
     <div class="stepleft">
-      <h2> STEP1 </h2>
+      <h2> STEP 1 </h2>
     </div>
-    <div class="stepright">
+    <div class="stepright flexRow flexCenter flexWrap">
       <div>
         <h3>Select the alignment mode:</h3>
       </div>
-      <div>
-        <input type="radio" name="alignMode" value="promoter" checked>
-        Promoter<br>
-        <input type="radio" name="alignMode" value="enhancer">
-        Enhancer </div>
-      <div> Which mode should I choose? </div>
+      <div class="flexRow flexCenter flexWrap">
+        <input type="radio" name="alignMode" value="promoter" id="promoterRadio" checked>
+        <label for="promoterRadio"> Promoter</label>
+        <input type="radio" name="alignMode" value="enhancer" id="enhancerRadio">
+        <label for="enhancerRadio"> Enhancer</label>
+      </div>
+      <div id="modeHelp" class="help"> Which mode should I choose? </div>
     </div>
   </div>
   <!--step2-->
-  <div id="step2" class="stepbox">
+  <div id="step2" class="stepbox flexRow flexStart flex">
     <div class="stepleft">
-      <h2> STEP2 </h2>
+      <h2> STEP 2 </h2>
     </div>
-    <div class="stepright">
+    <div class="stepright flexColumn flexStretch">
       <div>
         <h3>Upload data</h3>
       </div>
       <!--query region-->
-      <div class="speciesData">
+      <div class="speciesData flexColumn flexStretch">
         <h4>Query regions</h4>
-        <div> Genome assembly:
+        <div class="flexRow flexCenter flexWrap">
+          <div class="elemLabel">Genome assembly:</div>
           <select name="genomeAssembly[]">
-            <option value="hg38" selected>hg38</option>
-            <option value="mm10">mm10</option>
+            <option value="hg38" selected>(Homo sapiens) hg38</option>
+            <option value="mm10">(Mus musculus) mm10</option>
           </select>
         </div>
-        <div> Peak regions:
-          <input type="file" name="speciesPeak[]">
+        <div class="flexRow flexCenter flexWrap">
+          <div class="elemLabel">Peak regions:</div>
+          <input class="flex" type="file" name="speciesPeak[]">
         </div>
-        <div> Input regions:<br>
-          <textarea name="speciesText[]">Upload a bed file or a genelist.</textarea>
-          <br>
-          Or uploaded a file:
-          <input type="file" name="speciesInput[]"><br>
-          Specify promoter region ranges: upstream from TSSs <input type="text" name="promoterUp" value="500"> downstream from TSSs <input type="text" name="promoterDown" value="1000">
+        <div id="inputRegionContainer" class="flexColumn flexStretch">
+          <div class="flexRow flexStart flexWrap">
+            <div class="elemLabel">Input regions:</div>
+            <textarea name="speciesText[]">Upload a bed file or a genelist.</textarea>
+          </div>
+          <div class="flexRow flexStart flexWrap">
+            <div class="elemLabel">Or upload a file:</div>
+            <input class="flex" type="file" name="speciesInput[]">
+          </div>
+        </div>
+        <div class="flexRow flexStart flexWrap">
+          <div class="elemLabel">Specify promoter region ranges:</div>
+          <div> <span class="shortInputContainer nobr">
+            <input type="text" name="promoterUp" value="500">
+            bps upstream from TSSs,</span> <span class="shortInputContainer nobr">
+            <input type="text" name="promoterDown" value="1000">
+            bps downstream from TSSs.</span> </div>
         </div>
       </div>
       <!--searching region-->
-      <div class="speciesData">
+      <div class="speciesData flexColumn flexStretch">
         <h4>Searching region</h4>
-        <div> Genome assembly:
+        <div class="flexRow flexCenter flexWrap">
+          <div class="elemLabel">Genome assembly:</div>
           <select name="genomeAssembly[]">
-            <option value="hg38">hg38</option>
-            <option value="mm10" selected>mm10</option>
+            <option value="hg38">(Homo sapiens) hg38</option>
+            <option value="mm10" selected>(Mus musculus) mm10</option>
           </select>
         </div>
-        <div> Peak regions:
-          <input type="file" name="speciesPeak[]">
+        <div class="flexRow flexCenter flexWrap">
+          <div class="elemLabel">Peak regions:</div>
+          <input class="flex" type="file" name="speciesPeak[]">
         </div>
         <!--type of searching regions-->
-        <div>
+        <div class="flexColumn flexStretch"> 
           <!--promoter mode-->
-          <input type="radio" name="promSearchRegion" value="genomregion">
-          Define searching regions with bed files / genelists.
-          <div> Input regions:<br>
-            <textarea name="speciesText[]">Upload a bed file or a genelist.</textarea>
-            <br>
-            Or uploaded a file:
-            <input type="file" name="speciesInput[]">
+          <div class="flexRow flexStart flexWrap">
+            <div class="elemLabel flexRow flexStart flexNoWrap">
+              <input type="radio" name="promSearchRegion" value="genomregion" id="bedPromSearch">
+              <label for="bedPromSearch"> Define searching regions with bed files / genelists.</label>
+            </div>
+            <div class="flexColumn flexStretch flex">
+              <div class="flexRow flexStart flexWrap">
+                <div class="subElemLabel"> Input regions:</div>
+                <textarea name="speciesText[]">Upload a bed file or a genelist.</textarea>
+              </div>
+              <div class="flexRow flexStart flexWrap">
+                <div class="subElemLabel">Or upload a file:</div>
+                <input class="flex" type="file" name="speciesInput[]">
+              </div>
+            </div>
           </div>
-          <input type="radio" name="promSearchRegion" value="genetype">Search a specific type of genes.
-          <div>
-            <select name="genetypeSelect[]">
-              <option value="protein-coding gene" selected>protein-coding gene</option>
-              <option value="lincRNA">lincRNA</option>
-              <option value="pseudogene">pseudogene</option>
-            </select>
+          <div class="flexRow flexStart flexWrap">
+            <div class="elemLabel flexRow flexStart flexNoWrap">
+              <input type="radio" name="promSearchRegion" value="genetype" id="geneTypeSearch">
+              <label for="geneTypeSearch"> Search a specific type of genes.</label>
+            </div>
+            <div>
+              <select name="genetypeSelect[]">
+                <option value="protein-coding gene" selected>protein-coding gene</option>
+                <option value="lincRNA">lincRNA</option>
+                <option value="pseudogene">pseudogene</option>
+              </select>
+            </div>
           </div>
-          <input type="radio" name="promSearchRegion" value="genecluster">Search a specific gene cluster.
-          <div>
-            <input list="clusters">
-            <datalist>
-              <option value="cluster1">
-              <option value="cluster2">
-              <option value="cluster3">
-            </datalist>
+          <div class="flexRow flexStart flexWrap">
+            <div class="elemLabel flexRow flexStart flexNoWrap">
+              <input type="radio" name="promSearchRegion" value="genecluster" id="geneClusterSearch">
+              <label for="geneClusterSearch"> Search a specific gene cluster.</label>
+            </div>
+            <div>
+              <input list="clusters">
+              <datalist>
+                <option value="cluster1"></option>
+                <option value="cluster2"></option>
+                <option value="cluster3"></option>
+              </datalist>
+            </div>
           </div>
           <!--enhancer mode-->
-          <input type="radio" name="promSearchRegion" value="homoregion">Use homologous regions in this species (liftOver MinMatch = 0.1).
-          <div>
-            Upstream: <input type="text" name="enhancerUp" value=20000>
-            Downstream: <input type="text" name="enhancerDown" value=20000>
+          <div class="flexRow flexStart flexWrap">
+            <div class="elemLabel flexRow flexStart flexNoWrap">
+              <input type="radio" name="promSearchRegion" value="homoregion" id="homologSearch">
+              <label for="homologSearch"> Use homologous regions in this species <span class="nobr">(liftOver MinMatch = 0.1)</span>.</label>
+            </div>
+            <div> <span class="shortInputContainer nobr">
+              <input type="text" name="enhancerUp" value="20000">
+              bps upstream,</span> <span class="shortInputContainer nobr">
+              <input type="text" name="enhancerDown" value="20000">
+              bps downstream. </span></div>
           </div>
-          
         </div>
       </div>
     </div>
   </div>
   <!--step 3-->
-  <div id="step3" class="stepbox">
+  <div id="step3" class="stepbox flexRow flexStart flex">
     <div class="stepleft">
-      <h2> STEP3 </h2>
+      <h2> STEP 3 </h2>
     </div>
-    <div class="stepright">
-      <div>
+    <div class="stepright flexColumn flexStretch">
+      <div class="flexRow flexCenter flexWrap">
         <h3>Set the alignment parameters</h3>
         <button type="button">Show more parameters...</button>
       </div>
-      <div> Weights:<br>
-        Sequence weight:
-        <input type="text" name="seqweight" value=0.9>
-        Epigenome weight:
-        <input type="text" name="epiweight">
-        <br>
-        Alignment parameters:<br>
-        s:
-        <input type="text" name="paras">
-        <br>
-        &#956:
-        <input type="text" name="paramu">
-        <br>
-        &#954:
-        <input type="text" name="parak">
-        <br>
-        &#960<sub>A</sub>:
-        <input type="text" name="piA">
-        &#960<sub>C</sub>:
-        <input type="text" name="piC">
-        &#960<sub>G</sub>:
-        <input type="text" name="piG">
-        &#960<sub>T</sub>:
-        <input type="text" name="piT">
-        <br>
-        &#960<sub>1</sub>:
-        <input type="text" name="pi1">
+      <div class="flexRow flexStart flexWrap">
+        <div class="elemLabel">Weights:</div>
+        <div class="flexRow flexCenter flexWrap">
+          <div class="flexRow flexNoWrap shortInputContainer">
+            <div class="subElemLabel">Sequence weight:</div>
+            <input type="text" name="seqweight" value="0.9">
+          </div>
+          <div class="flexRow flexNoWrap shortInputContainer">
+            <div class="subElemLabel">Epigenome weight:</div>
+            <input type="text" name="epiweight">
+          </div>
+        </div>
+      </div>
+      <div class="flexRow flexStart flexWrap">
+        <div class="elemLabel">Alignment parameters:</div>
+        <div class="parameterContainer flexColumn flexStretch">
+          <div class="flexRow flexStart flexWrap">
+            <div class="nobr shortInputContainer">
+              <div class="paramLabel">s:</div>
+              <input type="text" name="paras">
+            </div>
+            <div class="nobr shortInputContainer">
+              <div class="paramLabel">&#956:</div>
+              <input type="text" name="paramu">
+            </div>
+            <div class="nobr shortInputContainer">
+              <div class="paramLabel">&#954:</div>
+              <input type="text" name="parak">
+            </div>
+          </div>
+          <div class="flexRow flexStart flexWrap">
+            <div class="nobr shortInputContainer">
+              <div class="paramLabel">&#960<sub>A</sub>:</div>
+              <input type="text" name="piA">
+            </div>
+            <div class="nobr shortInputContainer">
+              <div class="paramLabel">&#960<sub>C</sub>:</div>
+              <input type="text" name="piC">
+            </div>
+            <div class="nobr shortInputContainer">
+              <div class="paramLabel">&#960<sub>G</sub>:</div>
+              <input type="text" name="piG">
+            </div>
+            <div class="nobr shortInputContainer">
+              <div class="paramLabel">&#960<sub>T</sub>:</div>
+              <input type="text" name="piT">
+            </div>
+          </div>
+          <div class="flexRow flexStart flexWrap">
+            <div class="nobr shortInputContainer">
+              <div class="paramLabel">&#960<sub>1</sub>:</div>
+              <input type="text" name="pi1">
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   <!--step 4-->
-  <div id="step4" class="stepbox">
+  <div id="step4" class="stepbox flexRow flexStart flex">
     <div class="stepleft">
-      <h2> STEP4 </h2>
+      <h2> STEP 4 </h2>
     </div>
-    <div class="stepright">
+    <div class="stepright flexColumn flexStart">
       <div>
         <h3>Submit data</h3>
       </div>
-      <div>
-        <input type="checkbox" name="emailNote">
-        Notify me by email when the job is done.<br>
-        Email:
-        <input type="text" name="mail" value="your email">
+      <div class="flexRow flexStart">
+        <div>
+          <input type="checkbox" name="emailNote" id="emailCheckbox">
+          <label for="emailCheckbox">Notify me by email when the job is done.</label>
+        </div>
+        <div>Email:
+          <input id="emailField" Starttype="text" name="mail" value="your email">
+        </div>
         <br>
-        <input type="submit" value="Submit">
       </div>
+      <input type="submit" value="Submit">
     </div>
   </div>
 </form>

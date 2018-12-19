@@ -40,6 +40,9 @@
       <div>
         <h3>Upload data</h3>
       </div>
+      <div>
+        Epigenomic modification names: <input type="text" name="epiName" value="H3K4me3">  
+      </div>
       <!--query region-->
       <div class="speciesData flexColumn flexStretch">
         <h4>Query regions</h4>
@@ -57,13 +60,15 @@
         <div id="inputRegionContainer" class="flexColumn flexStretch">
           <div class="flexRow flexStart flexWrap">
             <div class="elemLabel">Input regions:</div>
-            <textarea name="speciesText[]">Upload a bed file or a genelist.</textarea>
-          </div>
+			<div class="flexColumn flexStretch flex">
+				<span>Paste BED data or gene names:</span>
+				<textarea name="speciesText[]"></textarea></div>
           <div class="flexRow flexStart flexWrap">
-            <div class="elemLabel">Or upload a file:</div>
+            <div class="elemLabel">or upload a file:</div>
             <input class="flex" type="file" name="speciesInput[]">
           </div>
-        </div>
+         </div>
+         </div>
         <div class="flexRow flexStart flexWrap">
           <div class="elemLabel">Specify promoter region ranges:</div>
           <div> <span class="shortInputContainer nobr">
@@ -93,15 +98,14 @@
           <div class="flexRow flexStart flexWrap">
             <div class="elemLabel flexRow flexStart flexNoWrap">
               <input type="radio" name="promSearchRegion" value="genomregion" id="bedPromSearch">
-              <label for="bedPromSearch"> Define searching regions with bed files / genelists.</label>
+              <label for="bedPromSearch"> Define searching regions with bed files / gene lists.</label>
             </div>
             <div class="flexColumn flexStretch flex">
-              <div class="flexRow flexStart flexWrap">
-                <div class="subElemLabel"> Input regions:</div>
+              <span>Paste BED data or gene names:</span>
+              
                 <textarea name="speciesText[]">Upload a bed file or a genelist.</textarea>
-              </div>
               <div class="flexRow flexStart flexWrap">
-                <div class="subElemLabel">Or upload a file:</div>
+                <div class="subElemLabel">or upload a file:</div>
                 <input class="flex" type="file" name="speciesInput[]">
               </div>
             </div>
@@ -159,18 +163,15 @@
         <h3>Set the alignment parameters</h3>
         <button type="button">Show more parameters...</button>
       </div>
-      <div class="flexRow flexStart flexWrap">
-        <div class="elemLabel">Weights:</div>
-        <div class="flexRow flexCenter flexWrap">
+      <div class="flexRow flexCenter flexWrap">
           <div class="flexRow flexNoWrap shortInputContainer">
             <div class="subElemLabel">Sequence weight:</div>
             <input type="text" name="seqweight" value="0.9">
           </div>
           <div class="flexRow flexNoWrap shortInputContainer">
             <div class="subElemLabel">Epigenome weight:</div>
-            <input type="text" name="epiweight">
+            <input type="text" name="epiweight" value="0.1">
           </div>
-        </div>
       </div>
       <div class="flexRow flexStart flexWrap">
         <div class="elemLabel">Alignment parameters:</div>
@@ -178,39 +179,39 @@
           <div class="flexRow flexStart flexWrap">
             <div class="nobr shortInputContainer">
               <div class="paramLabel">s:</div>
-              <input type="text" name="paras">
+              <input type="text" name="paras" value="0.3">
             </div>
             <div class="nobr shortInputContainer">
               <div class="paramLabel">&#956:</div>
-              <input type="text" name="paramu">
+              <input type="text" name="paramu" value="0.3">
             </div>
             <div class="nobr shortInputContainer">
               <div class="paramLabel">&#954:</div>
-              <input type="text" name="parak">
+              <input type="text" name="parak" value="0.3">
             </div>
           </div>
           <div class="flexRow flexStart flexWrap">
             <div class="nobr shortInputContainer">
               <div class="paramLabel">&#960<sub>A</sub>:</div>
-              <input type="text" name="piA">
+              <input type="text" name="piA" value="0.25">
             </div>
             <div class="nobr shortInputContainer">
               <div class="paramLabel">&#960<sub>C</sub>:</div>
-              <input type="text" name="piC">
+              <input type="text" name="piC" value="0.25">
             </div>
             <div class="nobr shortInputContainer">
               <div class="paramLabel">&#960<sub>G</sub>:</div>
-              <input type="text" name="piG">
+              <input type="text" name="piG" value="0.25">
             </div>
             <div class="nobr shortInputContainer">
               <div class="paramLabel">&#960<sub>T</sub>:</div>
-              <input type="text" name="piT">
+              <input type="text" name="piT" value="0.25">
             </div>
           </div>
           <div class="flexRow flexStart flexWrap">
             <div class="nobr shortInputContainer">
               <div class="paramLabel">&#960<sub>1</sub>:</div>
-              <input type="text" name="pi1">
+              <input type="text" name="pi1" value="0.1">
             </div>
           </div>
         </div>

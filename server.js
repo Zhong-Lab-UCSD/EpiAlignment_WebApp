@@ -21,10 +21,6 @@ function makeid() {
   return text
 }
 
-app.get('/', function (req, res) {
-  res.sendFile( __dirname + '/' + 'index.html' )
-})
-
 
 const cpUpload = upload.fields([{ name: 'speciesPeak[]', maxCount: 2 }, { name: 'speciesInput[]', maxCount: 2 }])
 app.post('/form_upload', cpUpload, function (req, res) {
@@ -90,7 +86,7 @@ app.post('/form_upload', cpUpload, function (req, res) {
 
 })
 
-app.get('/download_results/:runid', function(req, res){
+app.get('/result/:runid', function(req, res){
   var runid = req.params.runid
   console.log(runid)
   console.log(RunID_dict)
@@ -111,7 +107,7 @@ app.get('/download_results/:runid', function(req, res){
   }
 });
 
-const server = app.listen(3000, "sysbio.ucsd.edu", function () {
+const server = app.listen(3000, function () {
  
   var host = server.address().address
   var port = server.address().port

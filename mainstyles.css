@@ -1,0 +1,173 @@
+@charset "utf-8";
+
+body {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
+	font-size: 14px;
+	line-height: 1.3em;
+}
+
+div#header {
+	background: #363636;
+	color: #FFFFFF;
+	padding: 1.5em;
+}
+
+div#header > h1 {
+	margin: 0.5em 0 1em 0;
+}
+
+form {
+	display: flex;
+	flex-direction: column;
+	flex: auto;
+	padding: 1em 0.5em;
+}
+
+.nobr {
+	white-space: nowrap;
+}
+
+.flexRow {
+	display: flex;
+	flex-direction: row;
+}
+
+.flexRow > *:not(:last-child) {
+	margin-right: 1.5em;
+}
+
+.flexColumn {
+	display: flex;
+	flex-direction: column;
+}
+
+.flexColumn > *:not(:last-child) {
+	margin-bottom: 0.7em;
+}
+
+.flex {
+	flex: auto;
+}
+
+.flexStart {
+	align-items: flex-start;
+}
+
+.flexCenter {
+	align-items: center;
+}
+
+.flexStretch {
+	align-items: stretch;
+}
+
+.flexWrap {
+	flex-wrap: wrap;
+}
+
+.flexNoWrap {
+	flex-wrap: nowrap;
+}
+
+div.stepbox > div {
+	padding: 1em;
+}
+
+div.stepleft {
+	width: 5em;
+	flex: none;
+}
+
+div.stepleft h2 {
+	margin: 0.2em 0;
+}
+
+div.stepright {
+	flex: auto;
+}
+
+div.stepright h3 {
+	margin: 0.2em 0;
+}
+
+div.stepright h4 {
+	margin-top: 0.2em;
+}
+
+div.stepright > div.help::before {
+	display: inline-block;
+	border-radius: 50%;
+	background: #555555;
+	color: #FFFFFF;
+	content: "?";
+	width: 1.4em;
+	height: 1.4em;
+	text-align: center;
+	margin: 0 0.4em -0.2em 0;
+	font-weight: bold;
+}
+
+div.stepright > div.help {
+	opacity: 0.75;
+	cursor: pointer;
+}
+
+div.stepright > div.help:hover {
+	opacity: 1;
+}
+
+div#step1 > div.stepright > div > input:not(:first-of-type) {
+	margin-left: 1em;
+}
+
+div#step1 > div.stepright > div > input {
+	margin-right: 0.3em;
+}
+
+div.elemLabel {
+	width: 16em;
+	flex: none;
+}
+
+div.subElemLabel {
+	width: 10em;
+	flex: none;
+}
+
+textarea {
+	flex: auto;
+	min-height: 7em;
+	min-width: 20em;
+}
+
+div#inputRegionContainer > * {
+	margin-bottom: 0.25em;
+}
+
+.shortInputContainer > input {
+	width: 5em;
+	text-align: right;
+}
+
+div#step2 div.elemLabel > * {
+	margin-right: 0.25em;
+}
+
+.parameterContainer input {
+	margin-right: 2em;
+}
+
+.paramLabel {
+	display: inline-block;
+	width: 2em;
+	font-style: italic;
+}
+
+#emailField {
+	width: 20em;
+}

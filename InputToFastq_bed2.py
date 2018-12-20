@@ -109,7 +109,7 @@ def Generate_output_str(bed_pair):
 
   output_list=[]
   for s,sp,qrs in zip(args.species, [sp1,sp2], [bed1,bed2]):
-    output_list.append("@"+s+"_"+"_".join(args.histone)+"_"+bed1.id)
+    output_list.append("@"+s+"_"+"|".join(args.histone)+"_"+bed1.id)
 
     seq=fetchSeq(qrs,args.fasta_path.rstrip('/')+'/'+s+'.fa',args.s_path)
     if "N" in seq:

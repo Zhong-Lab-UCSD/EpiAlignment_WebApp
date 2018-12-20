@@ -111,7 +111,7 @@ app.get('/download_results/:runid', function(req, res){
   }
 });
 
-const server = app.listen(3000, "sysbio.ucsd.edu", function () {
+const server = app.listen(3000, function () {
  
   var host = server.address().address
   var port = server.address().port

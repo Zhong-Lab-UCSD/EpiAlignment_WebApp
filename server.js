@@ -21,11 +21,6 @@ function makeid() {
   return text
 }
 
-app.get('/', function (req, res) {
-  res.sendFile( __dirname + '/' + 'index.html' )
-})
-
-
 const cpUpload = upload.fields([{ name: 'speciesPeak1[]', maxCount: 3 }, { name: 'speciesPeak2[]', maxCount: 3 }, { name: 'speciesInput1', maxCount: 1 }, { name: 'speciesInput2', maxCount: 1 }])
 app.post('/form_upload', cpUpload, function (req, res) {
   // req.files is an object (String -> Array) where fieldname is the key, and the value is array of files

@@ -93,6 +93,10 @@ input[type="submit"] {
 	align-self: flex-start;
 }
 
+div.stepright .inactive {
+	opacity: 0.38;
+}
+
 div.speciesData {
 	border: 0.5px dashed #999999;
 	padding: 0.5em 1em;

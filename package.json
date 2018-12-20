@@ -19,7 +19,10 @@
   "nodemonConfig": {
     "ignore": [
       "html/*",
-      "docs/*"
+      "docs/*",
+      "tmp_*",
+      "package.json",
+      "package-lock.json"
     ]
   },
   "devDependencies": {

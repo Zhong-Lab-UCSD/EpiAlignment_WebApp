@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>EpiAlignment</title>
+  <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
+  <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
+  <script defer src="js/result.js" type="module"></script>
+</head>
+
+<body>
+  <div id="header">
+    <!--Introduction-->
+    <h1>EpiAlignment: chromosomal similarity searching engine</h1>
+    EpiAlignment is a tool that can align genomic regions with both sequence and epigenomic information. For more
+    theoretical details please see our PLoS computational biology paper.
+  </div>
+  <!--alignment steps-->
+  <div id="result_app" v-cloak>
+    {{ showData }}
+  </div>
+</body>
+
+</html>

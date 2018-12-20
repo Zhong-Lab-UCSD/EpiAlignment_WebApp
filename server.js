@@ -8,6 +8,9 @@ const spawn = require('child_process').spawn
 const app = express()
 // python
 const pythonScript = 'server_agent.py'
+// util
+const util = require('util')
+const readFilePromise = util.promisify(fs.readFile)
 
 var RunID_dict = {}
 const RUNNING_CODE = -1
@@ -23,6 +26,7 @@ function makeid() {
 }
 
 const cpUpload = upload.fields([{ name: 'speciesPeak1[]', maxCount: 3 }, { name: 'speciesPeak2[]', maxCount: 3 }, { name: 'speciesInput1', maxCount: 1 }, { name: 'speciesInput2', maxCount: 1 }])
+
 app.post('/form_upload', cpUpload, function (req, res) {
   // req.files is an object (String -> Array) where fieldname is the key, and the value is array of files
   //
@@ -49,6 +53,8 @@ app.post('/form_upload', cpUpload, function (req, res) {
     }
   }
   while (flag === 1)
+
+  console.log(RunID_dict)
 
   // construct an object for python input
   var pyMessenger = { 'body': req.body, 'files': req.files, 'runid': "tmp_" + runid }
@@ -79,7 +85,7 @@ app.post('/form_upload', cpUpload, function (req, res) {
       }
     }
     let header = 'Dear user,\n\n'
-    let footer = '\n\nEpiAlignment Team\n--\nZhong Lab\n' +
+    let footer = '\n\nThe EpiAlignment Team\n--\nZhong Lab\n' +
       'Department of Bioengineering, Mail Code 0412\n' +
       'University of California, San Diego\n' +
       '9500 Gilman Dr.\nLa Jolla, CA 92122-0412\nUnited States'
@@ -113,11 +119,11 @@ app.post('/form_upload', cpUpload, function (req, res) {
           'Your EpiAlignment results are now ready and can be downloaded ' +
           'by following this link:\n\n' +
           'https://beta.epialign.ucsd.edu/result_page/' + runid + '\n\n' +
-          'If the link above does not work, please copy the entire link and' +
-          'paste it into the address bar of your web browser.\n\n'
-        'If you have any questions, please let us know by emailing ' +
-          'Jia Lu<jil430@eng.ucsd.edu> or Xiaoyi Cao <x9cao@eng.ucsd.edu>. ' +
-          'Thank you for trying EpiAlignment!' + footer
+          'If the link above does not work, please copy the entire link ' +
+          'and paste it into the address bar of your web browser.\n\n' +
+          'If you have any questions, please let us know by emailing ' +
+          'Jia Lu<jil430@eng.ucsd.edu> or Xiaoyi Cao <x9cao@eng.ucsd.edu>.' +
+          ' \n\nThank you for using EpiAlignment!' + footer
       }
       transporter.sendMail(message)
     }
@@ -128,28 +134,44 @@ app.post('/form_upload', cpUpload, function (req, res) {
   // tell the node that sending inputs to python is done.
   scriptExecution.stdin.end();
 
+  console.log(RunID_dict)
   res.json({ runid: runid })
 
 })
 
-app.get('/download_results/:runid', function (req, res) {
+app.get('/results/:runid', function (req, res) {
   var runid = req.params.runid
   console.log(runid)
   console.log(RunID_dict)
   if (!RunID_dict.hasOwnProperty(runid)) {
     // The query id does not exist.
     console.log(runid)
+    res.status(401)
     res.send("This query ID does not exist!")
   } else if (RunID_dict[runid] === RUNNING_CODE) {
-    res.send("EpiAlignment is still running.")
+    res.json({ status: RUNNING_CODE })
   } else if (RunID_dict[runid] === 0) {
     // python exited successfully.
-    var file = __dirname + '/tmp_' + runid + '/' + 'epialign_result_' + runid
-    console.log(file)
-    res.sendFile(file);
+    // read JSON file and return it.
+    readFilePromise('tmp_' + runid + '/' + runid + '.json', 'utf8')
+      .then(result => {
+        let resObj = JSON.parse(result)
+        res.json({
+          status: 0,
+          data: resObj
+        })
+      })
+      .catch(err => {
+        res.status(401)
+        res.send(err.message)
+      })
   } else {
     // python exited with error.
-    res.send("EpiAlignment exited with an error.")
+    res.json({
+      // TODO: find a way to insert error code and msg here
+      status: 1,
+      message: "EpiAlignment exited with an error."
+    })
   }
 });
 

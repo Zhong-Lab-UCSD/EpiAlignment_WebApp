@@ -60,6 +60,8 @@ const PARA_PI_1_DEFAULT = 0.1
 
 const FORM_SUBMIT_TARGET = '/backend/form_upload'
 
+import postAjax from './promisedAjax.js'
+
 var app = new Vue({
   el: '#epialign_app',
   data: {
@@ -141,21 +143,23 @@ var app = new Vue({
     submitForm: function () {
       // TODO: validate formParams
       if (!this.validateForm()) {
-        this.submitStatus = '✖ Error encountered. Please review your submission before continuing.'
+        this.submitStatus = '✖ Error encountered. Please review your ' +
+          'submission before continuing.'
         return
       }
       this.submitted = false
       this.submitStatus = 'Submitting data to server. Please wait ...'
-      let xhr = new window.XMLHttpRequest()
       let formData = new window.FormData(this.$refs.mainForm)
-      xhr.responseType = 'json'
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 400) {
-          let runid = xhr.response.runid
+      postAjax(FORM_SUBMIT_TARGET, formData, 'json', 'POST')
+        .then(response => {
+          let runid = response.runid
           this.submitted = true
-          this.submitStatus = '✔ Data submitted to server. Redirecting to result page ...'
+          this.submitStatus = '✔ Data submitted to server. Redirecting to ' +
+            'result page ...'
           // Testing code
-          if (window.confirm('Please click "Ok" to go to the result page, click "Cancel" to remain at this page.')) {
+          if (window.confirm('Please click "Ok" to go to the result page, ' +
+            'click "Cancel" to remain at this page.')
+          ) {
             window.setTimeout(() => {
               window.location.href = '/result_page/' + runid
             }, 500)
@@ -165,17 +169,12 @@ var app = new Vue({
           /*window.setTimeout(() => {
             window.location.href = '/result_page/' + runid
           }, 3500)*/
-        } else {
+        })
+        .catch(err => {
           this.hasError = true
-          this.submitStatus = '✖ Error encountered. Error code: ' + xhr.status
-        }
-      }
-      xhr.onerror = () => {
-        this.hasError = true
-        this.submitStatus = '✖ Error encountered. Error code: ' + xhr.status
-      }
-      xhr.open('POST', FORM_SUBMIT_TARGET)
-      xhr.send(formData)
+          this.submitStatus = '✖ Error encountered. Error code: ' +
+            err.status
+        })
     }
   },
   computed: {

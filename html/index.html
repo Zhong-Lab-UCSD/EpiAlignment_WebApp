@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>index</title>
+  <title>EpiAlignment</title>
   <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
   <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
   <script defer src="js/main.js"></script>
@@ -17,24 +17,29 @@
     theoretical details please see our PLoS computational biology paper.
   </div>
   <!--alignment steps-->
-  <div id="epialign_app">
+  <div id="epialign_app" v-cloak>
     <form ref="mainForm" method="post" enctype="multipart/form-data" action="/backend/form_upload" @submit.prevent="submitForm">
       <!--step1-->
       <div id="step1" class="stepbox flexRow flexStart flex">
         <div class="stepleft">
           <h2> STEP 1 </h2>
         </div>
-        <div class="stepright flexRow flexCenter flexWrap">
-          <div>
-            <h2>Select the alignment mode:</h2>
-          </div>
+        <div class="stepright flexColumn flexStretch flex">
           <div class="flexRow flexCenter flexWrap">
-            <input type="radio" v-model="formParams.alignMode" name="alignMode" value="promoter" id="promoterRadio" checked @change="checkAlignMode">
-            <label for="promoterRadio"> Promoter</label>
-            <input type="radio" v-model="formParams.alignMode" name="alignMode" value="enhancer" id="enhancerRadio" @change="checkAlignMode">
-            <label for="enhancerRadio"> Enhancer</label>
+            <div>
+              <h2>Select the alignment mode:</h2>
+            </div>
+            <div class="flexRow flexCenter flexWrap">
+              <input type="radio" v-model="formParams.alignMode" name="alignMode" value="promoter" id="promoterRadio"
+                checked @change="checkAlignMode">
+              <label for="promoterRadio"> Promoter</label>
+              <input type="radio" v-model="formParams.alignMode" name="alignMode" value="enhancer" id="enhancerRadio"
+                @change="checkAlignMode">
+              <label for="enhancerRadio"> Enhancer</label>
+            </div>
+            <div id="modeHelp" class="help"> Which mode should I choose? </div>
           </div>
-          <div id="modeHelp" class="help"> Which mode should I choose? </div>
+          <div v-show="formError.modeNotSelected" class="error">Please select an alignment mode.</div>
         </div>
       </div>
       <!--step2-->
@@ -102,18 +107,21 @@
               <!--promoter mode-->
               <div class="flexRow flexStart flexWrap">
                 <div class="elemLabel flexRow flexStart flexNoWrap">
-                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genomeregion" id="bedPromSearch">
+                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genomeregion"
+                    id="bedPromSearch">
                   <label for="bedPromSearch"> {{ genomeRegionLabel }} </label>
                 </div>
                 <div class="flexColumn flexStretch flex" :class="{ inactive: !genomeRegionSelected }">
-                  <textarea :disabled="!genomeRegionSelected" name="speciesText[]" v-model="formParams.speciesText[1]" :placeholder="genomePlaceholder"></textarea>
+                  <textarea :disabled="!genomeRegionSelected" name="speciesText[]" v-model="formParams.speciesText[1]"
+                    :placeholder="genomePlaceholder"></textarea>
                   <div class="flexRow flexStart flexWrap">
                     <div class="subElemLabel">or upload a file:</div>
                     <input :disabled="!genomeRegionSelected" class="flex" type="file" name="speciesInput2" @change="inputFileChanged(1, $event)">
                   </div>
                 </div>
               </div>
-              <div v-show="!formParams.alignMode" class="searchClassPlaceholder">Please select the alignment mode to see
+              <div v-show="!formParams.alignMode" class="searchClassPlaceholder">Please select the alignment mode to
+                see
                 additional search types.</div>
               <div v-show="promoterSelected" class="flexRow flexStart flexWrap">
                 <div class="elemLabel flexRow flexStart flexNoWrap">
@@ -130,7 +138,8 @@
               </div>
               <div v-show="promoterSelected" class="flexRow flexStart flexWrap">
                 <div class="elemLabel flexRow flexStart flexNoWrap">
-                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genecluster" id="geneClusterSearch">
+                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genecluster"
+                    id="geneClusterSearch">
                   <label for="geneClusterSearch"> Search a specific gene cluster.</label>
                 </div>
                 <div :class="{ inactive: !geneClusterSelected }">
@@ -145,7 +154,8 @@
               <!--enhancer mode-->
               <div v-show="enhancerSelected" class="flexRow flexStart flexWrap">
                 <div class="elemLabel flexRow flexStart flexNoWrap">
-                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="homoregion" id="homologSearch">
+                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="homoregion"
+                    id="homologSearch">
                   <label for="homologSearch"> Use homologous regions in this species <span class="nobr">(liftOver
                       MinMatch = 0.1)</span>.</label>
                 </div>
@@ -240,11 +250,15 @@
               <label for="emailCheckbox">Notify me by email when the job is done.</label>
             </div>
             <div :class="{ inactive: !formParams.emailNote }">Email:
-              <input id="emailField" type="text" name="mail" v-model="formParams.mail" :disabled="!formParams.emailNote" placeholder="Enter your email here.">
+              <input id="emailField" type="text" name="mail" v-model="formParams.mail" :disabled="!formParams.emailNote"
+                placeholder="Enter your email here.">
             </div>
             <br>
           </div>
-          <input type="submit" value="Submit">
+          <div class="flexRow flexCenter">
+            <input type="submit" value="Submit">
+            <div class="submitStatus" :class="{ formError: hasError, submitted: submitted }"> {{ submitStatus }} </div>
+          </div>
         </div>
       </div>
     </form>

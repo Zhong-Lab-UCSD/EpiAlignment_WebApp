@@ -64,6 +64,13 @@ var app = new Vue({
   el: '#epialign_app',
   data: {
     showParam: false,
+    hasError: false,
+    submitted: false,
+    formError: {
+      modeNotSelected: false,
+
+    },
+    submitStatus: null,
     formParams: {
       alignMode: null,
       epiName: 'H3K4me3',
@@ -109,27 +116,63 @@ var app = new Vue({
       }
     },
     checkModeConflict: function () {
-      return (this.promoterSelected && 
+      return (this.promoterSelected &&
         this.searchRegionMode === 'homoregion'
       ) || (this.enhancerSelected && (
         this.searchRegionMode === 'genetype' ||
         this.searchRegionMode === 'genecluster'
       ))
     },
+    validateForm: function () {
+      let hasError = false
+      for (let key in this.formError) {
+        if (this.formError.hasOwnProperty(key)) {
+          this.formError[key] = false
+        }
+      }
+      if (!this.formParams.alignMode) {
+        this.formError.modeNotSelected = true
+        hasError = true
+      }
+
+      this.hasError = hasError
+      return !this.hasError
+    },
     submitForm: function () {
       // TODO: validate formParams
+      if (!this.validateForm()) {
+        this.submitStatus = '✖ Error encountered. Please review your submission before continuing.'
+        return
+      }
+      this.submitted = false
+      this.submitStatus = 'Submitting data to server. Please wait ...'
       let xhr = new window.XMLHttpRequest()
       let formData = new window.FormData(this.$refs.mainForm)
-      //xhr.responseType = 'json'
-      xhr.onload = function () {
+      xhr.responseType = 'json'
+      xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 400) {
-          window.alert('SUCCESS: \n' + xhr.response)
+          let runid = xhr.response.runid
+          this.submitted = true
+          this.submitStatus = '✔ Data submitted to server. Redirecting to result page ...'
+          // Testing code
+          if (window.confirm('Please click "Ok" to go to the result page, click "Cancel" to remain at this page.')) {
+            window.setTimeout(() => {
+              window.location.href = '/result_page/' + runid
+            }, 500)
+          } else {
+
+          }
+          /*window.setTimeout(() => {
+            window.location.href = '/result_page/' + runid
+          }, 3500)*/
         } else {
-          window.alert('ERROR: ' + xhr.status)
-       }
+          this.hasError = true
+          this.submitStatus = '✖ Error encountered. Error code: ' + xhr.status
+        }
       }
-      xhr.onerror = function () {
-        window.alert('ERROR: ' + xhr.status)
+      xhr.onerror = () => {
+        this.hasError = true
+        this.submitStatus = '✖ Error encountered. Error code: ' + xhr.status
       }
       xhr.open('POST', FORM_SUBMIT_TARGET)
       xhr.send(formData)

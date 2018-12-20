@@ -22,6 +22,17 @@ div#header > h1 {
 	font-size: 32px;
 }
 
+[v-cloak] > * { display:none; }
+[v-cloak]::before { 
+  content: " ";
+  display: block;
+  width: 160px;
+  height: 160px;
+	background-image: url('../images/loading.svg');
+	background-repeat: no-repeat;
+	background-position: center center;
+}
+
 form {
 	display: flex;
 	flex-direction: column;
@@ -132,7 +143,28 @@ div.stepright h3 {
 	margin-top: 0.2em;
 }
 
-div.stepright > div.help::before {
+div.stepright .error::before {
+	display: inline-block;
+	border-radius: 50%;
+	background: #B00020;
+	color: #F9EFAD;
+	content: "!";
+	width: 1.4em;
+	height: 1.4em;
+	text-align: center;
+	margin: 0 0.4em -0.2em 0;
+	font-weight: bold;
+}
+
+div.stepright .error {
+	padding: 0.5em;
+	border: #B00020 dotted 0.5px;
+	background: #F9EFAD;
+	color: #B00020;
+	font-size: 14px;
+}
+
+div.stepright div.help::before {
 	display: inline-block;
 	border-radius: 50%;
 	background: #555555;
@@ -145,13 +177,34 @@ div.stepright > div.help::before {
 	font-weight: bold;
 }
 
-div.stepright > div.help {
+div.stepright div.help {
 	opacity: 0.75;
 	cursor: pointer;
 }
 
 div.stepright > div.help:hover {
 	opacity: 1;
+}
+
+div.searchClassPlaceholder {
+	font-style: italic;
+	padding: 0.5em;
+	border: #000000 dotted 0.5px;
+	opacity: 0.6;
+	background: #FFFFCC;
+	font-size: 14px;
+}
+
+div.submitStatus {
+	margin: 0 0.5em;
+}
+
+div.submitStatus.formError {
+	color: #B00020;
+}
+
+div.submitStatus.submitted {
+	color: #01775e;
 }
 
 div#step1 > div.stepright > div > input:not(:first-of-type) {

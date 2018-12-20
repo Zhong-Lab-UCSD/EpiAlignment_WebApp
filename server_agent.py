@@ -1,8 +1,12 @@
 import subprocess
+from Transcripts import *
 import json
 import shutil
 import sys
 import os
+import re
+
+ensembl_regexp = 'ENS[A-Z]+[0-9]{11}'
 
 def ParseJson():
   '''
@@ -94,6 +98,61 @@ def FileOrTextarea(textarea_input, json_files, key, of_name, runid):
   intype = CheckFileType(fname)
   return fname, intype
 
+########################
+## Mode 1: genelist   ##
+########################
+def Cons_transDict(gene_name, sp_name, of_name):
+  if re.match(ensembl_regexp, gene_name):
+    transDict = Transcripts.Construct_ensDict(of_name + sp_name + "_transcript.clean")
+  else:
+    transDict = Transcripts.Construct_nameDict(of_name + sp_name + "_transcript.clean")
+
+
+def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem, of_name):
+  if intype1 == "bed" and intype2 == "bed":
+    return input1, input2
+
+  with open(input1, "r") as fin1, open(input2, "r") as fin2, open(input1 + ".bed", "w") as fout1, open(input2 + "", "w") as fout2:
+    i = 0
+    while True:
+      line1 = fin1.readline().strip()
+      line2 = fin2.readline().strip()
+      if line1 == "" or line2 == "":
+        break
+      if i == 0:
+        # first line
+        if intype1 == "name":
+          transDict1 = Cons_transDict(line1, genAssem[0], of_name)
+        if intype2 == "name":
+          transDict2 = Cons_transDict(line2, genAssem[1], of_name)
+        i += 1
+
+      if intype1 == "name":
+        if line1 not in transDict1:
+          # No such gene
+          continue
+        trans_list1 = [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[line1]]
+      else:
+        line1 = line1.split("\t")
+
+      if intype2 == "name":
+        if line2 not in transDict2:
+          continue
+        trans_list2 = [PromoterBed(x, promoterUp, promoterDown) for x in transDict2[line2]]
+      else:
+        line2 = line2.split("\t")
+
+      for region1 in trans_list1:
+        for region2 in trans_list2:
+          region_name = region1[3] + region2[3]
+          region1[3] = region_name
+          region2[3] = region_name
+          print >> fout1, "\t".join(region1)
+          print >> fout2, "\t".join(region2)
+
+  return input1 + ".bed", input2 + ".bed"
+
+
 #######################
 ## Mode 4: liftOver  ##
 #######################
@@ -155,6 +214,9 @@ def RemoveNonlift(input_bed, lift_bed):
           break
   return input_bed + ".clean"
 
+##################
+## Create beds  ##
+##################
 
 def CreateInputBeds(of_name, json_dict, runid):
   '''
@@ -166,18 +228,12 @@ def CreateInputBeds(of_name, json_dict, runid):
   # Is input1 a file or a pasted text?
   input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", of_name, runid)
 
-  if json_dict["body"]["searchRegionMode"] == "genomregion":
+  if json_dict["body"]["searchRegionMode"] == "genomeregion":
     # Mode 1: define search regions with bed files or gene lists.
     # Is input2 a file or a pasted text?
     input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", of_name, runid)
     if CheckFileLength(input1, input2):
-      if intype1 == "bed" and intype2 == "bed":
-        # Two input files are all bed6:
-        bed1 = input1
-        bed2 = input2
-      else:
-        # at least one file is a gene list. Cut the promoter regions.
-        pass
+      bed1, bed2 = PairCutPromoter(intype1, intype2, int(json_dict["body"]["promoterUp"]), int(json_dict["body"]["promoterDown"]), json_dict["body"]["genomeAssembly"])
 
   else:    
     if json_dict["body"]["searchRegionMode"] == "genetype" and json_dict["body"]["alignMode"] == "promoter":
@@ -195,9 +251,6 @@ def CreateInputBeds(of_name, json_dict, runid):
         print >> sys.stderr, "The two species must be different to use this mode."
         sys.exit(208)
       # Extend the input bed file1. extbed: extended bed file name.
-      if intype1 == "name":
-        # genelist. Convert to bed file.
-        pass
       extbed = ExtendBed(input1, int(json_dict["body"]["enhancerUp"]), int(json_dict["body"]["enhancerDown"]))
       # LiftOver
       liftbed = LiftOver(extbed, json_dict["body"]["genomeAssembly"])
@@ -240,25 +293,39 @@ def InputParas(of_name, json_body, runid):
     sys.exit(206)
 
   seq_pi_list = [float(json_body["piA"]), float(json_body["piC"]), float(json_body["piG"]), float(json_body["piT"])]
-  kappa_list1 = [float(k) for k in json_body["pi1"].split(",")]
+  pi_list1 = [float(k) for k in json_body["pi1"].split(",")]
   weight_list = [float(w) for w in json_body["epiweight"].split(",")]
-  para_list = seq_pi_list + kappa_list1 + weight_list
+  para_list = seq_pi_list + pi_list1 + weight_list
   if min(para_list) <= 0 or max(para_list) >= 1:
     print >> sys.stderr, "Equilibrium probabilities (pi) must be values between 0 and 1."
     sys.exit(206)
 
-
+  # Create parameter file.
   with open(of_name + "parameters_" + runid, "w") as fpara:
     print >> fpara, json_body["paras"]
     print >> fpara, json_body["paramu"]
     print >> fpara, "\n".join(json_body["parak"].split(","))
     print >> fpara, "A:" + json_body["piA"] + "\t" + "C:" + json_body["piC"] + "\t" +\
     "G:" + json_body["piG"] + "\t" + "T:" + json_body["piT"]
-    kappa_list0 = [1 - k for k in kappa_list1]
-    for p0, p1 in zip(kappa_list0, kappa_list1):
+    pi_list0 = [1 - k for k in pi_list1]
+    for p0, p1 in zip(pi_list0, pi_list1):
       print >> fpara, "0:" + str(p0) + "\t" + "1:" + str(p1)
     weights = "\t".join(json_body["epiweight"].split(","))
     print >> fpara, json_body["seqweight"] + "\t" + weights
+
+  # If epi weight is not 0, create another parameter file for sequence-only alignment.
+  if float(json_body["seqweight"]) != 1:
+    with open(of_name + "parameters_seq_" + runid, "w") as fseq_para:
+      print >> fseq_para, json_body["paras"]
+      print >> fseq_para, json_body["paramu"]
+      print >> fseq_para, "\n".join(json_body["parak"].split(","))
+      print >> fseq_para, "A:" + json_body["piA"] + "\t" + "C:" + json_body["piC"] + "\t" +\
+      "G:" + json_body["piG"] + "\t" + "T:" + json_body["piT"]
+      pi_list0 = [1 - k for k in pi_list1]
+      for p0, p1 in zip(pi_list0, pi_list1):
+        print >> fseq_para, "0:" + str(p0) + "\t" + "1:" + str(p1)
+      print >> fseq_para, "1" + "\t" + "0"
+
 
 def ExeEpiAlignment(of_name, runid):
   '''

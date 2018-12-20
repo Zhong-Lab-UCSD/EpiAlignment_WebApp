@@ -816,12 +816,12 @@ def Main():
     if all_prob:
         with open(args.output, "w") as fout, open(args.out_allvec, "w") as fout2:
             for pair in S:
-                print >>fout, "\t".join([pair.name, str(pair.L), str(pair.averagedL), str(pair.loc1), str(pair.loc2), str(pair.start_point)])
+                print >>fout, "\t".join([pair.name, str(pair.L), str(pair.averagedL), str(pair.start_point[0]), str(pair.loc1), str(pair.start_point[1]), str(pair.loc2)])
                 print >>fout2, ",".join([str(f) for f in [pair.name] + pair.prob])
     else:
         with open(args.output, "w") as fout:
             for pair in S:
-                print >>fout, "\t".join([pair.name, str(pair.L), str(pair.averagedL), str(pair.loc1), str(pair.loc2), str(pair.start_point)])
+                print >>fout, "\t".join([pair.name, str(pair.L), str(pair.averagedL), str(pair.start_point[0]), str(pair.loc1), str(pair.start_point[1]), str(pair.loc2)])
 
     if align_path:
         with open(align_path, "w") as fout2:

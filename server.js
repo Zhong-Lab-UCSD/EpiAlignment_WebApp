@@ -1,6 +1,6 @@
 const express = require('express')
 const multer = require('multer')
-const fs = require('fs');
+const fs = require('fs')
 const nodemailer = require('nodemailer')
 const upload = multer({ dest: 'uploads/' })
 const spawn = require('child_process').spawn
@@ -15,12 +15,11 @@ const readFilePromise = util.promisify(fs.readFile)
 var RunID_dict = {}
 const RUNNING_CODE = -1
 
-function makeid() {
+function makeid () {
   let text = ''
   let possible = 'abcdefghijklmnopqrstuvwxyz0123456789'
 
-  for (var i = 0; i < 20; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length))
+  for (var i = 0; i < 20; i++)    { text += possible.charAt(Math.floor(Math.random() * possible.length)) }
 
   return text
 }
@@ -42,12 +41,11 @@ app.post('/form_upload', cpUpload, function (req, res) {
   do {
     try {
       var runid = makeid()
-      tmp_stat = fs.statSync("tmp_" + runid)
-    }
-    catch (err) {
+      tmp_stat = fs.statSync('tmp_' + runid)
+    } catch (err) {
       // if the folder does not exist
-      console.log("Just created a new directory: " + runid)
-      fs.mkdirSync("tmp_" + runid)
+      console.log('Just created a new directory: ' + runid)
+      fs.mkdirSync('tmp_' + runid)
       RunID_dict[runid] = RUNNING_CODE
       flag = 0
     }
@@ -57,12 +55,12 @@ app.post('/form_upload', cpUpload, function (req, res) {
   console.log(RunID_dict)
 
   // construct an object for python input
-  var pyMessenger = { 'body': req.body, 'files': req.files, 'runid': "tmp_" + runid }
+  var pyMessenger = { 'body': req.body, 'files': req.files, 'runid': 'tmp_' + runid }
   var stdoutData = ''
   var stderrData = ''
 
   // execute python code on the server.
-  let scriptExecution = spawn('python', [pythonScript]);
+  let scriptExecution = spawn('python', [pythonScript])
 
   // Handle normal output
   scriptExecution.stdout.on('data', (data) => {
@@ -80,17 +78,18 @@ app.post('/form_upload', cpUpload, function (req, res) {
     let message = null
     if (req.body.emailNote && req.body.mail) {
       message = {
-        from: 'no-reply@mail.beta.givengine.org',
-        to: req.body.mail
+        from: 'EpiAlignment Notification <no-reply@mail.beta.givengine.org>',
+        to: req.body.mail,
+        replyTo: 'x9cao@eng.ucsd.edu'
       }
     }
     let header = 'Dear user,\n\n'
-    let footer = '\n\nThe EpiAlignment Team\n--\nZhong Lab\n' +
-      'Department of Bioengineering, Mail Code 0412\n' +
+    let footer = '\n\nThe EpiAlignment Team from Zhong Lab @ UC San Diego\n' +
+      '--\nDepartment of Bioengineering, Mail Code 0412\n' +
       'University of California, San Diego\n' +
       '9500 Gilman Dr.\nLa Jolla, CA 92122-0412\nUnited States'
 
-    console.log("Process quit with code : " + code)
+    console.log('Process quit with code : ' + code)
     RunID_dict[runid] = code
     if (message) {
       // needs to write an email
@@ -109,8 +108,9 @@ app.post('/form_upload', cpUpload, function (req, res) {
           'In some cases this may be due to an erroneous input format, ' +
           'in which case you may try again by providing the correctly ' +
           'formatted input at https://beta.epialign.ucsd.edu/.\n\n' +
-          'If the error keep happening, please let us know by emailing ' +
-          'Jia Lu<jil430@eng.ucsd.edu> or Xiaoyi Cao <x9cao@eng.ucsd.edu>. ' +
+          'If the error keep happening, please let us know by replying to ' +
+          'this email, or sending an email to Jia Lu<jil430@eng.ucsd.edu> ' +
+          'or Xiaoyi Cao <x9cao@eng.ucsd.edu>. \n\n ' +
           'Thank you for trying EpiAlignment!' + footer
       } else {
         // Normal email
@@ -121,22 +121,22 @@ app.post('/form_upload', cpUpload, function (req, res) {
           'https://beta.epialign.ucsd.edu/result_page/' + runid + '\n\n' +
           'If the link above does not work, please copy the entire link ' +
           'and paste it into the address bar of your web browser.\n\n' +
-          'If you have any questions, please let us know by emailing ' +
-          'Jia Lu<jil430@eng.ucsd.edu> or Xiaoyi Cao <x9cao@eng.ucsd.edu>.' +
-          ' \n\nThank you for using EpiAlignment!' + footer
+          'If you have any questions, please let us know by replying to ' +
+          'this email, or sending an email to Jia Lu<jil430@eng.ucsd.edu> ' +
+          'or Xiaoyi Cao <x9cao@eng.ucsd.edu>. \n\n' +
+          'Thank you for using EpiAlignment!' + footer
       }
       transporter.sendMail(message)
     }
-  });
+  })
   // console.log(JSON.stringify(pyMessenger))
   // python input
-  scriptExecution.stdin.write(JSON.stringify(pyMessenger));
+  scriptExecution.stdin.write(JSON.stringify(pyMessenger))
   // tell the node that sending inputs to python is done.
-  scriptExecution.stdin.end();
+  scriptExecution.stdin.end()
 
   console.log(RunID_dict)
   res.json({ runid: runid })
-
 })
 
 app.get('/results/:runid', function (req, res) {
@@ -147,7 +147,7 @@ app.get('/results/:runid', function (req, res) {
     // The query id does not exist.
     console.log(runid)
     res.status(401)
-    res.send("This query ID does not exist!")
+    res.send('This query ID does not exist!')
   } else if (RunID_dict[runid] === RUNNING_CODE) {
     res.json({ status: RUNNING_CODE })
   } else if (RunID_dict[runid] === 0) {
@@ -168,16 +168,14 @@ app.get('/results/:runid', function (req, res) {
     res.json({
       // TODO: find a way to insert error code and msg here
       status: 1,
-      message: "EpiAlignment exited with an error."
+      message: 'EpiAlignment exited with an error.'
     })
   }
-});
+})
 
 const server = app.listen(3000, function () {
-
   var host = server.address().address
   var port = server.address().port
 
   console.log('Listening http://%s:%s', host, port)
-
 })

@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EpiAlignment</title>
+  <title>EpiAlignment - Result</title>
   <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@1.3.15/dist/vuetify.min.css" rel="stylesheet" type="text/css">
   <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
@@ -17,7 +17,7 @@
 <body>
   <div id="header">
     <!--Introduction-->
-    <h3>EpiAlignment: chromosomal similarity searching engine</h1>
+    <h2>EpiAlignment: chromosomal similarity searching engine</h2>
     EpiAlignment is a tool that can align genomic regions with both sequence and epigenomic information. For more
     theoretical details please see our PLoS computational biology paper.
   </div>
@@ -44,7 +44,9 @@
       </div>
       <div v-show="hasEmail">
         You will also receive an email at your email address at
-        {{ emailAddress }} once the computation is done.
+        {{ emailAddress }} once the computation is done. Please check your spam
+        folder regularly, or make sure no-reply@mail.beta.givengine.org is on
+        your approved sender list ("white list") and/or in your address book.
       </div>
     </div>
     <div class="resultHolder flexColumn flexStretch flex" v-if="!loading">

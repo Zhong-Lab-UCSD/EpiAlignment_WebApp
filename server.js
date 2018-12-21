@@ -90,9 +90,9 @@ app.post('/form_upload', cpUpload, function (req, res) {
       'University of California, San Diego\n' +
       '9500 Gilman Dr.\nLa Jolla, CA 92122-0412\nUnited States'
 
+    console.log("Process quit with code : " + code)
+    RunID_dict[runid] = code
     if (message) {
-      console.log("Process quit with code : " + code)
-      RunID_dict[runid] = code
       // needs to write an email
       let transporter = nodemailer.createTransport({
         sendmail: true,
@@ -156,10 +156,8 @@ app.get('/results/:runid', function (req, res) {
     readFilePromise('tmp_' + runid + '/' + runid + '.json', 'utf8')
       .then(result => {
         let resObj = JSON.parse(result)
-        res.json({
-          status: 0,
-          data: resObj
-        })
+        resObj.status = 0
+        res.json(resObj)
       })
       .catch(err => {
         res.status(401)

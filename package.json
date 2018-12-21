@@ -21,8 +21,13 @@
       "html/*",
       "docs/*",
       "tmp_*",
+      "tmp_*/*",
       "package.json",
-      "package-lock.json"
+      "package-lock.json",
+      "uploads/*",
+      "Annotation/*",
+      "Data/*",
+      "GeneAnno/*"
     ]
   },
   "devDependencies": {

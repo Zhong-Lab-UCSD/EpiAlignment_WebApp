@@ -3,7 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EpiAlignment</title>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
   <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
   <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
   <script defer src="js/main.js" type="module"></script>
@@ -37,9 +40,13 @@
                 @change="checkAlignMode">
               <label for="enhancerRadio"> Enhancer</label>
             </div>
-            <div id="modeHelp" class="help"> Which mode should I choose? </div>
+            <div id="modeHelp" class="help">
+              <i class="material-icons">help</i>
+              Which mode should I choose? </div>
           </div>
-          <div v-show="formError.modeNotSelected" class="error">Please select an alignment mode.</div>
+          <div v-show="formError.modeNotSelected" class="error">
+            <i class="material-icons">warning</i>
+            Please select an alignment mode.</div>
         </div>
       </div>
       <!--step2-->
@@ -67,7 +74,7 @@
             </div>
             <div class="flexRow flexCenter flexWrap">
               <div class="elemLabel">Peak regions:</div>
-              <input class="flex" type="file" name="speciesPeak1[]" @change="peakFileChanged(0, $event)">
+              <input class="flex" type="file" name="speciesPeak1[]">
             </div>
             <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Input regions:</div>
@@ -75,7 +82,7 @@
                 <textarea name="speciesText[]" v-model="formParams.speciesText[0]" :placeholder="genomePlaceholder"></textarea>
                 <div class="flexRow flexStart flexWrap">
                   <div class="subElemLabel">or upload a file:</div>
-                  <input class="flex" type="file" name="speciesInput1" @change="inputFileChanged(0, $event)">
+                  <input class="flex" type="file" name="speciesInput1">
                 </div>
               </div>
             </div>
@@ -100,7 +107,7 @@
             </div>
             <div class="flexRow flexCenter flexWrap">
               <div class="elemLabel">Peak regions:</div>
-              <input class="flex" type="file" name="speciesPeak2[]" @change="peakFileChanged(1, $event)">
+              <input class="flex" type="file" name="speciesPeak2[]">
             </div>
             <!--type of searching regions-->
             <div class="flexColumn flexStretch">
@@ -116,7 +123,7 @@
                     :placeholder="genomePlaceholder"></textarea>
                   <div class="flexRow flexStart flexWrap">
                     <div class="subElemLabel">or upload a file:</div>
-                    <input :disabled="!genomeRegionSelected" class="flex" type="file" name="speciesInput2" @change="inputFileChanged(1, $event)">
+                    <input :disabled="!genomeRegionSelected" class="flex" type="file" name="speciesInput2">
                   </div>
                 </div>
               </div>
@@ -257,7 +264,9 @@
           </div>
           <div class="flexRow flexCenter">
             <input type="submit" value="Submit">
-            <div class="submitStatus" :class="{ formError: hasError, submitted: submitted }"> {{ submitStatus }} </div>
+            <div v-html="submitStatus" class="submitStatus"
+              :class="{ formError: hasError, submitted: submitted }">
+            </div>
           </div>
         </div>
       </div>

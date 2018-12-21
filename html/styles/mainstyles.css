@@ -1,9 +1,15 @@
 @charset "utf-8";
 
+html {
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
 body {
 	display: flex;
 	flex-direction: column;
-	width: 100%;
+	width: 100vw;
+	height: 100vh;
 	margin: 0;
 	padding: 0;
 	font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
@@ -104,6 +110,15 @@ input[type="submit"] {
 	align-self: flex-start;
 }
 
+.selfAlignCenter {
+	align-self: center;
+}
+
+i.material-icons {
+	font-size: 1.4em;
+	vertical-align: text-bottom;
+}
+
 div.stepright .inactive {
 	opacity: 0.38;
 }
@@ -143,38 +158,12 @@ div.stepright h3 {
 	margin-top: 0.2em;
 }
 
-div.stepright .error::before {
-	display: inline-block;
-	border-radius: 50%;
-	background: #B00020;
-	color: #F9EFAD;
-	content: "!";
-	width: 1.4em;
-	height: 1.4em;
-	text-align: center;
-	margin: 0 0.4em -0.2em 0;
-	font-weight: bold;
-}
-
 div.stepright .error {
 	padding: 0.5em;
 	border: #B00020 dotted 0.5px;
 	background: #F9EFAD;
 	color: #B00020;
 	font-size: 14px;
-}
-
-div.stepright div.help::before {
-	display: inline-block;
-	border-radius: 50%;
-	background: #555555;
-	color: #FFFFFF;
-	content: "?";
-	width: 1.4em;
-	height: 1.4em;
-	text-align: center;
-	margin: 0 0.4em -0.2em 0;
-	font-weight: bold;
 }
 
 div.stepright div.help {
@@ -255,4 +244,27 @@ div#step2 div.elemLabel > * {
 
 #emailField {
 	width: 20em;
+}
+
+.loadingHolder {
+	padding: 2em;
+	line-height: 1.4em;
+}
+
+.loadingHolder > *:not(:last-child) {
+	margin-bottom: 0.8em;
+}
+
+span.keyboard {
+	white-space: nowrap;
+	padding: 0.17em 0.4em;
+	background: #EEEEEE;
+	border-radius: 5px;
+	border: 0.5px solid #999999;
+	font-family: 'Consolas', 'Courier New', Courier, monospace;
+	font-size: 0.9em;
+}
+
+.resultHolder {
+	padding: 1em;
 }

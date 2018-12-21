@@ -3,22 +3,84 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EpiAlignment</title>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@1.3.15/dist/vuetify.min.css" rel="stylesheet" type="text/css">
   <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
   <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/vuetify@1.3.15/dist/vuetify.js"></script>
   <script defer src="js/result.js" type="module"></script>
 </head>
 
 <body>
   <div id="header">
     <!--Introduction-->
-    <h1>EpiAlignment: chromosomal similarity searching engine</h1>
+    <h3>EpiAlignment: chromosomal similarity searching engine</h1>
     EpiAlignment is a tool that can align genomic regions with both sequence and epigenomic information. For more
     theoretical details please see our PLoS computational biology paper.
   </div>
   <!--alignment steps-->
-  <div id="result_app" v-cloak>
-    {{ showData }}
+  <div data-app id="result_app" class="flex flexColumn flexStretch" v-cloak>
+    <div class="loadingHolder flexColumn flexStretch" v-show="loading">
+      <h3>Calculating...</h3>
+      <img class="selfAlignStart" src="images/loading.svg">
+      <div>
+        Please wait: your data is still being computed.
+        <strong>
+          This page will automatically refresh every 15 seconds.
+        </strong>
+      </div>
+      <div>
+        You may bookmark this page now and check back later. To
+        bookmark this page, please press <span class="keyboard">Ctrl</span> +
+        <span class="keyboard">D</span> (on a PC) or
+        <span class="keyboard">⌘ Command</span> +
+        <span class="keyboard">D</span>
+        (on a Mac) and follow the instructions of your web browser (if any).
+        Once the results are available, you may fetch your results via the
+        bookmarked page in <strong>14 days</strong>.
+      </div>
+      <div v-show="hasEmail">
+        You will also receive an email at your email address at
+        {{ emailAddress }} once the computation is done.
+      </div>
+    </div>
+    <div class="resultHolder flexColumn flexStretch flex" v-if="!loading">
+      <div>
+        Description |
+        <a :href="downloadLink" download="results.txt" target="_blank">Download results</a>
+        
+        | Filter
+      </div>
+      <v-data-table
+        :headers="headers"
+        :items="dataEntries"
+        item-key="index"
+        class="elevation-1">
+        <template slot="no-data">
+
+        </template>
+        <template slot="items" slot-scope="row">
+          <tr @click="row.expanded = !row.expanded">
+            <td>{{ row.item.index }}</td>
+            <td>{{ row.item.region_name1 || row.item.transID1 }}</td>
+            <td>{{ row.item.region1 }}</td>
+            <td>{{ row.item.region_name2 || row.item.transID2 }}</td>
+            <td>{{ row.item.region2 }}</td>
+            <td class="text-xs-right">{{ row.item.scoreE }}</td>
+            <td class="text-xs-right">{{ row.item.scoreS }}</td>
+          </tr>
+        </template>
+        <template slot="expand" slot-scope="entry">
+          <v-card flat>
+            Ensembl IDs: {{ entry.item.ensID1 }}, targets go here.
+          </v-card>
+        </template>
+      </v-data-table>
+      <div id="embeddedBrowser"></div>
+    </div>
   </div>
 </body>
 

@@ -143,7 +143,8 @@ var app = new Vue({
     submitForm: function () {
       // TODO: validate formParams
       if (!this.validateForm()) {
-        this.submitStatus = '✖ Error encountered. Please review your ' +
+        this.submitStatus = '<i class="material-icons">clear</i> ' +
+          'Error encountered. Please review your ' +
           'submission before continuing.'
         return
       }
@@ -154,7 +155,9 @@ var app = new Vue({
         .then(response => {
           let runid = response.runid
           this.submitted = true
-          this.submitStatus = '✔ Data submitted to server. Redirecting to ' +
+          this.submitStatus = '<i class="material-icons">' +
+            'check_circle' +
+            '</i> Data submitted to server. Redirecting to the ' +
             'result page ...'
           // Testing code
           if (window.confirm('Please click "Ok" to go to the result page, ' +
@@ -172,7 +175,9 @@ var app = new Vue({
         })
         .catch(err => {
           this.hasError = true
-          this.submitStatus = '✖ Error encountered. Error code: ' +
+          this.submitStatus = '<i class="material-icons">' +
+            'clear' +
+            '</i> Error encountered. Error code: ' +
             err.status
         })
     }

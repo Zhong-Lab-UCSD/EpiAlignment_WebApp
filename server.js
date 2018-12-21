@@ -19,7 +19,7 @@ function makeid () {
   let text = ''
   let possible = 'abcdefghijklmnopqrstuvwxyz0123456789'
 
-  for (var i = 0; i < 20; i++)    { text += possible.charAt(Math.floor(Math.random() * possible.length)) }
+  for (var i = 0; i < 20; i++) { text += possible.charAt(Math.floor(Math.random() * possible.length)) }
 
   return text
 }
@@ -78,7 +78,7 @@ app.post('/form_upload', cpUpload, function (req, res) {
     let message = null
     if (req.body.emailNote && req.body.mail) {
       message = {
-        from: 'EpiAlignment Notification <no-reply@mail.beta.givengine.org>',
+        from: 'EpiAlignment Notification <messenger@mail.beta.givengine.org>',
         to: req.body.mail,
         replyTo: 'x9cao@eng.ucsd.edu'
       }
@@ -104,11 +104,11 @@ app.post('/form_upload', cpUpload, function (req, res) {
         message.text = header +
           'Unfortunately, an error occured when processing ' +
           'your data for EpiAlignment (Error Code: ' + code +
-          '). We are unable to complete your request. \n\n' +
-          'In some cases this may be due to an erroneous input format, ' +
+          '). We were unable to complete your request. \n\n' +
+          'In some cases this may be caused by an erroneous input format, ' +
           'in which case you may try again by providing the correctly ' +
-          'formatted input at https://beta.epialign.ucsd.edu/.\n\n' +
-          'If the error keep happening, please let us know by replying to ' +
+          'formatted input at https://beta.epialign.ucsd.edu/. \n\n' +
+          'If the error keeps happening, please let us know by replying to ' +
           'this email, or sending an email to Jia Lu<jil430@eng.ucsd.edu> ' +
           'or Xiaoyi Cao <x9cao@eng.ucsd.edu>. \n\n ' +
           'Thank you for trying EpiAlignment!' + footer

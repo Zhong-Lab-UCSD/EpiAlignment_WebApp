@@ -17,19 +17,16 @@
     "nodemailer": "^4.7.0"
   },
   "nodemonConfig": {
+    "ext": "js, json",
     "ignore": [
-      "html/*",
-      "docs/*",
+      "node_modules/**/node_modules",
+      "html",
+      "docs",
       "tmp_*",
-      "tmp_*/*",
-      "package.json",
-      "package-lock.json",
-      "uploads/*",
-      "Annotation/*",
-      "Data/*",
-      "GeneAnno/*",
-      "epialignData",
-      "epialignData/*"
+      "uploads",
+      "Annotation",
+      "Data",
+      "GeneAnno"
     ]
   },
   "devDependencies": {

@@ -72,10 +72,12 @@ var app = new Vue({
     dataEntries: []
   },
   created: function () {
-    const urlParams = new URLSearchParams(window.location.search)
+    const urlParams = new window.URLSearchParams(window.location.search)
     let runid = urlParams.get('runid')
     this.pollResult(runid).then(data => {
-      // TODO: process data
+      // TODO: load the submit time from server and update title accordingly
+      document.title = 'EpiAlignment - Result (runID: ' + runid + ')'
+
       this.loading = false
       this.downloadLink = window.location.protocol + '//' +
         window.location.host + '/download/' + runid + '.txt'

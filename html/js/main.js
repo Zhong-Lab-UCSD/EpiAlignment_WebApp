@@ -3,17 +3,17 @@
  *    // General settings
  *    alignMode: String, // choices from ['promoter', 'enhancer']
  *    epiName: String,
- * 
+ *
  *    // Query/search shared settings
  *    genomeAssembly: Array<String>(2), // choices from ['hg38', 'mm10']
  *    speciesText: Array<String>(2),
- * 
+ *
  *    // Query specific settings
  *    speciesPeak1: Array<File>(),
  *    speciesInput1: File,
  *    promoterUp: Integer,
  *    promoterDown: Integer,
- * 
+ *
  *    // Search specific settings
  *    speciesPeak2: Array<File>(),
  *    speciesInput2: File,
@@ -24,7 +24,7 @@
  *    clusters: String, // or Array<String>, TBD
  *    enhancerUp: Integer,
  *    enhancerDown: Integer,
- * 
+ *
  *    // Parameters
  *    seqweight: Float,
  *    epiweight: Float,
@@ -37,12 +37,14 @@
  *    piG: Float,
  *    piT: Float,
  *    pi1: Float,
- * 
+ *
  *    // Notification related
  *    emailNote: Boolean,
  *    mail: String
  * }
  */
+
+import postAjax from './promisedAjax.js'
 
 const PROMOTER_UP_DEFAULT = 500
 const PROMOTER_DOWN_DEFAULT = 1000
@@ -60,8 +62,6 @@ const PARA_PI_1_DEFAULT = 0.1
 
 const FORM_SUBMIT_TARGET = '/backend/form_upload'
 
-import postAjax from './promisedAjax.js'
-
 var app = new Vue({
   el: '#epialign_app',
   data: {
@@ -69,7 +69,7 @@ var app = new Vue({
     hasError: false,
     submitted: false,
     formError: {
-      modeNotSelected: false,
+      modeNotSelected: false
 
     },
     submitStatus: null,
@@ -106,7 +106,7 @@ var app = new Vue({
 
       emailNote: false,
       mail: null
-    },
+    }
   },
   methods: {
     toggleShowParam: function () {
@@ -160,18 +160,18 @@ var app = new Vue({
             '</i> Data submitted to server. Redirecting to the ' +
             'result page ...'
           // Testing code
-          if (window.confirm('Please click "Ok" to go to the result page, ' +
-            'click "Cancel" to remain at this page.')
-          ) {
-            window.setTimeout(() => {
-              window.location.href = '/result_page/' + runid
-            }, 500)
-          } else {
+          // if (window.confirm('Please click "Ok" to go to the result ' +
+          //   'page, click "Cancel" to remain at this page.')
+          // ) {
+          //   window.setTimeout(() => {
+          //     window.location.href = '/result_page/' + runid
+          //   }, 500)
+          // } else {
 
-          }
-          /*window.setTimeout(() => {
+          // }
+          window.setTimeout(() => {
             window.location.href = '/result_page/' + runid
-          }, 3500)*/
+          }, 3500)
         })
         .catch(err => {
           this.hasError = true
@@ -209,6 +209,5 @@ var app = new Vue({
     homologRegionSelected: function () {
       return this.formParams.searchRegionMode === 'homoregion'
     }
-  },
+  }
 })
-

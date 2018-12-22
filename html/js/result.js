@@ -9,7 +9,7 @@ const setTimeoutPromise = function (timeout, resolvedValue) {
 const INQUIRY_TARGET_PREFIX = '/backend/results/'
 
 const STATUS_RUNNING = -1
-const POLLING_INTERVAL = 15000    // 15 seconds
+const POLLING_INTERVAL = 15000 // 15 seconds
 
 var app = new Vue({
   el: '#result_app',

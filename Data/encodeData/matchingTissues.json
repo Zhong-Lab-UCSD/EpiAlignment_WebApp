@@ -1,0 +1,142 @@
+[
+  {
+    "__type": "Embryonic stem cells (human h1-hESC, mouse ES-E14)",
+    "human": [
+      "ENCBS951DDF",
+      "ENCBS307HNW",
+      "ENCBS282MUP",
+      "ENCBS568FYY",
+      "ENCBS984IPH",
+      "ENCBS559QNR",
+      "ENCBS899NYB",
+      "ENCBS103ZIA",
+      "ENCBS215WGD",
+      "ENCBS780WAB",
+      "ENCBS717WTB",
+      "ENCBS582QGL",
+      "ENCBS409PYK",
+      "ENCBS739PSV",
+      "ENCBS534NMZ",
+      "ENCBS977TKX",
+      "ENCBS945MCY",
+      "ENCBS368BPP",
+      "ENCBS497CZZ"
+    ],
+    "mouse": [
+      "ENCBS043ENC",
+      "ENCBS054SMP",
+      "ENCBS042ENC",
+      "ENCBS033ENC",
+      "ENCBS324NLT"
+    ]
+  },
+  {
+    "__type": "B-lymphocytes (human GM12878, mouse CH12)",
+    "human": [
+      "ENCBS166BUX",
+      "ENCBS330WEW",
+      "ENCBS981DLH",
+      "ENCBS127ZRH",
+      "ENCBS866OKF",
+      "ENCBS978YID",
+      "ENCBS155GIM",
+      "ENCBS571ZAL",
+      "ENCBS101KOX",
+      "ENCBS900QPF",
+      "ENCBS830FPU",
+      "ENCBS830CIQ",
+      "ENCBS715VCP"
+    ],
+    "mouse": [
+      "ENCBS076QIH",
+      "ENCBS782ENP",
+      "ENCBS443MXB",
+      "ENCBS940UDN",
+      "ENCBS042ZWV",
+      "ENCBS777FXN",
+      "ENCBS824VDB",
+      "ENCBS789HDO",
+      "ENCBS912CAS",
+      "ENCBS948OTG",
+      "ENCBS092RNA",
+      "ENCBS091RNA",
+      "ENCBS045ENC",
+      "ENCBS044ENC"
+    ]
+  },
+  {
+    "__type": "Erythroid (human K562, mouse MEL)",
+    "human": [
+      "ENCBS000CDD",
+      "ENCBS639AAA",
+      "ENCBS005AIZ",
+      "ENCBS979ZKW",
+      "ENCBS729ELF",
+      "ENCBS323WRW",
+      "ENCBS674MPN",
+      "ENCBS775RXB",
+      "ENCBS378DFU",
+      "ENCBS354VJM",
+      "ENCBS984VNR",
+      "ENCBS980HYW",
+      "ENCBS619VEE",
+      "ENCBS947YKG",
+      "ENCBS532KVA",
+      "ENCBS862RBC",
+      "ENCBS397OLQ",
+      "ENCBS216WMI",
+      "ENCBS658RMI",
+      "ENCBS083ACT"
+    ],
+    "mouse": [
+      "ENCBS425KAG",
+      "ENCBS706GHU",
+      "ENCBS259BOZ",
+      "ENCBS588DZE",
+      "ENCBS892CGC",
+      "ENCBS002NUU",
+      "ENCBS802BLF",
+      "ENCBS870FKO",
+      "ENCBS217OGM",
+      "ENCBS048ENC",
+      "ENCBS436ELB",
+      "ENCBS047ENC",
+      "ENCBS046ENC",
+      "ENCBS437PRW",
+      "ENCBS243ENC",
+      "ENCBS050ENC",
+      "ENCBS671NUO",
+      "ENCBS049ENC"
+    ]
+  },
+  {
+    "__type": "Adult kidney",
+    "human": [
+      "ENCBS570IQU",
+      "ENCBS438CSQ"
+    ],
+    "mouse": [
+      "ENCBS092MYO",
+      "ENCBS713GAH",
+      "ENCBS333ENC",
+      "ENCBS601VEO",
+      "ENCBS565AAA",
+      "ENCBS569AAA"
+    ]
+  },
+  {
+    "__type": "Adult liver",
+    "human": [
+      "ENCBS631TVY",
+      "ENCBS097LXO",
+      "ENCBS046RNA",
+      "ENCBS754HTZ"
+    ],
+    "mouse": [
+      "ENCBS338ENC",
+      "ENCBS976CGL",
+      "ENCBS337ENC",
+      "ENCBS419QNR"
+    ]
+  }
+]

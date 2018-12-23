@@ -13,6 +13,10 @@ const references = {
   'mouse': 'mm10'
 }
 
+const basePath = 'encodeData'
+
+const matchTissueJsonFileName = 'matchingTissues.json'
+const filterJsonFileName = 'filters.json'
 const outputFile = 'encodeData.json'
 
 /**
@@ -125,8 +129,17 @@ var finalResult = {
  * @returns {Promise<object>} ENCODE object
  */
 async function getEncodeObject (type, id) {
+  // console.log('https://www.encodeproject.org/' + type +
+  //   '/' + id + '?format=json')
   return axios.get('https://www.encodeproject.org/' + type +
-    '/' + id + '?format=json')
+    '/' + id + '?format=json'
+  ).then(response => response.data
+  ).catch(err => {
+    console.log('Error getting ENCODE object: ' +
+      'https://www.encodeproject.org/' + type +
+      '/' + id + '?format=json')
+    throw err
+  })
 }
 
 /**
@@ -141,14 +154,31 @@ async function getExperimentsUsingBiosample (biosampleObj, notReleaseOnly) {
   // first get the uuid of the biosampleObj
   let uuid = biosampleObj.uuid
   let queryUrlBase = 'https://www.encodeproject.org/search/?' +
-    'type=Experiment&replicates.library.biosample.uuid=' + uuid
+    'format=json&type=Experiment&replicates.library.biosample.uuid=' + uuid
   let status = ''
   if (!notReleaseOnly) {
     // release only
     status = 'status=released'
   }
-  let resultObj = await axios.get(queryUrlBase + (status ? '&' + status : ''))
-  return resultObj
+  try {
+    let resultObj = await axios.get(
+      queryUrlBase + (status ? '&' + status : '')
+    )
+    console.log('Found ' + resultObj.data['@graph'].length +
+      ' experiments for biosample ' + biosampleObj.accession + '.')
+    return resultObj.data
+  } catch (err) {
+    if (err.response.status === 404) {
+      // no result
+      console.log('No results for biosample ' + biosampleObj.accession + '.')
+      return null
+    }
+    console.log('Error getting ENCODE object for biosample ' +
+      biosampleObj.accession + ': ' +
+      queryUrlBase + (status ? '&' + status : ''))
+    console.log(err)
+    throw err
+  }
 }
 
 const getNestedObject = function getNestedObject (nestedObj, pathArr) {
@@ -173,28 +203,30 @@ const getNestedObject = function getNestedObject (nestedObj, pathArr) {
  */
 function filterSearchResults (searchObj, filters) {
   let result = []
-  searchObj['@graph'].forEach(
-    graphObj => filters.some(filter => {
-      for (let key in filter) {
-        if (!key.startsWith('.') && filter.hasOwnProperty(key)) {
-          // key may be something like 'a.b', in which case we need to descend
-          // into graphObj
-          if ((filter[key] + '').toLowerCase() !==
-            (getNestedObject(graphObj, key.split('.')) + '').toLowerCase()
-          ) {
-            return false
+  if (searchObj && Array.isArray(searchObj['@graph'])) {
+    searchObj['@graph'].forEach(
+      graphObj => filters.some(filter => {
+        for (let key in filter) {
+          if (!key.startsWith('.') && filter.hasOwnProperty(key)) {
+            // key may be something like 'a.b', in which case we need to descend
+            // into graphObj
+            if ((filter[key] + '').toLowerCase() !==
+              (getNestedObject(graphObj, key.split('.')) + '').toLowerCase()
+            ) {
+              return false
+            }
           }
         }
-      }
-      // Passed filter, construct an object with Experiment IDs and filter ID
-      // that are passed
-      result.push({
-        filterId: filter['.id'],
-        id: graphObj.accession
+        // Passed filter, construct an object with Experiment IDs and filter ID
+        // that are passed
+        result.push({
+          filterId: filter['.id'],
+          id: graphObj.accession
+        })
+        return true
       })
-      return true
-    })
-  )
+    )
+  }
   return result
 }
 
@@ -294,11 +326,16 @@ async function processSingleBiosample (biosampleID, filters, tissueResult) {
       tissueResult['.life_stage'] ? tissueResult['.life_stage'] + ' ' : ''
     ) + tissueResult['.term']
   }
-  // TODO: set `notReleaseOnly` to `true` and update superseded experiments
-  let searchObj = await getExperimentsUsingBiosample(biosampleObj)
-  // TODO: replace superseded experiments
+  try {
+    // TODO: set `notReleaseOnly` to `true` and update superseded experiments
+    let searchObj = await getExperimentsUsingBiosample(biosampleObj)
+    // TODO: replace superseded experiments
 
-  return filterSearchResults(searchObj, filters)
+    return filterSearchResults(searchObj, filters)
+  } catch (err) {
+    console.log('Error processSingleBiosample (' + biosampleID + ').')
+    throw err
+  }
 }
 
 /**
@@ -315,7 +352,9 @@ async function processSingleTissue (tissueObj, filters) {
   let tissueResult = {}
   let speciesFilterSet = []
   for (let species in tissueObj) {
-    if (tissueObj.hasOwnProperty(species)) {
+    if (!species.startsWith('__') && !species.startsWith('.') &&
+      tissueObj.hasOwnProperty(species)
+    ) {
       let experimentEntryArray = await Promise.all(
         tissueObj[species].map(
           biosampleID => processSingleBiosample(
@@ -329,11 +368,12 @@ async function processSingleTissue (tissueObj, filters) {
             current.map(experimentEntry => ({
               biosampleID: tissueObj[species][index],
               id: experimentEntry.id,
-              filterID: experimentEntry.filter
+              filterID: experimentEntry.filterId
             }))
           ), []
         )
       }
+      console.log(tissueResult[species].experiments)
 
       // build a filter set (for debug purposes)
       let currSpeciesFilterSet = new Set()
@@ -353,7 +393,9 @@ async function processSingleTissue (tissueObj, filters) {
 
 async function filterInvalidDataSingleTissue (tissueResult) {
   for (let species in tissueResult) {
-    if (tissueResult.hasOwnProperty(species)) {
+    if (!species.startsWith('__') && !species.startsWith('.') &&
+      tissueResult.hasOwnProperty(species)
+    ) {
       // filter this preliminary list to remove the ones without proper data
       // files
       let experimentResultArray = await Promise.all(
@@ -381,9 +423,13 @@ function filterMismatchedSingleTissue (tissueResult, filters) {
   // reconstruct speciesFilterSet
   let speciesFilterSet = []
   for (let species in tissueResult) {
-    if (tissueResult.hasOwnProperty(species)) {
+    if (!species.startsWith('__') && !species.startsWith('.') &&
+      tissueResult.hasOwnProperty(species)
+    ) {
+      let currSpeciesFilterSet = new Set()
       tissueResult[species].experiments.forEach(experimentObj =>
-        speciesFilterSet.add(experimentObj.filterID))
+        currSpeciesFilterSet.add(experimentObj.filterID))
+      speciesFilterSet.push(currSpeciesFilterSet)
     }
   }
 
@@ -396,18 +442,25 @@ function filterMismatchedSingleTissue (tissueResult, filters) {
     speciesFilterSet[0] ? [...speciesFilterSet[0]] : []
   ))
 
+  console.log('Processed species filter set after matching: ')
+  console.log(intersectSet)
+
   // remove species-unique experiments
   for (let species in tissueResult) {
-    tissueResult[species].experiments =
-      tissueResult[species].experiments.filter(experiment =>
-        intersectSet.has(experiment.filterID)
-      )
+    if (!species.startsWith('__') && !species.startsWith('.') &&
+      tissueResult.hasOwnProperty(species)
+    ) {
+      tissueResult[species].experiments =
+        tissueResult[species].experiments.filter(experiment =>
+          intersectSet.has(experiment.filterID)
+        )
+    }
   }
   return tissueResult
 }
 
 async function downloadFileObject (fileObj, path) {
-  path = path || '.'
+  path = path || basePath
   let encodeId = fileObj.accession
   await fsMkdirPromise(path + '/' + encodeId).catch(err => {
     if (err.code === 'EEXIST') {
@@ -422,6 +475,10 @@ async function downloadFileObject (fileObj, path) {
   return axios.request({
     url: 'https://www.encodeproject.org' + fileObj.href,
     responseType: 'arraybuffer'
+  }).catch(err => {
+    console.log('Error getting ENCODE file: ' +
+      'https://www.encodeproject.org' + fileObj.href)
+    throw err
   }).then(async response => {
     let extension = fileObj.href.split('.').pop()
     let data = response.data
@@ -454,62 +511,76 @@ async function populateTissueExperiments (
   tissueResult, experimentResultDict
 ) {
   for (let species in tissueResult) {
-    if (tissueResult.hasOwnProperty(species)) {
+    if (!species.startsWith('__') && !species.startsWith('.') &&
+      tissueResult.hasOwnProperty(species)
+    ) {
       await Promise.all(
         tissueResult[species].experiments.map(
           experimentObj => {
             experimentResultDict[experimentObj.id] =
               tissueResult[species]._expResultDict[experimentObj.id]
+            console.log('Downloading experiment file: ' + experimentObj.id)
             return downloadExperimentFiles(
               tissueResult[species]._expResultDict[experimentObj.id]
             )
           }
         )
       )
+      delete tissueResult[species]._expResultDict
     }
   }
   return tissueResult
 }
 
-var readTissuePromise = fsReadfilePromise('matchedTissues.json', 'utf8')
-  .then(result => {
-    return JSON.parse(result)
-  })
-  .catch(err => {
-    console.log(err)
-  })
+var readTissuePromise = fsReadfilePromise(
+  basePath + '/' + matchTissueJsonFileName, 'utf8'
+).then(result => {
+  return JSON.parse(result)
+}).catch(err => {
+  console.log(err)
+})
 
-var readFilterPromise = fsReadfilePromise('filter.json', 'utf8')
-  .then(result => {
-    return JSON.parse(result)
-  })
-  .catch(err => {
-    console.log(err)
-  })
+var readFilterPromise = fsReadfilePromise(
+  basePath + '/' + filterJsonFileName, 'utf8'
+).then(result => {
+  return JSON.parse(result)
+}).catch(err => {
+  console.log(err)
+})
 
 Promise.all([readTissuePromise, readFilterPromise])
   .then(results => {
     let [tissues, filters] = results
-    finalResult.filters = filters
+    finalResult.filters = filters.reduce((prev, curr) => {
+      prev[curr['.id']] = curr
+      return prev
+    }, {})
     // first get raw tissue results
     return Promise.all(
       tissues.map(tissue => processSingleTissue(tissue, filters))
     )
   }).then(tissueResults => {
-    return Promise.all(
-      tissueResults.map(tissue => filterInvalidDataSingleTissue(tissue))
-    )
-  }).then(tissueResults =>
-    tissueResults.map(tissue => filterMismatchedSingleTissue(tissue))
-  ).then(tissueResults => {
+    console.log(tissueResults)
+    console.log('===== filterInvalidDataSingleTissue =====')
+    return Promise.all(tissueResults.map(tissue => {
+      return filterInvalidDataSingleTissue(tissue)
+    }))
+  }).then(tissueResults => {
+    console.log('===== filterMismatchedSingleTissue =====')
+    return tissueResults.map(tissue => filterMismatchedSingleTissue(tissue))
+  }
+  ).then(async tissueResults => {
     // Now all tissues should be ready
     finalResult.matchedTissues = tissueResults
     // populate and download experiments
-    return Promise.all(finalResult.matchedTissues.map(
-      tissueResult =>
+    return finalResult.matchedTissues.map(
+      async tissueResult => {
         populateTissueExperiments(tissueResult, finalResult.experiments)
-    ))
+      }
+    )
   }).then(() => {
     // write finalResults to a JSON file
-    return fsWritefilePromise(outputFile, JSON.stringify(finalResult))
+    return fsWritefilePromise(
+      basePath + '/' + outputFile, JSON.stringify(finalResult)
+    )
   })

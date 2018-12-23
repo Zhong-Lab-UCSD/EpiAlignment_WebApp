@@ -1,0 +1,799 @@
+{
+  "filters": {
+    "chip_h3k4me3": {
+      ".id": "chip_h3k4me3",
+      ".label": "ChIP-Seq (H3K4me3)",
+      "assay_term_name": "ChIP-seq",
+      "target.label": "H3K4me3"
+    },
+    "chip_h3k4me1": {
+      ".id": "chip_h3k4me1",
+      ".label": "ChIP-Seq (H3K4me1)",
+      "assay_term_name": "ChIP-seq",
+      "target.label": "H3K4me1"
+    },
+    "chip_h3k27ac": {
+      ".id": "chip_h3k27ac",
+      ".label": "ChIP-Seq (H3K27ac)",
+      "assay_term_name": "ChIP-seq",
+      "target.label": "H3K27ac"
+    }
+  },
+  "matchedTissues": [
+    {
+      ".term": "H1-hESC",
+      ".life_stage": "embryonic",
+      ".label": "embryonic stem cells",
+      "human": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS103ZIA",
+            "id": "ENCSR271TFS",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS717WTB",
+            "id": "ENCSR880SUY",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS945MCY",
+            "id": "ENCSR443YAS",
+            "filterID": "chip_h3k4me3"
+          }
+        ]
+      },
+      "mouse": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS043ENC",
+            "id": "ENCSR000ADK",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS043ENC",
+            "id": "ENCSR000ADL",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS054SMP",
+            "id": "ENCSR000CGO",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS054SMP",
+            "id": "ENCSR000CGN",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS054SMP",
+            "id": "ENCSR000CGQ",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS042ENC",
+            "id": "ENCSR000CGO",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS042ENC",
+            "id": "ENCSR000CGN",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS042ENC",
+            "id": "ENCSR000CGQ",
+            "filterID": "chip_h3k27ac"
+          }
+        ]
+      }
+    },
+    {
+      ".term": "GM12878",
+      ".life_stage": "adult",
+      ".label": "adult B-lymphocytes",
+      "human": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS978YID",
+            "id": "ENCSR057BWO",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS830CIQ",
+            "id": "ENCSR057BWO",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS830CIQ",
+            "id": "ENCSR000AKC",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS830CIQ",
+            "id": "ENCSR000AKF",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS830CIQ",
+            "id": "ENCSR000AKA",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS715VCP",
+            "id": "ENCSR000AKC",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS715VCP",
+            "id": "ENCSR000AKF",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS715VCP",
+            "id": "ENCSR000AKA",
+            "filterID": "chip_h3k4me3"
+          }
+        ]
+      },
+      "mouse": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS782ENP",
+            "id": "ENCSR000CGK",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS782ENP",
+            "id": "ENCSR000CGJ",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS782ENP",
+            "id": "ENCSR000CGH",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS443MXB",
+            "id": "ENCSR000DHQ",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS443MXB",
+            "id": "ENCSR000DHU",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS948OTG",
+            "id": "ENCSR000DHQ",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS948OTG",
+            "id": "ENCSR000DHU",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS045ENC",
+            "id": "ENCSR000CGK",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS045ENC",
+            "id": "ENCSR000CGJ",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS045ENC",
+            "id": "ENCSR000CGH",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS044ENC",
+            "id": "ENCSR000ADI",
+            "filterID": "chip_h3k4me3"
+          }
+        ]
+      }
+    },
+    {
+      ".term": "K562",
+      ".life_stage": "adult",
+      ".label": "adult erythroids",
+      "human": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS639AAA",
+            "id": "ENCSR000AKU",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS639AAA",
+            "id": "ENCSR000AKP",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS674MPN",
+            "id": "ENCSR000AKU",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS674MPN",
+            "id": "ENCSR000AKP",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS980HYW",
+            "id": "ENCSR668LDD",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS619VEE",
+            "id": "ENCSR668LDD",
+            "filterID": "chip_h3k4me3"
+          }
+        ]
+      },
+      "mouse": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS425KAG",
+            "id": "ENCSR000CEX",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS425KAG",
+            "id": "ENCSR000CEV",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS047ENC",
+            "id": "ENCSR000AEA",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS046ENC",
+            "id": "ENCSR000ADR",
+            "filterID": "chip_h3k4me3"
+          }
+        ]
+      }
+    },
+    {
+      ".term": "kidney",
+      ".life_stage": "adult",
+      ".label": "adult kidney",
+      "human": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS570IQU",
+            "id": "ENCSR100OZR",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS570IQU",
+            "id": "ENCSR994BPD",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS570IQU",
+            "id": "ENCSR438SPO",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS438CSQ",
+            "id": "ENCSR716YIT",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS438CSQ",
+            "id": "ENCSR009MUF",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS438CSQ",
+            "id": "ENCSR230BWN",
+            "filterID": "chip_h3k27ac"
+          }
+        ]
+      },
+      "mouse": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS092MYO",
+            "id": "ENCSR000CDG",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS713GAH",
+            "id": "ENCSR000CDG",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS333ENC",
+            "id": "ENCSR000CAN",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS333ENC",
+            "id": "ENCSR000CAF",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS601VEO",
+            "id": "ENCSR000CAN",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS601VEO",
+            "id": "ENCSR000CAF",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS565AAA",
+            "id": "ENCSR196ENU",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS565AAA",
+            "id": "ENCSR057SHA",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS565AAA",
+            "id": "ENCSR669AQL",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS569AAA",
+            "id": "ENCSR196ENU",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS569AAA",
+            "id": "ENCSR057SHA",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS569AAA",
+            "id": "ENCSR669AQL",
+            "filterID": "chip_h3k4me3"
+          }
+        ]
+      }
+    },
+    {
+      ".term": "liver",
+      ".life_stage": "adult",
+      ".label": "adult liver",
+      "human": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS631TVY",
+            "id": "ENCSR803JYI",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS631TVY",
+            "id": "ENCSR642HII",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS631TVY",
+            "id": "ENCSR678LND",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS097LXO",
+            "id": "ENCSR458WIH",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS097LXO",
+            "id": "ENCSR111OHT",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS097LXO",
+            "id": "ENCSR230IMS",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS046RNA",
+            "id": "ENCSR218ZMU",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS754HTZ",
+            "id": "ENCSR520BUX",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS754HTZ",
+            "id": "ENCSR203RKZ",
+            "filterID": "chip_h3k4me1"
+          }
+        ]
+      },
+      "mouse": {
+        "experiments": [
+          {
+            "biosampleID": "ENCBS338ENC",
+            "id": "ENCSR000CDH",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS976CGL",
+            "id": "ENCSR000CDH",
+            "filterID": "chip_h3k27ac"
+          },
+          {
+            "biosampleID": "ENCBS337ENC",
+            "id": "ENCSR000CAP",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS337ENC",
+            "id": "ENCSR000CAO",
+            "filterID": "chip_h3k4me1"
+          },
+          {
+            "biosampleID": "ENCBS419QNR",
+            "id": "ENCSR000CAP",
+            "filterID": "chip_h3k4me3"
+          },
+          {
+            "biosampleID": "ENCBS419QNR",
+            "id": "ENCSR000CAO",
+            "filterID": "chip_h3k4me1"
+          }
+        ]
+      }
+    }
+  ],
+  "experiments": {
+    "ENCSR271TFS": {
+      "id": "ENCSR271TFS",
+      "peak_id": "ENCFF694ENI",
+      "bigwig_id": "ENCFF593OAZ",
+      "peak_file": "encodeData/ENCFF694ENI/ENCFF694ENI.bed",
+      "bigwig_file": "encodeData/ENCFF593OAZ/ENCFF593OAZ.bigWig"
+    },
+    "ENCSR880SUY": {
+      "id": "ENCSR880SUY",
+      "peak_id": "ENCFF045CUG",
+      "bigwig_id": "ENCFF872FNR",
+      "peak_file": "encodeData/ENCFF045CUG/ENCFF045CUG.bed",
+      "bigwig_file": "encodeData/ENCFF872FNR/ENCFF872FNR.bigWig"
+    },
+    "ENCSR443YAS": {
+      "id": "ENCSR443YAS",
+      "peak_id": "ENCFF277AOQ",
+      "bigwig_id": "ENCFF818FCM",
+      "peak_file": "encodeData/ENCFF277AOQ/ENCFF277AOQ.bed",
+      "bigwig_file": "encodeData/ENCFF818FCM/ENCFF818FCM.bigWig"
+    },
+    "ENCSR057BWO": {
+      "id": "ENCSR057BWO",
+      "peak_id": "ENCFF188SZS",
+      "bigwig_id": "ENCFF228TWF",
+      "peak_file": "encodeData/ENCFF188SZS/ENCFF188SZS.bed",
+      "bigwig_file": "encodeData/ENCFF228TWF/ENCFF228TWF.bigWig"
+    },
+    "ENCSR000AKC": {
+      "id": "ENCSR000AKC",
+      "peak_id": "ENCFF367KIF",
+      "bigwig_id": "ENCFF340JIF",
+      "peak_file": "encodeData/ENCFF367KIF/ENCFF367KIF.bed",
+      "bigwig_file": "encodeData/ENCFF340JIF/ENCFF340JIF.bigWig"
+    },
+    "ENCSR000AKF": {
+      "id": "ENCSR000AKF",
+      "peak_id": "ENCFF453PEP",
+      "bigwig_id": "ENCFF304YFO",
+      "peak_file": "encodeData/ENCFF453PEP/ENCFF453PEP.bed",
+      "bigwig_file": "encodeData/ENCFF304YFO/ENCFF304YFO.bigWig"
+    },
+    "ENCSR000AKA": {
+      "id": "ENCSR000AKA",
+      "peak_id": "ENCFF228GWY",
+      "bigwig_id": "ENCFF722QFZ",
+      "peak_file": "encodeData/ENCFF228GWY/ENCFF228GWY.bed",
+      "bigwig_file": "encodeData/ENCFF722QFZ/ENCFF722QFZ.bigWig"
+    },
+    "ENCSR000AKU": {
+      "id": "ENCSR000AKU",
+      "peak_id": "ENCFF909PMV",
+      "bigwig_id": "ENCFF517YFY",
+      "peak_file": "encodeData/ENCFF909PMV/ENCFF909PMV.bed",
+      "bigwig_file": "encodeData/ENCFF517YFY/ENCFF517YFY.bigWig"
+    },
+    "ENCSR000AKP": {
+      "id": "ENCSR000AKP",
+      "peak_id": "ENCFF038DDS",
+      "bigwig_id": "ENCFF779QTH",
+      "peak_file": "encodeData/ENCFF038DDS/ENCFF038DDS.bed",
+      "bigwig_file": "encodeData/ENCFF779QTH/ENCFF779QTH.bigWig"
+    },
+    "ENCSR668LDD": {
+      "id": "ENCSR668LDD",
+      "peak_id": "ENCFF616DLO",
+      "bigwig_id": "ENCFF804OLI",
+      "peak_file": "encodeData/ENCFF616DLO/ENCFF616DLO.bed",
+      "bigwig_file": "encodeData/ENCFF804OLI/ENCFF804OLI.bigWig"
+    },
+    "ENCSR100OZR": {
+      "id": "ENCSR100OZR",
+      "peak_id": "ENCFF751ZDX",
+      "bigwig_id": "ENCFF438RHT",
+      "peak_file": "encodeData/ENCFF751ZDX/ENCFF751ZDX.bed",
+      "bigwig_file": "encodeData/ENCFF438RHT/ENCFF438RHT.bigWig"
+    },
+    "ENCSR994BPD": {
+      "id": "ENCSR994BPD",
+      "peak_id": "ENCFF022QUU",
+      "bigwig_id": "ENCFF313QRX",
+      "peak_file": "encodeData/ENCFF022QUU/ENCFF022QUU.bed",
+      "bigwig_file": "encodeData/ENCFF313QRX/ENCFF313QRX.bigWig"
+    },
+    "ENCSR438SPO": {
+      "id": "ENCSR438SPO",
+      "peak_id": "ENCFF584JKX",
+      "bigwig_id": "ENCFF871QBB",
+      "peak_file": "encodeData/ENCFF584JKX/ENCFF584JKX.bed",
+      "bigwig_file": "encodeData/ENCFF871QBB/ENCFF871QBB.bigWig"
+    },
+    "ENCSR716YIT": {
+      "id": "ENCSR716YIT",
+      "peak_id": "ENCFF334DZG",
+      "bigwig_id": "ENCFF369QLG",
+      "peak_file": "encodeData/ENCFF334DZG/ENCFF334DZG.bed",
+      "bigwig_file": "encodeData/ENCFF369QLG/ENCFF369QLG.bigWig"
+    },
+    "ENCSR009MUF": {
+      "id": "ENCSR009MUF",
+      "peak_id": "ENCFF547WIC",
+      "bigwig_id": "ENCFF076DVZ",
+      "peak_file": "encodeData/ENCFF547WIC/ENCFF547WIC.bed",
+      "bigwig_file": "encodeData/ENCFF076DVZ/ENCFF076DVZ.bigWig"
+    },
+    "ENCSR230BWN": {
+      "id": "ENCSR230BWN",
+      "peak_id": "ENCFF512JNT",
+      "bigwig_id": "ENCFF722YGU",
+      "peak_file": "encodeData/ENCFF512JNT/ENCFF512JNT.bed",
+      "bigwig_file": "encodeData/ENCFF722YGU/ENCFF722YGU.bigWig"
+    },
+    "ENCSR803JYI": {
+      "id": "ENCSR803JYI",
+      "peak_id": "ENCFF928OBQ",
+      "bigwig_id": "ENCFF069ZID",
+      "peak_file": "encodeData/ENCFF928OBQ/ENCFF928OBQ.bed",
+      "bigwig_file": "encodeData/ENCFF069ZID/ENCFF069ZID.bigWig"
+    },
+    "ENCSR642HII": {
+      "id": "ENCSR642HII",
+      "peak_id": "ENCFF033CCP",
+      "bigwig_id": "ENCFF063HVC",
+      "peak_file": "encodeData/ENCFF033CCP/ENCFF033CCP.bed",
+      "bigwig_file": "encodeData/ENCFF063HVC/ENCFF063HVC.bigWig"
+    },
+    "ENCSR678LND": {
+      "id": "ENCSR678LND",
+      "peak_id": "ENCFF275ZWJ",
+      "bigwig_id": "ENCFF611FWS",
+      "peak_file": "encodeData/ENCFF275ZWJ/ENCFF275ZWJ.bed",
+      "bigwig_file": "encodeData/ENCFF611FWS/ENCFF611FWS.bigWig"
+    },
+    "ENCSR458WIH": {
+      "id": "ENCSR458WIH",
+      "peak_id": "ENCFF726WMX",
+      "bigwig_id": "ENCFF151YYY",
+      "peak_file": "encodeData/ENCFF726WMX/ENCFF726WMX.bed",
+      "bigwig_file": "encodeData/ENCFF151YYY/ENCFF151YYY.bigWig"
+    },
+    "ENCSR111OHT": {
+      "id": "ENCSR111OHT",
+      "peak_id": "ENCFF956VHP",
+      "bigwig_id": "ENCFF383GNY",
+      "peak_file": "encodeData/ENCFF956VHP/ENCFF956VHP.bed",
+      "bigwig_file": "encodeData/ENCFF383GNY/ENCFF383GNY.bigWig"
+    },
+    "ENCSR230IMS": {
+      "id": "ENCSR230IMS",
+      "peak_id": "ENCFF976KNB",
+      "bigwig_id": "ENCFF905FLR",
+      "peak_file": "encodeData/ENCFF976KNB/ENCFF976KNB.bed",
+      "bigwig_file": "encodeData/ENCFF905FLR/ENCFF905FLR.bigWig"
+    },
+    "ENCSR218ZMU": {
+      "id": "ENCSR218ZMU",
+      "peak_id": "ENCFF276BDF",
+      "bigwig_id": "ENCFF549OBG",
+      "peak_file": "encodeData/ENCFF276BDF/ENCFF276BDF.bed",
+      "bigwig_file": "encodeData/ENCFF549OBG/ENCFF549OBG.bigWig"
+    },
+    "ENCSR520BUX": {
+      "id": "ENCSR520BUX",
+      "peak_id": "ENCFF876MVW",
+      "bigwig_id": "ENCFF669BCZ",
+      "peak_file": "encodeData/ENCFF876MVW/ENCFF876MVW.bed",
+      "bigwig_file": "encodeData/ENCFF669BCZ/ENCFF669BCZ.bigWig"
+    },
+    "ENCSR203RKZ": {
+      "id": "ENCSR203RKZ",
+      "peak_id": "ENCFF343WKQ",
+      "bigwig_id": "ENCFF245XLB",
+      "peak_file": "encodeData/ENCFF343WKQ/ENCFF343WKQ.bed",
+      "bigwig_file": "encodeData/ENCFF245XLB/ENCFF245XLB.bigWig"
+    },
+    "ENCSR000ADK": {
+      "id": "ENCSR000ADK",
+      "peak_id": "ENCFF440FYE",
+      "bigwig_id": "ENCFF968MDP",
+      "peak_file": "encodeData/ENCFF440FYE/ENCFF440FYE.bed",
+      "bigwig_file": "encodeData/ENCFF968MDP/ENCFF968MDP.bigWig"
+    },
+    "ENCSR000ADL": {
+      "id": "ENCSR000ADL",
+      "peak_id": "ENCFF012AZO",
+      "bigwig_id": "ENCFF421OLR",
+      "peak_file": "encodeData/ENCFF012AZO/ENCFF012AZO.bed",
+      "bigwig_file": "encodeData/ENCFF421OLR/ENCFF421OLR.bigWig"
+    },
+    "ENCSR000CGO": {
+      "id": "ENCSR000CGO",
+      "peak_id": "ENCFF680CYO",
+      "bigwig_id": "ENCFF167THF",
+      "peak_file": "encodeData/ENCFF680CYO/ENCFF680CYO.bed",
+      "bigwig_file": "encodeData/ENCFF167THF/ENCFF167THF.bigWig"
+    },
+    "ENCSR000CGN": {
+      "id": "ENCSR000CGN",
+      "peak_id": "ENCFF067VMS",
+      "bigwig_id": "ENCFF539HTI",
+      "peak_file": "encodeData/ENCFF067VMS/ENCFF067VMS.bed",
+      "bigwig_file": "encodeData/ENCFF539HTI/ENCFF539HTI.bigWig"
+    },
+    "ENCSR000CGQ": {
+      "id": "ENCSR000CGQ",
+      "peak_id": "ENCFF194TQD",
+      "bigwig_id": "ENCFF875PDV",
+      "peak_file": "encodeData/ENCFF194TQD/ENCFF194TQD.bed",
+      "bigwig_file": "encodeData/ENCFF875PDV/ENCFF875PDV.bigWig"
+    },
+    "ENCSR000CEX": {
+      "id": "ENCSR000CEX",
+      "peak_id": "ENCFF302BKK",
+      "bigwig_id": "ENCFF132TWB",
+      "peak_file": "encodeData/ENCFF302BKK/ENCFF302BKK.bed",
+      "bigwig_file": "encodeData/ENCFF132TWB/ENCFF132TWB.bigWig"
+    },
+    "ENCSR000CEV": {
+      "id": "ENCSR000CEV",
+      "peak_id": "ENCFF078RJZ",
+      "bigwig_id": "ENCFF997SNR",
+      "peak_file": "encodeData/ENCFF078RJZ/ENCFF078RJZ.bed",
+      "bigwig_file": "encodeData/ENCFF997SNR/ENCFF997SNR.bigWig"
+    },
+    "ENCSR000AEA": {
+      "id": "ENCSR000AEA",
+      "peak_id": "ENCFF294ZVX",
+      "bigwig_id": "ENCFF252HIZ",
+      "peak_file": "encodeData/ENCFF294ZVX/ENCFF294ZVX.bed",
+      "bigwig_file": "encodeData/ENCFF252HIZ/ENCFF252HIZ.bigWig"
+    },
+    "ENCSR000ADR": {
+      "id": "ENCSR000ADR",
+      "peak_id": "ENCFF140BSU",
+      "bigwig_id": "ENCFF404TDY",
+      "peak_file": "encodeData/ENCFF140BSU/ENCFF140BSU.bed",
+      "bigwig_file": "encodeData/ENCFF404TDY/ENCFF404TDY.bigWig"
+    },
+    "ENCSR000CDH": {
+      "id": "ENCSR000CDH",
+      "peak_id": "ENCFF545NYE",
+      "bigwig_id": "ENCFF300MYS",
+      "peak_file": "encodeData/ENCFF545NYE/ENCFF545NYE.bed",
+      "bigwig_file": "encodeData/ENCFF300MYS/ENCFF300MYS.bigWig"
+    },
+    "ENCSR000CAP": {
+      "id": "ENCSR000CAP",
+      "peak_id": "ENCFF420PUU",
+      "bigwig_id": "ENCFF709AJU",
+      "peak_file": "encodeData/ENCFF420PUU/ENCFF420PUU.bed",
+      "bigwig_file": "encodeData/ENCFF709AJU/ENCFF709AJU.bigWig"
+    },
+    "ENCSR000CAO": {
+      "id": "ENCSR000CAO",
+      "peak_id": "ENCFF338OJA",
+      "bigwig_id": "ENCFF645VRS",
+      "peak_file": "encodeData/ENCFF338OJA/ENCFF338OJA.bed",
+      "bigwig_file": "encodeData/ENCFF645VRS/ENCFF645VRS.bigWig"
+    },
+    "ENCSR000CDG": {
+      "id": "ENCSR000CDG",
+      "peak_id": "ENCFF338WZP",
+      "bigwig_id": "ENCFF179NTO",
+      "peak_file": "encodeData/ENCFF338WZP/ENCFF338WZP.bed",
+      "bigwig_file": "encodeData/ENCFF179NTO/ENCFF179NTO.bigWig"
+    },
+    "ENCSR000CAN": {
+      "id": "ENCSR000CAN",
+      "peak_id": "ENCFF372KRV",
+      "bigwig_id": "ENCFF277PVZ",
+      "peak_file": "encodeData/ENCFF372KRV/ENCFF372KRV.bed",
+      "bigwig_file": "encodeData/ENCFF277PVZ/ENCFF277PVZ.bigWig"
+    },
+    "ENCSR000CAF": {
+      "id": "ENCSR000CAF",
+      "peak_id": "ENCFF323VQM",
+      "bigwig_id": "ENCFF859PSM",
+      "peak_file": "encodeData/ENCFF323VQM/ENCFF323VQM.bed",
+      "bigwig_file": "encodeData/ENCFF859PSM/ENCFF859PSM.bigWig"
+    },
+    "ENCSR196ENU": {
+      "id": "ENCSR196ENU",
+      "peak_id": "ENCFF367TAY",
+      "bigwig_id": "ENCFF991YLQ",
+      "peak_file": "encodeData/ENCFF367TAY/ENCFF367TAY.bed",
+      "bigwig_file": "encodeData/ENCFF991YLQ/ENCFF991YLQ.bigWig"
+    },
+    "ENCSR057SHA": {
+      "id": "ENCSR057SHA",
+      "peak_id": "ENCFF515NHP",
+      "bigwig_id": "ENCFF219OSF",
+      "peak_file": "encodeData/ENCFF515NHP/ENCFF515NHP.bed",
+      "bigwig_file": "encodeData/ENCFF219OSF/ENCFF219OSF.bigWig"
+    },
+    "ENCSR669AQL": {
+      "id": "ENCSR669AQL",
+      "peak_id": "ENCFF077SVM",
+      "bigwig_id": "ENCFF416JZH",
+      "peak_file": "encodeData/ENCFF077SVM/ENCFF077SVM.bed",
+      "bigwig_file": "encodeData/ENCFF416JZH/ENCFF416JZH.bigWig"
+    },
+    "ENCSR000CGK": {
+      "id": "ENCSR000CGK",
+      "peak_id": "ENCFF655AFF",
+      "bigwig_id": "ENCFF011TAF",
+      "peak_file": "encodeData/ENCFF655AFF/ENCFF655AFF.bed",
+      "bigwig_file": "encodeData/ENCFF011TAF/ENCFF011TAF.bigWig"
+    },
+    "ENCSR000CGJ": {
+      "id": "ENCSR000CGJ",
+      "peak_id": "ENCFF587SDE",
+      "bigwig_id": "ENCFF096TSJ",
+      "peak_file": "encodeData/ENCFF587SDE/ENCFF587SDE.bed",
+      "bigwig_file": "encodeData/ENCFF096TSJ/ENCFF096TSJ.bigWig"
+    },
+    "ENCSR000CGH": {
+      "id": "ENCSR000CGH",
+      "peak_id": "ENCFF512GBW",
+      "bigwig_id": "ENCFF013BOZ",
+      "peak_file": "encodeData/ENCFF512GBW/ENCFF512GBW.bed",
+      "bigwig_file": "encodeData/ENCFF013BOZ/ENCFF013BOZ.bigWig"
+    },
+    "ENCSR000DHQ": {
+      "id": "ENCSR000DHQ",
+      "peak_id": "ENCFF983MYN",
+      "bigwig_id": "ENCFF051LQD",
+      "peak_file": "encodeData/ENCFF983MYN/ENCFF983MYN.bed",
+      "bigwig_file": "encodeData/ENCFF051LQD/ENCFF051LQD.bigWig"
+    },
+    "ENCSR000DHU": {
+      "id": "ENCSR000DHU",
+      "peak_id": "ENCFF973RST",
+      "bigwig_id": "ENCFF554TFI",
+      "peak_file": "encodeData/ENCFF973RST/ENCFF973RST.bed",
+      "bigwig_file": "encodeData/ENCFF554TFI/ENCFF554TFI.bigWig"
+    },
+    "ENCSR000ADI": {
+      "id": "ENCSR000ADI",
+      "peak_id": "ENCFF612YWK",
+      "bigwig_id": "ENCFF289QMU",
+      "peak_file": "encodeData/ENCFF612YWK/ENCFF612YWK.bed",
+      "bigwig_file": "encodeData/ENCFF289QMU/ENCFF289QMU.bigWig"
+    }
+  }
+}

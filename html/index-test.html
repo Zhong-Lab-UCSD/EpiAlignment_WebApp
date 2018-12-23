@@ -271,13 +271,81 @@
           </div>
           <div class="flexRow flexCenter">
             <input type="submit" value="Submit">
-            <div v-html="submitStatus" class="submitStatus"
-              :class="{ formError: hasError, submitted: submitted }">
+            <div v-html="submitStatus" class="submitStatus" :class="{ formError: hasError, submitted: submitted }">
             </div>
           </div>
         </div>
       </div>
     </form>
+    <div v-show="showEncode" class="flexColumn flexCenter justifyCenter" id="encodeDialogContainer"
+      @wheel.stop.prevent @click.stop.prevent="closeEncodeDialog">
+      <div class="flexColumn flexStretch" id="encodeDialog" @click.stop>
+        <h2>Select paired peak datasets from ENCODE Project</h2>
+        <div id="encodeDialogBody" class="flex flexColumn">
+          <div>
+            Here we provide some pre-compiled paired peak datasets from
+            <a href="https://www.encodeproject.org/">the ENCODE and mouse ENCODE
+              project</a>.
+            More data will be added here after they are matched.
+          </div>
+          <div>
+            Please click on one of the green cells to use the paired data
+            between human and mouse in EpiAlignment.
+          </div>
+          <div v-show="!encodeLoaded">Loading ENCODE data ...</div>
+          <div v-show="encodeLoaded" class="flexRow flexStretch flex">
+            <div class="flex" id="encodeTableHolder">
+              <table v-show="encodeLoaded" class="encodeTable">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th v-for="filter in encodeFilters" :key="filter.id">
+                      {{ filter.label }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="sampleEntry in encodeSamples" :key="sampleEntry.label">
+                    <th>
+                      {{ sampleEntry.label }}
+                    </th>
+                    <td v-for="filterEntry in sampleEntry.matchedFilters"
+                      @click="selectEntry(filterEntry)">
+                      <template v-if="filterEntry">
+                        <span v-for="species in speciesSupported">
+                          {{ species.shortHand }}:
+                          {{ filterEntry[species.name].length }}
+                        </span>
+                      </template>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="encodeDataPanel">
+              <div v-if="selectedEntry" class="flex">
+                <template v-for="(experiments, species) in selectedEntry">
+                  <h3>{{ experiments.length > 1 ? 'Datasets' : 'Dataset' }}
+                    for {{ species }}</h3>
+                  <ul>
+                    <li v-for="experiment in experiments">
+                      {{ experiment.id }}
+                      <a target="_blank" title="See experiment details / download data on ENCODE website" :href="'https://www.encodeproject.org/experiments/' + experiment.id"><i class="material-icons">
+                        open_in_new
+                      </i></a>
+                    </li>
+                  </ul>
+                </template>
+              </div>
+            </div>
+          </div>
+          <div id="encodePanelCommandBar" class="flexRow justifyEnd">
+            <button id="confirmEncode">Confirm</button>
+            <button id="cancelEncode">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 

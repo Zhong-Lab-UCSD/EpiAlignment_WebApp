@@ -191,7 +191,7 @@ app.get('/result_image/:runid/:index/e.png', function (req, res) {
       } catch (err){
         res.status(404)
       }
-    }
+    })
     // python input
     var pyImageMessenger = { 'mode': 'epi', 'index': index, 'runid': runid }
     scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))

@@ -6,15 +6,15 @@
     "target.label": "H3K4me3"
   },
   {
-    ".id": "chip_h3k4me1",
-    ".label": "ChIP-Seq (H3K4me1)",
-    "assay_term_name": "ChIP-seq",
-    "target.label": "H3K4me1"
-  },
-  {
     ".id": "chip_h3k27ac",
     ".label": "ChIP-Seq (H3K27ac)",
     "assay_term_name": "ChIP-seq",
     "target.label": "H3K27ac"
+  },
+  {
+    ".id": "chip_h3k4me1",
+    ".label": "ChIP-Seq (H3K4me1)",
+    "assay_term_name": "ChIP-seq",
+    "target.label": "H3K4me1"
   }
 ]

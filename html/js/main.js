@@ -72,7 +72,27 @@ var app = new Vue({
       modeNotSelected: false
 
     },
+    showEncode: false,
+    encodeLoaded: false,
+    showMoreParamText: 'Show more parameters...',
     submitStatus: null,
+    encodeDataObj: null,
+    encodeDictionary: {},
+    encodeFilters: [],
+    encodeSamples: [],
+    selectedEntry: null,
+    speciesSupported: [
+      {
+        'name': 'human',
+        'assembly': 'hg38',
+        'shortHand': 'H'
+      },
+      {
+        'name': 'mouse',
+        'assembly': 'mm10',
+        'shortHand': 'M'
+      }
+    ],
     formParams: {
       alignMode: null,
       epiName: 'H3K4me3',
@@ -108,9 +128,81 @@ var app = new Vue({
       mail: null
     }
   },
+  created: function () {
+    // load preset data sets from ENCODE by reading the spec JSON file
+    postAjax('assets/encodeData.json', null, 'json', 'GET')
+      .then(result => {
+        this.encodeDictionary.experiments = result.experiments
+        // build this.encodeFilters, this.encodeSamples
+
+        // first build this.encodeFilters
+        let filterReverseMap = this.buildEncodeFilter(result.filters)
+
+        // then build this.encodeSamples
+        this.buildEncodeSample(result.matchedTissues, filterReverseMap)
+
+        this.encodeLoaded = true
+      })
+  },
   methods: {
+    buildEncodeFilter: function (filterObj) {
+      let filterRevMap = new Map()
+      for (let key in filterObj) {
+        if (filterObj.hasOwnProperty(key)) {
+          if (!filterRevMap.has(filterObj[key]['.id'])) {
+            filterRevMap.set(filterObj[key]['.id'], filterRevMap.size)
+            this.encodeFilters.push({
+              id: filterObj[key]['.id'],
+              label: filterObj[key]['.label']
+            })
+          }
+        }
+      }
+      return filterRevMap
+    },
+    buildEncodeSample: function (sampleObj, filterRevMap) {
+      let sampleSet = new Set()
+      sampleObj.forEach(sample => {
+        if (!sampleSet.has(sample['.label'])) {
+          sampleSet.add(sample['.label'])
+          let sampleEntry = {
+            label: sample['.label']
+          }
+          sampleEntry.matchedFilters = Array(this.encodeFilters.length)
+          sampleEntry.matchedFilters.fill(null)
+          sampleEntry.filterDict = {}
+
+          this.speciesSupported.forEach(species => {
+            let experiments = sample[species.name].experiments
+            experiments.forEach(experiment => {
+              if (!filterRevMap.has(experiment.filterID)) {
+                console.log('Warning: filter ID does not exist! ' +
+                  experiment.filterID)
+              } else {
+                let filterIndex = filterRevMap.get(experiment.filterID)
+                if (!sampleEntry.matchedFilters[filterIndex]) {
+                  sampleEntry.matchedFilters[filterIndex] = {}
+                  this.speciesSupported.forEach(spc => {
+                    sampleEntry.matchedFilters[filterIndex][spc.name] = []
+                  })
+                }
+                sampleEntry.matchedFilters[filterIndex][species.name]
+                  .push(experiment)
+              }
+            })
+          })
+
+          this.encodeSamples.push(sampleEntry)
+        }
+      })
+    },
+    selectEntry: function (entry) {
+      this.selectedEntry = entry
+    },
     toggleShowParam: function () {
       this.showParam = !this.showParam
+      this.showMoreParamText = this.showParam
+        ? 'Show less parameters.' : 'Show more parameters...'
     },
     checkAlignMode: function () {
       if (this.checkModeConflict()) {
@@ -180,6 +272,12 @@ var app = new Vue({
             '</i> Error encountered. Error code: ' +
             err.status
         })
+    },
+    selectEncodeData: function () {
+      this.showEncode = true
+    },
+    closeEncodeDialog: function () {
+      this.showEncode = false
     }
   },
   computed: {

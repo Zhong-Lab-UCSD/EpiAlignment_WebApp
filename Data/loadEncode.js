@@ -14,6 +14,7 @@ const references = {
 }
 
 const basePath = 'encodeData'
+const outputPath = '../html/assets'
 
 const matchTissueJsonFileName = 'matchingTissues.json'
 const filterJsonFileName = 'filters.json'
@@ -72,11 +73,15 @@ const outputFile = 'encodeData.json'
  *    in the following format:
  *    ```json
  *    {
- *      ".id": "<unique_filter_id>",
- *      ".label": "<human_readable_label>",  // e.g. 'ChIP-Seq (H3K4me3)'
+ *      "<unique_filter_id>": {
+ *        ".id": "<unique_filter_id>",
+ *        ".label": "<human_readable_label>",  // e.g. 'ChIP-Seq (H3K4me3)'
+ *        // ...
+ *        // all properties from ENCODE search object that must match
+ *        // sub-properties can be represented by using '.',
+ *        //   e.g. 'target.label'
+ *      }
  *      // ...
- *      // all properties from ENCODE search object that must match
- *      // sub-properties can be represented by using '.', e.g. 'target.label'
  *    }
  *    ```
  * @property {Array<object>} matchedTissues - the matched tissues, should be:
@@ -117,7 +122,7 @@ const outputFile = 'encodeData.json'
  */
 var finalResult = {
   filters: {},
-  matchedTissues: {},
+  matchedTissues: [],
   experiments: {}
 }
 
@@ -396,6 +401,18 @@ async function filterInvalidDataSingleTissue (tissueResult) {
     if (!species.startsWith('__') && !species.startsWith('.') &&
       tissueResult.hasOwnProperty(species)
     ) {
+      // First filter out duplicates
+      let expIdSet = new Set()
+      tissueResult[species].experiments =
+        tissueResult[species].experiments.filter(
+          experimentObj => {
+            if (expIdSet.has(experimentObj.id)) {
+              return false
+            }
+            expIdSet.add(experimentObj.id)
+            return true
+          }
+        )
       // filter this preliminary list to remove the ones without proper data
       // files
       let experimentResultArray = await Promise.all(
@@ -526,7 +543,6 @@ async function populateTissueExperiments (
           }
         )
       )
-      delete tissueResult[species]._expResultDict
     }
   }
   return tissueResult
@@ -569,18 +585,29 @@ Promise.all([readTissuePromise, readFilterPromise])
     console.log('===== filterMismatchedSingleTissue =====')
     return tissueResults.map(tissue => filterMismatchedSingleTissue(tissue))
   }
-  ).then(async tissueResults => {
+  ).then(tissueResults => {
+    console.log('===== populateTissueExperiments =====')
     // Now all tissues should be ready
     finalResult.matchedTissues = tissueResults
     // populate and download experiments
-    return finalResult.matchedTissues.map(
-      async tissueResult => {
+    return Promise.all(finalResult.matchedTissues.map(
+      tissueResult =>
         populateTissueExperiments(tissueResult, finalResult.experiments)
-      }
-    )
+    ))
   }).then(() => {
+    console.log('===== Clearing _expResultDict =====')
     // write finalResults to a JSON file
+    finalResult.matchedTissues.forEach(tissueResult => {
+      for (let species in tissueResult) {
+        if (!species.startsWith('__') && !species.startsWith('.') &&
+          tissueResult.hasOwnProperty(species)
+        ) {
+          delete tissueResult[species]._expResultDict
+        }
+      }
+    })
+    console.log('===== Writing to JSON =====')
     return fsWritefilePromise(
-      basePath + '/' + outputFile, JSON.stringify(finalResult)
+      outputPath + '/' + outputFile, JSON.stringify(finalResult, null, 2)
     )
   })

@@ -34,7 +34,7 @@ div#header > h1 {
   display: block;
   width: 160px;
   height: 160px;
-	background-image: url('../images/loading.svg');
+	background-image: url('../assets/images/loading.svg');
 	background-repeat: no-repeat;
 	background-position: center center;
 }
@@ -44,6 +44,10 @@ form {
 	flex-direction: column;
 	flex: auto;
 	padding: 0 1em;
+}
+
+.flexRow > input[type="radio"] {
+	margin-right: 0.5em;
 }
 
 input[type="text"] {
@@ -92,6 +96,22 @@ input[type="submit"] {
 
 .flexCenter {
 	align-items: center;
+}
+
+.flexEnd {
+	align-items: flex-end;
+}
+
+.justifyStart {
+	justify-content: flex-start;
+}
+
+.justifyCenter {
+	justify-content: center;
+}
+
+.justifyEnd {
+	justify-content: flex-end;
 }
 
 .flexStretch {
@@ -201,7 +221,7 @@ div#step1 > div.stepright > div > input:not(:first-of-type) {
 }
 
 div#step1 > div.stepright > div > input {
-	margin-right: 0.3em;
+	margin-right: 0.5em;
 }
 
 div.elemLabel {
@@ -226,10 +246,6 @@ div#inputRegionContainer > * {
 .shortInputContainer > input {
 	width: 5em;
 	text-align: right;
-}
-
-div#step2 div.elemLabel > * {
-	margin-right: 0.25em;
 }
 
 .parameterContainer input {
@@ -267,4 +283,100 @@ span.keyboard {
 
 .resultHolder {
 	padding: 1em;
+}
+
+div#encodeDialogContainer {
+	position: fixed;
+	margin: auto;
+	width: 100vw;
+	height: 100vh;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: rgba(0, 0, 0, 0.35);
+}
+
+div#encodeDialogContainer > div {
+	background: #EEEEEE;
+	max-width: 70%;
+	max-height: 70%;
+	box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
+}
+
+div#encodeDialog > * {
+	padding-left: 2rem;
+	padding-right: 2rem;
+}
+
+div#encodeDialogBody {
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+}
+
+div#encodeDialogBody > *:not(:last-child) {
+	margin-bottom: 1rem;
+}
+
+div#encodeDialog > table {
+	margin: 1rem 2rem;
+}
+
+div#encodeDialog > h2 {
+	padding-top: 2rem;
+	padding-bottom: 1.5rem;
+	margin: 0;
+	background: #666666;
+	color: #FFFFFF;
+}
+
+table.encodeTable {
+	vertical-align: middle;
+	text-align: center;
+	border-collapse: collapse;
+	width: 99%;
+	box-sizing: border-box;
+}
+
+table.encodeTable > * > tr > th,
+table.encodeTable > * > tr > td {
+	padding: 0.6em 0.75em;
+}
+
+table.encodeTable > tbody > tr > th {
+	text-align: right;
+}
+
+table.encodeTable > * > tr > td {
+	border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+table.encodeTable > * > tr > td > span {
+	margin: 0 0.2em;
+}
+
+table.encodeTable > * > tr > th::first-letter {
+	text-transform: uppercase;
+}
+
+div#encodeDataPanel {
+	width: 20em;
+}
+
+div#encodeTableHolder {
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+table.encodeTable > * > tr > td:not(:empty) {
+	background: #93bde7;
+}
+
+table.encodeTable > * > tr > td:empty {
+	background: #CCCCCC;
+}
+
+table.encodeTable > * > tr > td:empty::before {
+	font-style: italic;
+	content: 'No paired data';
 }

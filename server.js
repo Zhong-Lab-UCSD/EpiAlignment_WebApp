@@ -174,9 +174,12 @@ app.get('/results/:runid', function (req, res) {
   }
 })
 
-app.get('/result_image/:runid/:index/e.png', function (req, res) {
-  let image_name = 'tmp_' + runid + '/Image_' + index + '_epi_' + runid + ".png"
-  console.log(image_name)
+app.get('/result_image/:runid/:index/:se.png', function (req, res) {
+  let runid = req.params.runid
+  let se = req.params.se
+  let index = req.params.index
+  let image_name = 'tmp_' + runid + '/Image_' + index +
+    (se === 'e' ? '_epi_' : '_seq_') + runid + ".png"
   try {
     // Check if the image exists.
     let image_stat = fs.statSync(image_name)
@@ -188,37 +191,12 @@ app.get('/result_image/:runid/:index/e.png', function (req, res) {
       try {
         let image_stat_new = fs.statSync(image_name)
         res.sendFile(image_name)
-      } catch (err){
+      } catch (err) {
         res.status(404)
       }
     })
     // python input
-    var pyImageMessenger = { 'mode': 'epi', 'index': index, 'runid': runid }
-    scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
-    // tell the node that sending inputs to python is done.
-    scriptExecution.stdin.end()
-  }
-})
-
-app.get('/result_image/:runid/:index/s.png', function (req, res){
-  let image_name = 'tmp_' + runid + '/Image_' + index + '_seq_' + runid + ".png"
-  try {
-    // Check if the image exists.
-    let image_stat = fs.statSync(image_name)
-    res.sendFile(image_name)
-  } catch (err) {
-    // if the image does not exist
-    let scriptExecution = spawn('python', [pythonPlotScript])
-    scriptExecution.on('exit', (code) => {
-      try {
-        let image_stat_new = fs.statSync(image_name)
-        res.sendFile(image_name)
-      } catch (err){
-        res.status(404)
-      }
-    }
-    // python input
-    var pyImageMessenger = { 'mode': 'seq', 'index': index, 'runid': runid }
+    var pyImageMessenger = { 'mode': se === 'e' ? 'epi' : 'seq', 'index': index, 'runid': runid }
     scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
     // tell the node that sending inputs to python is done.
     scriptExecution.stdin.end()

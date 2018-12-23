@@ -197,6 +197,7 @@ app.get('/result_image/:runid/:index/:se.png', function (req, res) {
     })
     // python input
     var pyImageMessenger = { 'mode': se === 'e' ? 'epi' : 'seq', 'index': index, 'runid': runid }
+    console.log(pyImageMessenger)
     scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
     // tell the node that sending inputs to python is done.
     scriptExecution.stdin.end()

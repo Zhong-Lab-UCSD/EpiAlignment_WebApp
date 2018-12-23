@@ -8,6 +8,7 @@ const spawn = require('child_process').spawn
 const app = express()
 // python
 const pythonScript = 'server_agent.py'
+const pythonPlotScript = 'Plot_selected_region.py'
 // util
 const util = require('util')
 const readFilePromise = util.promisify(fs.readFile)
@@ -41,7 +42,7 @@ app.post('/form_upload', cpUpload, function (req, res) {
   do {
     try {
       var runid = makeid()
-      tmp_stat = fs.statSync('tmp_' + runid)
+      let tmp_stat = fs.statSync('tmp_' + runid)
     } catch (err) {
       // if the folder does not exist
       console.log('Just created a new directory: ' + runid)
@@ -170,6 +171,57 @@ app.get('/results/:runid', function (req, res) {
       status: 1,
       message: 'EpiAlignment exited with an error.'
     })
+  }
+})
+
+app.get('/result_image/:runid/:index/e.png', function (req, res) {
+  let image_name = 'tmp_' + runid + '/Image_' + index + '_epi_' + runid + ".png"
+  console.log(image_name)
+  try {
+    // Check if the image exists.
+    let image_stat = fs.statSync(image_name)
+    res.sendFile(image_name)
+  } catch (err) {
+    // if the image does not exist
+    let scriptExecution = spawn('python', [pythonPlotScript])
+    scriptExecution.on('exit', (code) => {
+      try {
+        let image_stat_new = fs.statSync(image_name)
+        res.sendFile(image_name)
+      } catch (err){
+        res.status(404)
+      }
+    }
+    // python input
+    var pyImageMessenger = { 'mode': 'epi', 'index': index, 'runid': runid }
+    scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
+    // tell the node that sending inputs to python is done.
+    scriptExecution.stdin.end()
+  }
+})
+
+app.get('/result_image/:runid/:index/s.png', function (req, res){
+  let image_name = 'tmp_' + runid + '/Image_' + index + '_seq_' + runid + ".png"
+  try {
+    // Check if the image exists.
+    let image_stat = fs.statSync(image_name)
+    res.sendFile(image_name)
+  } catch (err) {
+    // if the image does not exist
+    let scriptExecution = spawn('python', [pythonPlotScript])
+    scriptExecution.on('exit', (code) => {
+      try {
+        let image_stat_new = fs.statSync(image_name)
+        res.sendFile(image_name)
+      } catch (err){
+        res.status(404)
+      }
+    }
+    // python input
+    var pyImageMessenger = { 'mode': 'seq', 'index': index, 'runid': runid }
+    scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
+    // tell the node that sending inputs to python is done.
+    scriptExecution.stdin.end()
   }
 })
 

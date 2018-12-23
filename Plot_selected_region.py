@@ -19,9 +19,12 @@ mtcars = packages.data(datasets).fetch('mtcars')['mtcars']
 
 def Extract_name(fname, ind):
   with open(fname, "r") as fin:
-    line = fin.readline()
     for line in fin:
+      if line[0] == "#":
+        continue
       line = line.strip().split("\t")
+      if line[0] == "Index":
+        continue
       if int(line[0]) == ind:
         xtitle = line[3].split('(')[0]
         coord = re.findall(r"[\w']+", xtitle)
@@ -71,6 +74,13 @@ def Main():
   mode = sys.argv[3]
   #lines = sys.stdin.readlines()
   #runid = lines[0]
+
+  lines = sys.stdin.readlines()
+  json_dict = json.loads(lines[0])
+  runid = json_dict["runid"]
+  ind = int(json_dict["index"])
+  mode = json_dict["mode"]
+
   out_folder = "tmp_" + runid + "/"
   if mode == "epi":
     fname = out_folder + "epi_scores_" + runid

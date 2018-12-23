@@ -1,4 +1,5 @@
 import sys
+import json
 import re
 import os
 import rpy2.robjects as ro
@@ -68,18 +69,20 @@ def Plot_ScoreDist(s_list, ind, mode, of_name, runid):
 
 
 def Main():
-  runid = sys.argv[1]
-  ind = int(sys.argv[2])
+  #runid = sys.argv[1]
+  #ind = int(sys.argv[2])
   # mode can be "epi" or "seq"
-  mode = sys.argv[3]
+  #mode = sys.argv[3]
   #lines = sys.stdin.readlines()
   #runid = lines[0]
 
   lines = sys.stdin.readlines()
+  print lines
   json_dict = json.loads(lines[0])
   runid = json_dict["runid"]
   ind = int(json_dict["index"])
   mode = json_dict["mode"]
+  print runid, ind, mode
 
   out_folder = "tmp_" + runid + "/"
   if mode == "epi":

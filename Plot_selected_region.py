@@ -24,9 +24,9 @@ def Extract_name(fname, ind):
       if line[0] == "Index":
         continue
       if int(line[0]) == ind:
-        xtitle = line[3].split('(')[0]
+        xtitle = line[8].split('(')[0]
         coord = re.findall(r"[\w']+", xtitle)
-        strand = line[3].split("(")[1].strip(")")
+        strand = line[8].split("(")[1].strip(")")
         return xtitle, int(coord[1]), int(coord[2]), strand
 
 
@@ -66,12 +66,6 @@ def Plot_ScoreDist(s_list, ind, mode, of_name, runid):
 
 
 def Main():
-  #runid = sys.argv[1]
-  #ind = int(sys.argv[2])
-  # mode can be "epi" or "seq"
-  #mode = sys.argv[3]
-  #lines = sys.stdin.readlines()
-  #runid = lines[0]
 
   lines = sys.stdin.readlines()
   print lines

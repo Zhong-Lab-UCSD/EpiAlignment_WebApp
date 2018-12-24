@@ -1,0 +1,51 @@
+{
+  "filters": {
+    "chip_h3k4me3": {
+      ".id": "chip_h3k4me3",
+      ".label": "ChIP-Seq (H3K4me3)",
+      "assay_term_name": "ChIP-seq",
+      "target.label": "H3K4me3"
+    }
+  },
+  "matchedTissues": [
+    {
+      ".label": "round spermatids",
+      "human": {
+        "experiments": [
+          {
+            "id": "PUBRSPHS001",
+            "filterId": "chip_h3k4me3"
+          }
+        ]
+      },
+      "mouse": {
+        "experiments": [
+          {
+            "id": "PUBRSPMM001",
+            "filterId": "chip_h3k4me3"
+          }
+        ]
+      }
+    }
+  ],
+  "experiments": {
+    "PUBRSPHS001": {
+      "id": "PUBRSPHS001",
+      "peak_id": "PUBHSF00001",
+      "bigwig_id": "PUBHSF00002",
+      "peak_file":
+        "PUBRSPHS001/hg38_RoundSpermatids_H3K4me3.broadPeak",
+      "bigwig_file":
+        "PUBRSPHS001/hg38_RoundSpermatids_H3K4me3.bw"
+    },
+    "PUBRSPMM001": {
+      "id": "PUBRSPMM001",
+      "peak_id": "PUBMMF00001",
+      "bigwig_id": "PUBMMF00002",
+      "peak_file":
+        "PUBRSPMM001/mm10_RoundSpermatids_H3K4me3.broadPeak",
+      "bigwig_file":
+        "PUBRSPMM001/mm10_RoundSpermatids_H3K4me3.bw"
+    }
+  }
+}

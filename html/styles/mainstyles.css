@@ -359,8 +359,46 @@ table.encodeTable > * > tr > th::first-letter {
 	text-transform: uppercase;
 }
 
-div#encodeDataPanel {
+div#dataPanel {
 	width: 20em;
+}
+
+div#dataPanel li {
+	padding: 0.25em 0;
+	cursor: pointer;
+}
+
+div#dataPanel li.selected {
+	font-weight: bold;
+}
+
+div#dataPanel li.selected > i {
+	display: inline-block;
+	margin: -0.2em 0 -0.05em -1.2em;
+}
+
+div#dataPanel li a > i {
+	margin-left: 0.5rem;
+	font-size: 1.1em;
+}
+
+div#dataPanel li a {
+	color: #000000;
+}
+
+div#dataPanel li a:link,
+div#dataPanel li a:visited {
+	opacity: 0.6;
+}
+
+div#dataPanel li a:focus,
+div#dataPanel li a:hover,
+div#dataPanel li a:active {
+	opacity: 1;
+}
+
+div#dataPanel li {
+	list-style-type: none;
 }
 
 div#encodeTableHolder {

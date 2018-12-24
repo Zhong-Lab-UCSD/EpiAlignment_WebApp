@@ -72,15 +72,13 @@ var app = new Vue({
       modeNotSelected: false
 
     },
-    showEncode: false,
-    encodeLoaded: false,
     showMoreParamText: 'Show more parameters...',
     submitStatus: null,
-    encodeDataObj: null,
-    encodeDictionary: {},
-    encodeFilters: [],
-    encodeSamples: [],
-    selectedEntry: null,
+
+    // parameters involved in preset dataset loading
+    showPreset: false,
+    presetLoaded: false,
+    experimentDict: {},
     speciesSupported: [
       {
         'name': 'human',
@@ -93,6 +91,16 @@ var app = new Vue({
         'shortHand': 'M'
       }
     ],
+    // selected datasets
+    selectedEntry: null,
+    selectedExperimentIds: null,
+    // ENCODE datasets
+    encodeFilters: [],
+    encodeSamples: [],
+    // Other public datasets
+    publicFilters: [],
+    publicSamples: [],
+
     formParams: {
       alignMode: null,
       epiName: 'H3K4me3',
@@ -130,28 +138,44 @@ var app = new Vue({
   },
   created: function () {
     // load preset data sets from ENCODE by reading the spec JSON file
-    postAjax('assets/encodeData.json', null, 'json', 'GET')
-      .then(result => {
-        this.encodeDictionary.experiments = result.experiments
-        // build this.encodeFilters, this.encodeSamples
+    Promise.all([
+      postAjax('assets/encodeData.json', null, 'json', 'GET'),
+      postAjax('assets/publicData.json', null, 'json', 'GET'),
+      postAjax('assets/experimentDict.json', null, 'json', 'GET')
+    ]).then(resultArray => {
+      let [encodeData, publicData, experiments] = resultArray
+      this.experimentDict = experiments
+      // build this.encodeFilters, this.encodeSamples
 
-        // first build this.encodeFilters
-        let filterReverseMap = this.buildEncodeFilter(result.filters)
+      // first build encodeDatasets
+      this.buildDataSetFilterAndSample(
+        this.encodeFilters, this.encodeSamples, encodeData
+      )
 
-        // then build this.encodeSamples
-        this.buildEncodeSample(result.matchedTissues, filterReverseMap)
+      // then build publicDatasets
+      this.buildDataSetFilterAndSample(
+        this.publicFilters, this.publicSamples, publicData
+      )
 
-        this.encodeLoaded = true
-      })
+      this.presetLoaded = true
+    })
   },
   methods: {
-    buildEncodeFilter: function (filterObj) {
+    buildDataSetFilterAndSample: function (
+      filterDomArray, sampleDomArray, dataObj
+    ) {
+      let filterDict = this.buildFilter(filterDomArray, dataObj.filters)
+      this.buildSample(
+        sampleDomArray, dataObj.matchedTissues, filterDict, filterDomArray
+      )
+    },
+    buildFilter: function (filterDomArray, filterObj) {
       let filterRevMap = new Map()
       for (let key in filterObj) {
         if (filterObj.hasOwnProperty(key)) {
           if (!filterRevMap.has(filterObj[key]['.id'])) {
             filterRevMap.set(filterObj[key]['.id'], filterRevMap.size)
-            this.encodeFilters.push({
+            filterDomArray.push({
               id: filterObj[key]['.id'],
               label: filterObj[key]['.label']
             })
@@ -160,7 +184,9 @@ var app = new Vue({
       }
       return filterRevMap
     },
-    buildEncodeSample: function (sampleObj, filterRevMap) {
+    buildSample: function (
+      sampleDomArray, sampleObj, filterRevMap, filterDomArray
+    ) {
       let sampleSet = new Set()
       sampleObj.forEach(sample => {
         if (!sampleSet.has(sample['.label'])) {
@@ -168,18 +194,18 @@ var app = new Vue({
           let sampleEntry = {
             label: sample['.label']
           }
-          sampleEntry.matchedFilters = Array(this.encodeFilters.length)
+          sampleEntry.matchedFilters = Array(filterDomArray.length)
           sampleEntry.matchedFilters.fill(null)
           sampleEntry.filterDict = {}
 
           this.speciesSupported.forEach(species => {
             let experiments = sample[species.name].experiments
             experiments.forEach(experiment => {
-              if (!filterRevMap.has(experiment.filterID)) {
+              if (!filterRevMap.has(experiment.filterId)) {
                 console.log('Warning: filter ID does not exist! ' +
-                  experiment.filterID)
+                  experiment.filterId)
               } else {
-                let filterIndex = filterRevMap.get(experiment.filterID)
+                let filterIndex = filterRevMap.get(experiment.filterId)
                 if (!sampleEntry.matchedFilters[filterIndex]) {
                   sampleEntry.matchedFilters[filterIndex] = {}
                   this.speciesSupported.forEach(spc => {
@@ -192,12 +218,26 @@ var app = new Vue({
             })
           })
 
-          this.encodeSamples.push(sampleEntry)
+          sampleDomArray.push(sampleEntry)
         }
       })
     },
     selectEntry: function (entry) {
       this.selectedEntry = entry
+      if (entry) {
+        this.selectedExperimentIds = {}
+        this.speciesSupported.forEach(species => {
+          this.selectedExperimentIds[species.name] = entry[species.name][0].id
+        })
+      } else {
+        this.selectedExperimentIds = null
+      }
+    },
+    selectExperiment: function (experimentId, speciesName) {
+      let tempSelectedIds = this.selectedExperimentIds
+      tempSelectedIds[speciesName] = experimentId
+      this.selectedExperimentIds = null
+      this.selectedExperimentIds = tempSelectedIds
     },
     toggleShowParam: function () {
       this.showParam = !this.showParam
@@ -243,6 +283,23 @@ var app = new Vue({
       this.submitted = false
       this.submitStatus = 'Submitting data to server. Please wait ...'
       let formData = new window.FormData(this.$refs.mainForm)
+      if (this.selectedExperimentIds) {
+        // populate encodeData[]
+        let encodeData = []
+        this.formParams.genomeAssembly.forEach(assembly => {
+          this.speciesSupported.some(species => {
+            if (species.assembly !== assembly) {
+              return false
+            }
+            encodeData.push(this.selectedExperimentIds[species.name])
+          })
+        })
+        if (encodeData.length === 2) {
+          encodeData.forEach(dataId => {
+            formData.append('encodeData[]', dataId)
+          })
+        }
+      }
       postAjax(FORM_SUBMIT_TARGET, formData, 'json', 'POST')
         .then(response => {
           let runid = response.runid
@@ -274,10 +331,14 @@ var app = new Vue({
         })
     },
     selectEncodeData: function () {
-      this.showEncode = true
+      this.showPreset = true
     },
     closeEncodeDialog: function () {
-      this.showEncode = false
+      this.selectEntry(null)
+      this.showPreset = false
+    },
+    confirmEncodeSelection: function () {
+      this.showPreset = false
     }
   },
   computed: {

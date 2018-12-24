@@ -59,12 +59,8 @@
             <h2>Upload data</h2>
           </div>
           <div class="flexRow flexCenter flexWrap">
-            <div class="elemLabel"> Epigenomic modification names:</div>
-            <input class="flex" type="text" name="epiName" v-model="formParams.epiName">
-          </div>
-          <div class="flexRow flexCenter flexWrap">
             <button type="button" class="selfAlignStart" @click="selectEncodeData">
-              Select paired peak data from ENCODE
+              Select paired peak data from public and ENCODE datasets
             </button>
           </div>
           <!--query region-->
@@ -91,13 +87,19 @@
                 </div>
               </div>
             </div>
-            <div class="flexRow flexStart flexWrap">
-              <div class="elemLabel">Specify promoter region ranges:</div>
-              <div> <span class="shortInputContainer nobr">
+            <div class="flexRow flexStart flexWrap" v-show="promoterSelected">
+              <div class="elemLabel"></div>
+              <div>Please specify promoter region ranges if you use gene names
+                for your input:
+                <span class="shortInputContainer nobr">
                   <input type="text" name="promoterUp" v-model.number="formParams.promoterUp">
-                  bps upstream from TSSs,</span> <span class="shortInputContainer nobr">
+                  bps upstream from TSSs,
+                </span>
+                <span class="shortInputContainer nobr">
                   <input type="text" name="promoterDown" v-model.number="formParams.promoterDown">
-                  bps downstream from TSSs.</span> </div>
+                  bps downstream from TSSs.
+                </span>
+              </div>
             </div>
           </div>
           <!--searching region-->
@@ -132,9 +134,10 @@
                   </div>
                 </div>
               </div>
-              <div v-show="!formParams.alignMode" class="searchClassPlaceholder">Please select the alignment mode to
-                see
-                additional search types.</div>
+              <div v-show="!formParams.alignMode" class="searchClassPlaceholder">
+                Please select the alignment mode to see additional search types.
+              </div>
+              <!--
               <div v-show="promoterSelected" class="flexRow flexStart flexWrap">
                 <div class="elemLabel flexRow flexStart flexNoWrap">
                   <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genetype" id="geneTypeSearch">
@@ -148,6 +151,7 @@
                   </select>
                 </div>
               </div>
+              -->
               <div v-show="promoterSelected" class="flexRow flexStart flexWrap">
                 <div class="elemLabel flexRow flexStart flexNoWrap">
                   <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genecluster"
@@ -271,13 +275,113 @@
           </div>
           <div class="flexRow flexCenter">
             <input type="submit" value="Submit">
-            <div v-html="submitStatus" class="submitStatus"
-              :class="{ formError: hasError, submitted: submitted }">
+            <div v-html="submitStatus" class="submitStatus" :class="{ formError: hasError, submitted: submitted }">
             </div>
           </div>
         </div>
       </div>
     </form>
+    <div v-show="showPreset" class="flexColumn flexCenter justifyCenter" id="encodeDialogContainer" @wheel.stop.prevent
+      @click.stop.prevent="closeEncodeDialog">
+      <div class="flexColumn flexStretch" id="encodeDialog" @click.stop>
+        <h2>Select paired peak datasets from ENCODE Project</h2>
+        <div id="encodeDialogBody" class="flex flexColumn">
+          <div>
+            Here we provide some pre-compiled paired peak datasets from
+            <a href="https://www.encodeproject.org/">the ENCODE and mouse ENCODE
+              project</a>.
+            More data will be added here after they are matched.
+          </div>
+          <div>
+            Please click on one of the green cells to use the paired data
+            between human and mouse in EpiAlignment.
+          </div>
+          <div v-show="!presetLoaded">Loading ENCODE data ...</div>
+          <div v-show="presetLoaded" class="flexRow flexStretch flex">
+            <div class="flex flexColumn" id="encodeTableHolder">
+              <table class="encodeTable">
+                <thead>
+                  <tr>
+                    <th>ENCODE Datasets</th>
+                    <th v-for="filter in encodeFilters" :key="filter.id">
+                      {{ filter.label }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="sampleEntry in encodeSamples" :key="sampleEntry.label">
+                    <th>
+                      {{ sampleEntry.label }}
+                    </th>
+                    <td v-for="filterEntry in sampleEntry.matchedFilters" @click="selectEntry(filterEntry)">
+                      <template v-if="filterEntry">
+                        <span v-for="species in speciesSupported">
+                          {{ species.shortHand }}:
+                          {{ filterEntry[species.name].length }}
+                        </span>
+                      </template>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <table class="encodeTable">
+                <thead>
+                  <tr>
+                    <th>Public Datasets</th>
+                    <th v-for="filter in publicFilters" :key="filter.id">
+                      {{ filter.label }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="sampleEntry in publicSamples" :key="sampleEntry.label">
+                    <th>
+                      {{ sampleEntry.label }}
+                    </th>
+                    <td v-for="filterEntry in sampleEntry.matchedFilters" @click="selectEntry(filterEntry)">
+                      <template v-if="filterEntry">
+                        <span v-for="species in speciesSupported">
+                          {{ species.shortHand }}:
+                          {{ filterEntry[species.name].length }}
+                        </span>
+                      </template>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="dataPanel">
+              <div v-if="selectedEntry" class="flex">
+                <template v-for="(experiments, species) in selectedEntry">
+                  <h3>{{ experiments.length > 1 ? 'Datasets' : 'Dataset' }}
+                    for {{ species }}</h3>
+                  <ul>
+                    <li v-for="experiment in experiments" :class="{ selected: experiment.id === selectedExperimentIds[species] }"
+                      @click="selectExperiment(experiment.id, species)">
+                      <i class="material-icons" v-show="experiment.id === selectedExperimentIds[species]">
+                        check
+                      </i>
+                      {{ experiment.id }}
+                      <a target="_blank"
+                        title="See experiment details / download data on ENCODE website"
+                        :href="'https://www.encodeproject.org/experiments/' + experiment.id"
+                      ><i
+                          class="material-icons">
+                          open_in_new
+                        </i></a>
+                    </li>
+                  </ul>
+                </template>
+              </div>
+            </div>
+          </div>
+          <div id="encodePanelCommandBar" class="flexRow justifyEnd">
+            <button id="confirmEncode" @click="confirmEncodeSelection">Confirm</button>
+            <button id="cancelEncode" @click="closeEncodeDialog">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 

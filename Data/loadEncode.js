@@ -7,6 +7,7 @@ const path = require('path')
 const fsReadfilePromise = util.promisify(fs.readFile)
 const fsWritefilePromise = util.promisify(fs.writeFile)
 const fsMkdirPromise = util.promisify(fs.mkdir)
+const fsStatPromise = util.promisify(fs.stat)
 const zlibGunzipPromise = util.promisify(zlib.gunzip)
 
 const references = {
@@ -29,6 +30,8 @@ const publicDataName = 'publicData.json'
 const outputEncodeFile = 'encodeData.json'
 const outputPublicFile = 'publicData.json'
 const outputExperimentFile = 'experimentDict.json'
+
+const MILLISECONDS_IN_A_DAY = 1000 * 60 * 60 * 24
 
 /**
  * Workflow:
@@ -195,7 +198,7 @@ async function getExperimentsUsingBiosample (biosampleObj, notReleaseOnly) {
       ' experiments for biosample ' + biosampleObj.accession + '.')
     return resultObj.data
   } catch (err) {
-    if (err.response.status === 404) {
+    if (err.response && err.response.status === 404) {
       // no result
       console.log('No results for biosample ' + biosampleObj.accession + '.')
       return null
@@ -525,41 +528,63 @@ function filterMismatchedSingleTissue (tissueResult) {
 async function downloadFileObject (fileObj, filePath) {
   filePath = filePath || encodeBasePath || '.'
   let encodeId = fileObj.accession
-  await fsMkdirPromise(
+  let extension = fileObj.href.split('.').pop()
+  let needGunzip = false
+  if (extension === 'gz') {
+    // needs to gunzip
+    needGunzip = true
+    extension = fileObj.href.split('.').slice(-2)[0]
+  }
+  let fileName = path.format({
+    dir: path.format({ dir: filePath, base: encodeId }),
+    name: encodeId,
+    ext: '.' + extension
+  })
+  let needUpdateFile = await fsMkdirPromise(
     path.format({ dir: filePath, base: encodeId })
-  ).catch(err => {
+  ).then(() => false
+  ).catch(async err => {
     if (err.code === 'EEXIST') {
-      // already exists, don't care
-      return null
+      // already exists, use fs.stat to test if file is too old
+      return fsStatPromise(fileName)
+        .then(fileStat =>
+          (Date.now() - fileStat.ctime > (90 * MILLISECONDS_IN_A_DAY))
+        )
+        .catch(err => {
+          if (err.code === 'ENOENT') {
+            return true
+          } else {
+            console.log(err)
+            throw err
+          }
+        })
     } else {
       console.log(err)
       throw err
     }
+  }).catch(err => {
+    console.log(err)
+    throw err
   })
   // Download file with axios
-  return axios.request({
-    url: 'https://www.encodeproject.org' + fileObj.href,
-    responseType: 'arraybuffer'
-  }).catch(err => {
-    console.log('Error getting ENCODE file: ' +
-      'https://www.encodeproject.org' + fileObj.href)
-    throw err
-  }).then(async response => {
-    let extension = fileObj.href.split('.').pop()
-    let data = response.data
-    if (extension === 'gz') {
-      // needs to gunzip
-      data = await zlibGunzipPromise(data)
-      extension = fileObj.href.split('.').slice(-2)[0]
-    }
-    let fileName = path.format({
-      dir: path.format({ dir: filePath, base: encodeId }),
-      name: encodeId,
-      ext: '.' + extension
+  return needUpdateFile
+    ? axios.request({
+      url: 'https://www.encodeproject.org' + fileObj.href,
+      responseType: 'arraybuffer'
+    }).catch(err => {
+      console.log('Error getting ENCODE file: ' +
+        'https://www.encodeproject.org' + fileObj.href)
+      throw err
+    }).then(async response => {
+      let data = response.data
+      if (needGunzip) {
+        // needs to gunzip
+        data = await zlibGunzipPromise(data)
+      }
+      await fsWritefilePromise(fileName, data)
+      return fileName
     })
-    await fsWritefilePromise(fileName, data)
-    return fileName
-  })
+    : fileName
 }
 
 async function downloadExperimentFiles (experimentResult) {

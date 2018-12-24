@@ -78,3 +78,8 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+# Generated assets/json files
+html/assets/encodeData.json
+html/assets/publicData.json
+html/assets/experimentDict.json

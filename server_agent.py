@@ -150,6 +150,13 @@ def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, 
 
   return input1 + ".bed", input2 + ".bed"
 
+#######################
+## Mode 3: cluster   ##
+#######################
+def PairCutPromoter(input1, intype1, cluster_id, promoterUp, promoterDown, genAssem, of_name):
+  '''
+  Find genes in the selected cluster.
+  '''
 
 #######################
 ## Mode 4: liftOver  ##
@@ -237,6 +244,7 @@ def CreateInputBeds(of_name, json_dict, runid):
   else:    
     if json_dict["body"]["searchRegionMode"] == "genetype" and json_dict["body"]["alignMode"] == "promoter":
       # Mode 2: search the promoter regions of a specific type of gene.
+      # Mode removed temporarily.
       pass
 
     elif json_dict["body"]["searchRegionMode"] == "genecluster" and json_dict["body"]["alignMode"] == "promoter":
@@ -380,72 +388,58 @@ def ExeEpiAlignment(alignMode, searchRegionMode, of_name, runid):
 ## Parse results ##
 ###################
 
+def InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, epi_score, line_epi, line_seq = ""):
+  '''
+  Initialize a json object
+  ifseq: If sequence-only alignment has been done. 
+  '''
+  json_obj = {"index":ind, "region1": ConcateBed(bed_dict1[pair_name]), "region2": ConcateBed(bed_dict2[pair_name]),\
+  "scoreE": line_epi[1], "targetE": TargetRegion(bed_dict2[pair_name], line_epi),\
+  "region_name1": ".", "region_name2": ".", "ensID1": ".", "ensID2": ".", "transID1":".", "transID2": "."}
+
+  if line_seq == "":
+    json_obj["scoreS"] = "."
+    json_obj["targetS"] = "."
+  else:
+    json_obj["scoreS"] = line_seq[1]
+    json_obj["targetS"] = TargetRegion(bed_dict2[pair_name], line_seq)
+
+  return json_obj
+
+
 def BedDict(fname):
   bed_dict = {}
   with open(fname, "r") as fin:
     for line in fin:
       line = line.strip().split("\t")
-      bed_dict[line[3]] = line[0:3]
+      bed_dict[line[3]] = line[0:3] + [line[5]]
   return bed_dict
 
 
 def TargetRegion(bed_list, res_line):
-  start = int(bed_list[1]) + int(res_line[5])
-  stop = int(bed_list[1]) + int(res_line[6])
-  return bed_list[0] + ":" + str(start) + "-" + str(stop)
+  if bed_list[3] == "+":
+    start = int(bed_list[1]) + int(res_line[5])
+    stop = int(bed_list[1]) + int(res_line[6])
+  else:
+    start = int(bed_list[2]) - int(res_line[6])
+    stop = int(bed_list[2]) - int(res_line[5])
+  return bed_list[0] + ":" + str(start) + "-" + str(stop) + "(" + bed_list[3] + ")"
 
 
 def ConcateBed(coor_list):
-  return coor_list[0] + ":" + str(coor_list[1]) + "-" + str(coor_list[2])
+  return coor_list[0] + ":" + str(coor_list[1]) + "-" + str(coor_list[2]) + "(" + coor_list[3] + ")"
 
 
 def WriteFinalResult(json_obj, fout, alignMode):
-  if alignMode == "enhancer":
-    if json_obj["index"] == 1:
-      print >> fout, "\t".join(["Index", "Region_name", "Query_coordinate", "Search_coordinate", "EpiAlign_score",\
-        "SeqOnly_score", "EpiAlign_target", "SeqOnly_target"])
+  if json_obj["index"] == 1:
+    print >> fout, "\t".join(["Index", "Query_region_name", "Query_gene", "Query_transcript", "Query_coordinate",\
+     "Target_region_name", "Target_gene", "Target_transcript", "Target_coordinate", "EpiAlign_score",\
+      "SeqOnly_score", "EpiAlign_target", "SeqOnly_target"])
 
-    print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["region_name"],\
-      json_obj["region1"], json_obj["region2"],\
-      json_obj["scoreE"], json_obj["scoreS"], json_obj["targetE"], json_obj["targetS"] ] ])
-  else:
-    if "ensID1" not in json_obj and "ensID2" not in json_obj:
-      if json_obj["index"] == 1:
-        print >> fout, "\t".join(["Index", "Region_name", "Query_coordinate", "Search_coordinate", "EpiAlign_score",\
-          "SeqOnly_score"])
-
-      print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["region_name"],\
-        json_obj["region1"], json_obj["region2"],\
-        json_obj["scoreE"], json_obj["scoreS"] ] ])
-
-    elif "ensID1" not in json_obj and "ensID2" in json_obj:
-      if json_obj["index"] == 1:
-        print >> fout, "\t".join(["Index", "Query_region", "Query_coordinate", "Search_gene", "Search_transcript",\
-          "Search_coordinate", "EpiAlign_score", "SeqOnly_score"])
-
-      print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["region_name1"],\
-        json_obj["region1"], json_obj["ensID2"], json_obj["transID2"], json_obj["region2"],\
-        json_obj["scoreE"], json_obj["scoreS"] ] ])
-
-    elif "ensID1" in json_obj and "ensID2" not in json_obj:
-      if json_obj["index"] == 1:
-        print >> fout, "\t".join(["Index", "Query_gene", "Query_transcript", "Query_coordinate", "Search_region",\
-          "Search_coordinate", "EpiAlign_score", "SeqOnly_score"])
-
-      print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["ensID1"], json_obj["transID1"],\
-        json_obj["region1"], json_obj["region_name2"], json_obj["region2"],\
-        json_obj["scoreE"], json_obj["scoreS"] ] ])
-
-    else:
-      if json_obj["index"] == 1:
-        print >> fout, "\t".join(["Index", "Query_gene", "Query_transcript", "Query_coordinate", "Search_gene",\
-          "Search_transcript", "Search_coordinate", "EpiAlign_score", "SeqOnly_score"])
-
-      print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["ensID1"], json_obj["transID1"],\
-        json_obj["region1"], json_obj["ensID2"], json_obj["transID2"], json_obj["region2"],\
-        json_obj["scoreE"], json_obj["scoreS"] ] ])
-
-
+  print >> fout, "\t".join([str(f) for f in [json_obj["index"],\
+    json_obj["region_name1"], json_obj["ensID1"], json_obj["transID1"], json_obj["region1"],\
+    json_obj["region_name2"], json_obj["ensID2"], json_obj["transID2"], json_obj["region2"],\
+    json_obj["scoreE"], json_obj["scoreS"], json_obj["targetE"], json_obj["targetS"] ] ])
 
 def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode, of_name, runid):
   '''
@@ -459,22 +453,34 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
   bed_dict1 = BedDict(bed1)
   bed_dict2 = BedDict(bed2)
   json_list = []
-  with open(of_name + "epialign_res_" + runid, "r") as fepi, open(of_name + "seqalign_res_" + runid, "r") as fseq,\
-  open(of_name + "AlignResults_" + runid + ".txt", "w") as fout:
-    # index, region1, region2, scoreS, scoreE.
+
+  epi_fname = of_name + "epialign_res_" + runid
+  seq_fname = of_name + "seqalign_res_" + runid
+  out_name = of_name + "AlignResults_" + runid + ".txt"
+  seq_stat = os.path.isfile(seq_fname)
+
+  if seq_stat:
+    fseq = open(seq_fname, "r")
+
+  with open(epi_fname, "r") as fepi, open(out_name, "w") as fout:
     i = 1
     while True:
       line_epi = fepi.readline().strip().split("\t")
-      line_seq = fseq.readline().strip().split("\t")
+      if seq_stat:
+        line_seq = fseq.readline().strip().split("\t")
       if line_epi[0] == "":
         break
       pair_name = line_epi[0].split("_", 2)[-1]
-      json_obj = {"index":i, "region1": ConcateBed(bed_dict1[pair_name]), "region2": ConcateBed(bed_dict2[pair_name]),\
-       "scoreE": line_epi[1], "scoreS": line_seq[1],\
-       "targetE": TargetRegion(bed_dict2[pair_name], line_epi), "targetS": TargetRegion(bed_dict2[pair_name], line_seq)}
+
+      #Initialize json_obj
+      if seq_stat:
+        json_obj = InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, epi_score, line_epi, line_seq)
+      else:
+        json_obj = InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, epi_score, line_epi)
+
       if (alignMode == "enhancer") or (intype1 == "bed" and intype2 == "bed"):
         # a pair of bed.
-        json_obj["region_name"] = pair_name
+        json_obj["region_name1"] = pair_name
 
       else:
         pair_name = pair_name.split("[===]")

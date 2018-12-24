@@ -1,4 +1,5 @@
 import subprocess
+from subprocess import Popen, PIPE
 from GeneAnno import *
 import json
 import shutil
@@ -57,19 +58,33 @@ def StripDigits(qstr):
   return ''.join([i for i in qstr if not i.isdigit()])
 
 
-def ParsePeaks(of_name, json_files, runid):
+def ParsePeaks(of_name, json_dict, runid):
   '''
   Creak peak files.
+  preset_data: a list with a pair of peak file id.
   '''
-  if "speciesPeak1[]" not in json_files or "speciesPeak2[]" not in json_files :
-    print >> sys.stderr, "No peak files found!"
-    sys.exit(207)
+  json_files = json_dict["files"]
+  db_fname = "html/assets/experimentDict.json"
+  if "encodeData" in json_dict["body"]:
+    # preset data select
+    preset_data = json_dict["body"]["encodeData"]
+    with open(db_fname, "r") as fdb:
+      data_json = json.load(fdb)
+    peak1 = data_json[preset_data[0]]['peak_file']
+    peak2 = data_json[preset_data[1]]['peak_file']
+  else:
+    # upload peak files
+    if "speciesPeak1[]" not in json_files or "speciesPeak2[]" not in json_files :
+      print >> sys.stderr, "No peak files found!"
+      sys.exit(207)
+    peak1 = of_name + json_files["speciesPeak1[]"][0]["filename"]
+    peak2 = of_name + json_files["speciesPeak2[]"][0]["filename"]
 
   with open(of_name + "peaks_" + runid, "w") as fpeak:
     print >> fpeak, "@species1"
-    print >> fpeak, of_name + json_files["speciesPeak1[]"][0]["filename"]
+    print >> fpeak, peak1
     print >> fpeak, "@species2"
-    print >> fpeak, of_name + json_files["speciesPeak2[]"][0]["filename"]
+    print >> fpeak, peak2
 
 def FileOrTextarea(textarea_input, json_files, key, of_name, runid):
   '''
@@ -91,8 +106,7 @@ def FileOrTextarea(textarea_input, json_files, key, of_name, runid):
       print >> fsp, textarea_input.rstrip("\n")
   else:
     # no data provided.
-    print >> sys.stderr, "No input regions provided."
-    sys.exit(200)
+    return "", ""
 
   intype = CheckFileType(fname)
   return fname, intype
@@ -149,6 +163,80 @@ def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, 
           print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
 
   return input1 + ".bed", input2 + ".bed"
+
+#######################
+## Mode 3: cluster   ##
+#######################
+def GenesInCluster(cluster_id, sp, of_name):
+  '''
+  Extract all genes in the selected cluster.
+  cluster_id: the ID of the cluster. 
+  sp: genome assembly name.
+  return: cluster_genes, a list of gene ensembl ids.
+  '''
+  cluster_genes = []
+  cfname = of_name + "Annotation/AnnotationFiles/" + sp + "_clusters"
+  with open(cfname, "r"):
+    for line in cfname:
+      line = line.strip().split("\t")
+      if line[2] == cluster_id:
+        cluster_genes.append(line[0])
+  return cluster_genes
+
+def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAssem, runid, of_name):
+  '''
+  Find genes in the selected cluster.
+  '''
+  # Extract genes in the cluster
+  cluster_genes2 = GenesInCluster(cluster_id, genAssem[1], of_name)
+  transDict2 = Cons_transDict(cluster_genes[0], genAssem[1], of_name)
+  trans_list2 = []
+  for gene in cluster_genes2:
+    if gene in transDict2:
+      trans_list2 += [PromoterBed(x, promoterUp, promoterDown) for x in transDict2[gene]]
+  
+  fname2 = of_name + cluster_id + runid + "_2.bed"
+  if input1 != "":
+    # uploaded file
+    i = 0
+    with open(input1, "r") as fin1, open(input1 + ".bed", "w") as fout1, open(fname2, "w") as fout2:
+      for line in fin1:
+        line = line.strip()
+        if i == 0:
+          # first line
+          if intype1 == "name":
+            transDict1 = Cons_transDict(line, genAssem[0], of_name)
+          i += 1
+
+        if intype1 == "name":
+          # gene list
+          trans_list1 = [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[line]]
+        else:
+          trans_list1 = [line.split("\t")]
+
+        for region1 in trans_list1:
+          for region2 in trans_list2:
+            region_name = region1[3] + "[===]" + region2[3]
+            print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
+            print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
+    return input1, fname2
+  else:
+    # Input1 is empty
+    fname1 = of_name + cluster_id + runid + "_1.bed"
+    cluster_genes1 = GenesInCluster(cluster_id, genAssem[0], of_name)
+    transDict1 = Cons_transDict(cluster_genes_oppo[0], genAssem[0], of_name)
+    trans_list1 = []
+    for gene in cluster_genes1:
+      if gene in transDict1:
+        trans_list1 += [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[gene]]
+
+    for region1 in trans_list1:
+      for region2 in trans_list2:
+        region_name = region1[3] + "[===]" + region2[3]
+        print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
+        print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
+    return fname1, fname2 
+
 
 
 #######################
@@ -215,6 +303,11 @@ def RemoveNonlift(input_bed, lift_bed):
 ##################
 ## Create beds  ##
 ##################
+def CheckNumber(key, json_body):
+  if key in json_body:
+    return int(json_body[key])
+  else:
+    return 0
 
 def CreateInputBeds(of_name, json_dict, runid):
   '''
@@ -223,36 +316,51 @@ def CreateInputBeds(of_name, json_dict, runid):
   json_dict: the json dictionary.
   return: names of the two bed files.
   '''
+  # Common variables
+  searchMode = json_dict["body"]["searchRegionMode"]
+  alignMode = json_dict["body"]["alignMode"]
+  genAssem = json_dict["body"]["genomeAssembly"]
+  promoterUp = CheckNumber("promoterUp", json_dict["body"])
+  promoterDown = CheckNumber("promoterDown", json_dict["body"])
+  enhancerUp = CheckNumber("enhancerUp", json_dict["body"])
+  enhancerDown = CheckNumber("enhancerDown", json_dict["body"])
+
   # Is input1 a file or a pasted text?
   input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", of_name, runid)
+  if input1 == "" and (not json_dict["body"]["searchRegionMode"] == "genecluster"):
+    print >> sys.stderr, "No input regions provided."
+    sys.exit(200)
 
-  if json_dict["body"]["searchRegionMode"] == "genomeregion":
+  if searchMode == "genomeregion":
     # Mode 1: define search regions with bed files or gene lists.
     # Is input2 a file or a pasted text?
     input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", of_name, runid)
     if CheckFileLength(input1, input2):
-      bed1, bed2 = PairCutPromoter(input1, input2, intype1, intype2, int(json_dict["body"]["promoterUp"]), int(json_dict["body"]["promoterDown"]), json_dict["body"]["genomeAssembly"], of_name)
+      if alignMode == "enhancer":
+        return input1, input2, intype1, intype2
+      bed1, bed2 = PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem, of_name)
     return bed1, bed2, intype1, intype2
 
   else:    
-    if json_dict["body"]["searchRegionMode"] == "genetype" and json_dict["body"]["alignMode"] == "promoter":
+    if searchMode == "genetype" and alignMode == "promoter":
       # Mode 2: search the promoter regions of a specific type of gene.
+      # Mode removed temporarily.
       pass
 
-    elif json_dict["body"]["searchRegionMode"] == "genecluster" and json_dict["body"]["alignMode"] == "promoter":
+    elif searchMode == "genecluster" and alignMode == "promoter":
       # Mode 3: search a specific gene cluster.
-      pass
+      bed1, bed2 = PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAssem, runid, of_name)
 
-    elif json_dict["body"]["searchRegionMode"] == "homoregion" and json_dict["body"]["alignMode"] == "enhancer":
+    elif searchMode == "homoregion" and alignMode == "enhancer":
       # Mode 4 (enhancer mode 2): use homologous regions. 
       # species must be different!
-      if StripDigits(json_dict["body"]["genomeAssembly"][0]) == StripDigits(json_dict["body"]["genomeAssembly"][1]):
+      if StripDigits(genAssem[0]) == StripDigits(genAssem[1]):
         print >> sys.stderr, "The two species must be different to use this mode."
         sys.exit(208)
       # Extend the input bed file1. extbed: extended bed file name.
-      extbed = ExtendBed(input1, int(json_dict["body"]["enhancerUp"]), int(json_dict["body"]["enhancerDown"]))
+      extbed = ExtendBed(input1, enhancerUp, enhancerDown)
       # LiftOver
-      liftbed = LiftOver(extbed, json_dict["body"]["genomeAssembly"])
+      liftbed = LiftOver(extbed, genAssem)
       # Remove non-remappable regions. Return a pair of bed file names.
       cleanbed = RemoveNonlift(input1, liftbed)
       os.remove(extbed)
@@ -263,14 +371,14 @@ def CreateInputBeds(of_name, json_dict, runid):
     return bed1, bed2, intype1, ""
 
 
-def BedToFa(bed1, bed2, out_folder, sp_list, epiName, runid):
+def BedToFa(bed1, bed2, out_folder, sp_list, runid):
   '''
   Run InputToFastq_bed2.py to convert the bed file pair to a fastq-like file.
   '''
-  epiName_list = epiName.split(",")
+  # epiName_list = epiName.split(",")
   cmd_list = ["python", "InputToFastq_bed2.py", bed1, bed2, "-s"] + sp_list +\
   ["--bg", out_folder + "peaks_" + runid] +\
-  ["--histone"] + epiName_list +\
+  ["--histone", "epi"] +\
   ["-p", "20"] +\
   ["-o", out_folder + "Input_" + runid]
 
@@ -330,122 +438,110 @@ def ExeEpiAlignment(alignMode, searchRegionMode, of_name, runid):
   '''
   Execute EpiAlignment
   '''
-  if alignMode == "promoter":
-    cmd_list = ["python", "EpiAlignment.py", of_name + "Input_" + runid] +\
+  seq_stat = os.path.isfile(of_name + "parameters_seq_" + runid)
+  cmd_list = ["python", "EpiAlignment.py", of_name + "Input_" + runid] +\
     ["-e", of_name + "parameters_" + runid] +\
     ["-p", "140"] +\
     ["-o", of_name + "epialign_res_" + runid]
 
-    exit_code = subprocess.call(cmd_list)
-    if exit_code != 0:
-      print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code)
-      sys.exit(exit_code)
+  cmd_list_seq = ["python", "EpiAlignment.py", of_name + "Input_" + runid] +\
+    ["-e", of_name + "parameters_seq_" + runid] +\
+    ["-p", "140"] +\
+    ["-o", of_name + "seqalign_res_" + runid]
 
-    if os.path.isfile(of_name + "parameters_seq_" + runid):
-      cmd_list_seq = ["python", "EpiAlignment.py", of_name + "Input_" + runid] +\
-      ["-e", of_name + "parameters_seq_" + runid] +\
-      ["-p", "140"] +\
-      ["-o", of_name + "seqalign_res_" + runid]
+  if alignMode == "promoter":
+    p_epi = Popen(cmd_list, stderr=PIPE)
+    if seq_stat:
+      p_seq = Popen(cmd_list_seq, stderr=PIPE)
+    (std_out_epi, std_err_epi) = p_epi.communicate()
+    exit_code_epi = p_epi.returncode
+    if exit_code_epi != 0:
+      print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code_epi)
+      sys.exit(exit_code_epi)
 
-      exit_code = subprocess.call(cmd_list_seq)
-      if exit_code != 0:
-        print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code)
-        sys.exit(exit_code)
+    if seq_stat:
+      (std_out_seq, std_err_seq) = p_seq.communicate()
+      exit_code_seq = p_seq.returncode
+      if exit_code_seq != 0:
+        print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code_seq)
+        sys.exit(exit_code_seq)
 
   elif alignMode == "enhancer":
-    cmd_list = ["python", "EpiAlignment.py", of_name + "Input_" + runid] +\
-    ["-e", of_name + "parameters_" + runid] +\
-    ["-p", "140"] +\
-    ["-o", of_name + "epialign_res_" + runid] +\
-    ["-O", of_name + "epi_scores_" + runid]
+    cmd_list += ["-O", of_name + "epi_scores_" + runid]
+    cmd_list_seq += ["-O", of_name + "seq_scores_" + runid]
 
-    exit_code = subprocess.call(cmd_list)
-    if exit_code != 0:
-      print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code)
-      sys.exit(exit_code)
+    p_epi = Popen(cmd_list, stderr=PIPE)
+    if seq_stat:
+      p_seq = Popen(cmd_list_seq, stderr=PIPE)
+    (std_out_epi, std_err_epi) = p_epi.communicate()
+    exit_code_epi = p_epi.returncode
+    if exit_code_epi != 0:
+      print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code_epi)
+      sys.exit(exit_code_epi)
 
-    if os.path.isfile(of_name + "parameters_seq_" + runid):
-      cmd_list_seq = ["python", "EpiAlignment.py", of_name + "Input_" + runid] +\
-      ["-e", of_name + "parameters_seq_" + runid] +\
-      ["-p", "140"] +\
-      ["-o", of_name + "seqalign_res_" + runid] +\
-      ["-O", of_name + "seq_scores_" + runid]
-
-      exit_code = subprocess.call(cmd_list_seq)
-      if exit_code != 0:
-        print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code)
-        sys.exit(exit_code)
+    if seq_stat:
+      (std_out_seq, std_err_seq) = p_seq.communicate()
+      exit_code_seq = p_seq.returncode
+      if exit_code_seq != 0:
+        print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code_seq)
+        sys.exit(exit_code_seq)
 
 ###################
 ## Parse results ##
 ###################
+
+def InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, line_epi, line_seq = ""):
+  '''
+  Initialize a json object
+  ifseq: If sequence-only alignment has been done. 
+  '''
+  json_obj = {"index":ind, "region1": ConcateBed(bed_dict1[pair_name]), "region2": ConcateBed(bed_dict2[pair_name]),\
+  "scoreE": line_epi[1], "targetE": TargetRegion(bed_dict2[pair_name], line_epi),\
+  "region_name1": ".", "region_name2": ".", "ensID1": ".", "ensID2": ".", "transID1":".", "transID2": "."}
+
+  if line_seq == "":
+    json_obj["scoreS"] = "."
+    json_obj["targetS"] = "."
+  else:
+    json_obj["scoreS"] = line_seq[1]
+    json_obj["targetS"] = TargetRegion(bed_dict2[pair_name], line_seq)
+
+  return json_obj
+
 
 def BedDict(fname):
   bed_dict = {}
   with open(fname, "r") as fin:
     for line in fin:
       line = line.strip().split("\t")
-      bed_dict[line[3]] = line[0:3]
+      bed_dict[line[3]] = line[0:3] + [line[5]]
   return bed_dict
 
 
 def TargetRegion(bed_list, res_line):
-  start = int(bed_list[1]) + int(res_line[5])
-  stop = int(bed_list[1]) + int(res_line[6])
-  return bed_list[0] + ":" + str(start) + "-" + str(stop)
+  if bed_list[3] == "+":
+    start = int(bed_list[1]) + int(res_line[5])
+    stop = int(bed_list[1]) + int(res_line[6])
+  else:
+    start = int(bed_list[2]) - int(res_line[6])
+    stop = int(bed_list[2]) - int(res_line[5])
+  return bed_list[0] + ":" + str(start) + "-" + str(stop) + "(" + bed_list[3] + ")"
 
 
 def ConcateBed(coor_list):
-  return coor_list[0] + ":" + str(coor_list[1]) + "-" + str(coor_list[2])
+  return coor_list[0] + ":" + str(coor_list[1]) + "-" + str(coor_list[2]) + "(" + coor_list[3] + ")"
 
 
 def WriteFinalResult(json_obj, fout, alignMode):
-  if alignMode == "enhancer":
-    if json_obj["index"] == 1:
-      print >> fout, "\t".join(["Index", "Region_name", "Query_coordinate", "Search_coordinate", "EpiAlign_score",\
-        "SeqOnly_score", "EpiAlign_target", "SeqOnly_target"])
+  if json_obj["index"] == 1:
+    print >> fout, "\t".join(["Index", "Query_region_name", "Query_gene", "Query_transcript", "Query_coordinate",\
+     "Target_region_name", "Target_gene", "Target_transcript", "Target_coordinate", "EpiAlign_score",\
+      "SeqOnly_score", "EpiAlign_target", "SeqOnly_target"])
 
-    print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["region_name"],\
-      json_obj["region1"], json_obj["region2"],\
-      json_obj["scoreE"], json_obj["scoreS"], json_obj["targetE"], json_obj["targetS"] ] ])
-  else:
-    if "ensID1" not in json_obj and "ensID2" not in json_obj:
-      if json_obj["index"] == 1:
-        print >> fout, "\t".join(["Index", "Region_name", "Query_coordinate", "Search_coordinate", "EpiAlign_score",\
-          "SeqOnly_score"])
-
-      print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["region_name"],\
-        json_obj["region1"], json_obj["region2"],\
-        json_obj["scoreE"], json_obj["scoreS"] ] ])
-
-    elif "ensID1" not in json_obj and "ensID2" in json_obj:
-      if json_obj["index"] == 1:
-        print >> fout, "\t".join(["Index", "Query_region", "Query_coordinate", "Search_gene", "Search_transcript",\
-          "Search_coordinate", "EpiAlign_score", "SeqOnly_score"])
-
-      print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["region_name1"],\
-        json_obj["region1"], json_obj["ensID2"], json_obj["transID2"], json_obj["region2"],\
-        json_obj["scoreE"], json_obj["scoreS"] ] ])
-
-    elif "ensID1" in json_obj and "ensID2" not in json_obj:
-      if json_obj["index"] == 1:
-        print >> fout, "\t".join(["Index", "Query_gene", "Query_transcript", "Query_coordinate", "Search_region",\
-          "Search_coordinate", "EpiAlign_score", "SeqOnly_score"])
-
-      print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["ensID1"], json_obj["transID1"],\
-        json_obj["region1"], json_obj["region_name2"], json_obj["region2"],\
-        json_obj["scoreE"], json_obj["scoreS"] ] ])
-
-    else:
-      if json_obj["index"] == 1:
-        print >> fout, "\t".join(["Index", "Query_gene", "Query_transcript", "Query_coordinate", "Search_gene",\
-          "Search_transcript", "Search_coordinate", "EpiAlign_score", "SeqOnly_score"])
-
-      print >> fout, "\t".join([str(f) for f in [json_obj["index"], json_obj["ensID1"], json_obj["transID1"],\
-        json_obj["region1"], json_obj["ensID2"], json_obj["transID2"], json_obj["region2"],\
-        json_obj["scoreE"], json_obj["scoreS"] ] ])
-
-
+  print >> fout, "\t".join([str(f) for f in [json_obj["index"],\
+    json_obj["region_name1"], json_obj["ensID1"], json_obj["transID1"], json_obj["region1"],\
+    json_obj["region_name2"], json_obj["ensID2"], json_obj["transID2"], json_obj["region2"],\
+    json_obj["scoreE"], json_obj["scoreS"], json_obj["targetE"], json_obj["targetS"] ] ])
 
 def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode, of_name, runid):
   '''
@@ -459,22 +555,34 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
   bed_dict1 = BedDict(bed1)
   bed_dict2 = BedDict(bed2)
   json_list = []
-  with open(of_name + "epialign_res_" + runid, "r") as fepi, open(of_name + "seqalign_res_" + runid, "r") as fseq,\
-  open(of_name + "AlignResults_" + runid + ".txt", "w") as fout:
-    # index, region1, region2, scoreS, scoreE.
+
+  epi_fname = of_name + "epialign_res_" + runid
+  seq_fname = of_name + "seqalign_res_" + runid
+  out_name = of_name + "AlignResults_" + runid + ".txt"
+  seq_stat = os.path.isfile(seq_fname)
+
+  if seq_stat:
+    fseq = open(seq_fname, "r")
+
+  with open(epi_fname, "r") as fepi, open(out_name, "w") as fout:
     i = 1
     while True:
       line_epi = fepi.readline().strip().split("\t")
-      line_seq = fseq.readline().strip().split("\t")
+      if seq_stat:
+        line_seq = fseq.readline().strip().split("\t")
       if line_epi[0] == "":
         break
       pair_name = line_epi[0].split("_", 2)[-1]
-      json_obj = {"index":i, "region1": ConcateBed(bed_dict1[pair_name]), "region2": ConcateBed(bed_dict2[pair_name]),\
-       "scoreE": line_epi[1], "scoreS": line_seq[1],\
-       "targetE": TargetRegion(bed_dict2[pair_name], line_epi), "targetS": TargetRegion(bed_dict2[pair_name], line_seq)}
+
+      #Initialize json_obj
+      if seq_stat:
+        json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi, line_seq)
+      else:
+        json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi)
+
       if (alignMode == "enhancer") or (intype1 == "bed" and intype2 == "bed"):
         # a pair of bed.
-        json_obj["region_name"] = pair_name
+        json_obj["region_name1"] = pair_name
 
       else:
         pair_name = pair_name.split("[===]")
@@ -510,11 +618,11 @@ def Main():
 
   # Generate input data
   # Parse peak files.
-  ParsePeaks(out_folder, web_json["files"], runid)
+  ParsePeaks(out_folder, web_json, runid)
   # Create a pair of bed files.
   bed1, bed2, intype1, intype2 = CreateInputBeds(out_folder, web_json, runid)
   # Generate the input fastq-like file.
-  BedToFa(bed1, bed2, out_folder, web_json["body"]["genomeAssembly"], web_json["body"]["epiName"], runid)
+  BedToFa(bed1, bed2, out_folder, web_json["body"]["genomeAssembly"], runid)
   # Generate parameter file
   InputParas(out_folder, web_json["body"], runid)
 

@@ -361,6 +361,7 @@ table.encodeTable > * > tr > th::first-letter {
 
 div#dataPanel {
 	width: 20em;
+	overflow-y: auto;
 }
 
 div#dataPanel li {

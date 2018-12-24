@@ -13,9 +13,33 @@ const pythonPlotScript = 'Plot_selected_region.py'
 const util = require('util')
 const path = require('path')
 const readFilePromise = util.promisify(fs.readFile)
+// const ClusterProcesser = require('./clusterProcessing')
+
+// var clusterProc = new ClusterProcesser(
+//   [
+//     {
+//       name: 'human',
+//       latin: 'Homo_sapiens',
+//       reference: 'hg38',
+//       encode_reference: 'GRCh38'
+//     }, {
+//       name: 'mouse',
+//       latin: 'Mus_musculus',
+//       reference: 'mm10',
+//       encode_reference: 'mm10'
+//     }
+//   ],
+//   {
+//     rawFilePath: 'Annotation/AnnotationFiles',
+//     clusterSuffix: '_clusters'
+//   }
+// )
 
 var runIdDict = {}
 const RUNNING_CODE = -1
+
+// Server preparation step: parse the cluster file to build a
+//  gene-name/ensemblID to cluster map
 
 function makeid () {
   let text = ''
@@ -169,12 +193,10 @@ app.get('/results/:runid', function (req, res) {
   }
 })
 
-app.get('/result_image/:runid/:index/:se.png', function (req, res) {
+app.get('/result_image/:runid/:index.png', function (req, res) {
   let runid = req.params.runid
-  let se = req.params.se
   let index = req.params.index
-  let imageName = 'tmp_' + runid + '/Image_' + index +
-    (se === 'e' ? '_epi_' : '_seq_') + runid + '.png'
+  let imageName = 'tmp_' + runid + '/Image_' + index + '_' + runid + '.png'
   try {
     // Check if the image exists.
     fs.statSync(imageName)
@@ -208,7 +230,7 @@ app.get('/result_image/:runid/:index/:se.png', function (req, res) {
       }
     })
     // python input
-    let pyImageMessenger = { 'mode': se === 'e' ? 'epi' : 'seq', 'index': index, 'runid': runid }
+    let pyImageMessenger = { 'index': index, 'runid': runid }
     scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
     // tell the node that sending inputs to python is done.
     scriptExecution.stdin.end()

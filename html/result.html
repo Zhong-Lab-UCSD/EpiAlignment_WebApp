@@ -81,8 +81,7 @@
         <template slot="expand" slot-scope="entry">
           <v-card flat>
             Ensembl IDs: {{ entry.item.ensID1 }}, targets go here.
-            <img class="enhancerPlot" v-show="entry.item.imageSData" :src="entry.item.imageSData">
-            <img class="enhancerPlot" v-show="entry.item.imageEData" :src="entry.item.imageEData">
+            <img class="enhancerPlot" v-show="entry.item.image" :src="entry.item.image">
           </v-card>
         </template>
       </v-data-table>

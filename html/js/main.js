@@ -145,18 +145,14 @@ var app = new Vue({
     ]).then(resultArray => {
       let [encodeData, publicData, experiments] = resultArray
       this.experimentDict = experiments
-      // build this.encodeFilters, this.encodeSamples
-
       // first build encodeDatasets
       this.buildDataSetFilterAndSample(
         this.encodeFilters, this.encodeSamples, encodeData
       )
-
       // then build publicDatasets
       this.buildDataSetFilterAndSample(
         this.publicFilters, this.publicSamples, publicData
       )
-
       this.presetLoaded = true
     })
   },

@@ -281,7 +281,7 @@
         </div>
       </div>
     </form>
-    <div v-show="showPreset" class="flexColumn flexCenter justifyCenter" id="encodeDialogContainer" @wheel.stop.prevent
+    <div v-show="showPreset" class="flexColumn flexCenter justifyCenter" id="encodeDialogContainer" @wheel.stop
       @click.stop.prevent="closeEncodeDialog">
       <div class="flexColumn flexStretch" id="encodeDialog" @click.stop>
         <h2>Select paired peak datasets from ENCODE Project</h2>
@@ -376,8 +376,8 @@
             </div>
           </div>
           <div id="encodePanelCommandBar" class="flexRow justifyEnd">
+            <!--<button id="cancelEncode" @click="closeEncodeDialog">Cancel</button>-->
             <button id="confirmEncode" @click="confirmEncodeSelection">Confirm</button>
-            <button id="cancelEncode" @click="closeEncodeDialog">Cancel</button>
           </div>
         </div>
       </div>

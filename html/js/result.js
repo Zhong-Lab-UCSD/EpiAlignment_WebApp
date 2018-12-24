@@ -12,11 +12,6 @@ const INQUIRY_IMAGE_PREFIX = '/backend/result_image/'
 const STATUS_RUNNING = -1
 const POLLING_INTERVAL = 15000 // 15 seconds
 
-const imageTag = [
-  { requestId: 's', itemDataLink: 'imageSData' },
-  { requestId: 'e', itemDataLink: 'imageEData' },
-]
-
 var app = new Vue({
   el: '#result_app',
   data: {
@@ -27,7 +22,7 @@ var app = new Vue({
     downloadLink: '',
     error: false,
     errorMessage: '',
-    imageBlobUrls: {},
+    imageBlobUrl: null,
     headers: [
       {
         text: '#',
@@ -126,25 +121,19 @@ var app = new Vue({
     },
     toggleRow: function (row) {
       row.expanded = !row.expanded
-      imageTag.map(tagObj => {
-        Vue.set(row.item, tagObj.itemDataLink, null)
-      })
+      Vue.set(row.item, 'image', null)
       if (row.expanded) {
-        return Promise.all(imageTag.map(tagObj => {
-          let imageLink = INQUIRY_IMAGE_PREFIX + this.runid + '/' +
-            row.item.index + '/' + tagObj.requestId + '.png'
-          return postAjax(
-            imageLink, null, 'blob', 'GET'
-          ).then(imageBlob => {
-            if (this.imageBlobUrls[tagObj.requestId]) {
-              window.URL.revokeObjectURL(this.imageBlobUrls[tagObj.requestId])
-            }
-            this.imageBlobUrls[tagObj.requestId] =
-              window.URL.createObjectURL(imageBlob)
-            Vue.set(row.item, tagObj.itemDataLink,
-              this.imageBlobUrls[tagObj.requestId])
-          })
-        }))
+        let imageLink = INQUIRY_IMAGE_PREFIX + this.runid + '/' +
+          row.item.index + '.png'
+        return postAjax(
+          imageLink, null, 'blob', 'GET'
+        ).then(imageBlob => {
+          if (this.imageBlobUrl) {
+            window.URL.revokeObjectURL(this.imageBlobUrl)
+          }
+          this.imageBlobUrl = window.URL.createObjectURL(imageBlob)
+          Vue.set(row.item, 'image', this.imageBlobUrl)
+        })
       }
     }
   }

@@ -2,6 +2,7 @@ const axios = require('axios')
 const fs = require('fs')
 const util = require('util')
 const zlib = require('zlib')
+const path = require('path')
 
 const fsReadfilePromise = util.promisify(fs.readFile)
 const fsWritefilePromise = util.promisify(fs.writeFile)
@@ -13,12 +14,21 @@ const references = {
   'mouse': 'mm10'
 }
 
-const basePath = 'encodeData'
+const encodeBasePath = 'encodeData'
+const publicBasePath = 'publicData'
+
+// This is the path of the `loadEncode.js` relative to the server scripts
+const scriptPath = 'Data'
+
 const outputPath = '../html/assets'
 
 const matchTissueJsonFileName = 'matchingTissues.json'
 const filterJsonFileName = 'filters.json'
-const outputFile = 'encodeData.json'
+const publicDataName = 'publicData.json'
+
+const outputEncodeFile = 'encodeData.json'
+const outputPublicFile = 'publicData.json'
+const outputExperimentFile = 'experimentDict.json'
 
 /**
  * Workflow:
@@ -94,9 +104,9 @@ const outputFile = 'encodeData.json'
  *        "<species_name>": {
  *          "experiments": [
  *            {
- *              "biosampleID": "<ENCODE_biosample_ID>",
+ *              "biosampleId": "<ENCODE_biosample_ID>",
  *              "id": "<ENCODE_experiment_ID>",
- *              "filterID": "<unique_filter_id>"
+ *              "filterId": "<unique_filter_id>"
  *            },
  *            // ...
  *          ]
@@ -106,25 +116,37 @@ const outputFile = 'encodeData.json'
  *      // ...
  *    ]
  *    ```
- * @property {object} experiments - the detailed experiments, should be:
- *    ```json
- *    {
- *      "<ENCODE_experiment_ID>": {
- *        "id": "<ENCODE_experiment_ID>",
- *        "peak_id": "<ENCODE_ID for peak file>",
- *        "peak_file": "<path of peak file on server>",
- *        "bigwig_id": "<ENCODE_ID for bigwig file>",
- *        "bigwig_file": "<path of bigwig file on server>"
- *      },
- *      // ...
- *    }
- *    ```
  */
-var finalResult = {
+var encodeResult = {
   filters: {},
   matchedTissues: [],
   experiments: {}
 }
+
+var publicResult = {
+  filters: {},
+  matchedTissues: []
+}
+
+/**
+ * Dictionary mapping experiment IDs to data files and limited meta info.
+ * Should be:
+ * ```json
+ * {
+ *   "<ENCODE_experiment_ID>": {
+ *     "id": "<ENCODE_experiment_ID>",
+ *     "experiment_type": "<filter label>",
+ *     "biosample_label": "<biosample label>",
+ *     "peak_id": "<ENCODE_ID for peak file>",
+ *     "peak_file": "<path of peak file on server>",
+ *     "bigwig_id": "<ENCODE_ID for bigwig file>",
+ *     "bigwig_file": "<path of bigwig file on server>"
+ *   },
+ *   // ...
+ * }
+ * ```
+ */
+var experimentDict = {}
 
 /**
  * Get the ENCODE JSON Object of the biosample
@@ -150,7 +172,7 @@ async function getEncodeObject (type, id) {
 /**
  * Get the ENCODE JSON Object of the biosample
  * @async
- * @param {string} biosampleID ENCODE biosample ID
+ * @param {string} biosampleId ENCODE biosample ID
  * @param {boolean} [notReleaseOnly] Set to `true` to include non-released
  *    datasets
  * @returns {Promise<Array<string>>} An array including all experiments
@@ -241,12 +263,19 @@ function filterSearchResults (searchObj, filters) {
  * *   Find the 'released' results;
  * *   Find the most comprehensive (pooled, replicated) peaks and bigWig
  *     files
- * *   Download those files and add them to the experiment list.
+ * *   Save the ID of those files (for the final downloading) and add them
+ *     to the experiment list.
+ * @async
  * @param {string} experimentId ENCODE ID for the experiment
  * @param {string} assembly the assembly of the file
+ * @param {object} [additionalMeta] additional meta data that needs to be added
+ *    to the experiment entry.
  * @returns {object} returns an experiment object (see "Final result format")
  */
-async function processExperimentFileObj (experimentId, assembly) {
+async function processExperimentFileObj (
+  experimentId, assembly, additionalMeta
+) {
+  additionalMeta = additionalMeta || {}
   let experimentObj = await getEncodeObject('experiments', experimentId)
   let availableFiles = experimentObj.files.filter(file => (
     file.assembly === assembly && file.output_category !== 'raw data' &&
@@ -284,9 +313,7 @@ async function processExperimentFileObj (experimentId, assembly) {
   // fields of the experiment
 
   if (bedFiles.length) {
-    experimentResult = {
-      id: experimentId
-    }
+    experimentResult = Object.assign({ id: experimentId }, additionalMeta)
     experimentResult.peak_id = bedFiles[0].accession
     experimentResult.peak_file_obj = bedFiles[0]
     if (bwFiles.length) {
@@ -308,8 +335,8 @@ async function processExperimentFileObj (experimentId, assembly) {
  * *   (TODO) Include archived experiments and replace them by the
  *     superseded experiments if exist, update biosample if necessary;
  * *   Return filtered experiment IDs;
- * @param {string} biosampleID ENCODE biosample ID
- * @param {object} filters Filters
+ * @param {string} biosampleId ENCODE biosample ID
+ * @param {Array<object>} filters Filters
  * @param {object} tissueResult tissueResult object
  *    (to fill '.term', '.life_stage' and '.label' element only)
  * @returns {Array<object>} An array of experimentEntry object:
@@ -320,8 +347,8 @@ async function processExperimentFileObj (experimentId, assembly) {
  * }
  * ```
  */
-async function processSingleBiosample (biosampleID, filters, tissueResult) {
-  let biosampleObj = await getEncodeObject('biosamples', biosampleID)
+async function processSingleBiosample (biosampleId, filters, tissueResult) {
+  let biosampleObj = await getEncodeObject('biosamples', biosampleId)
 
   if (!tissueResult.hasOwnProperty('.label')) {
     // initialize the properties with this biosample
@@ -338,7 +365,7 @@ async function processSingleBiosample (biosampleID, filters, tissueResult) {
 
     return filterSearchResults(searchObj, filters)
   } catch (err) {
-    console.log('Error processSingleBiosample (' + biosampleID + ').')
+    console.log('Error processSingleBiosample (' + biosampleId + ').')
     throw err
   }
 }
@@ -348,13 +375,16 @@ async function processSingleBiosample (biosampleID, filters, tissueResult) {
  * *   Find the overlapping experiments of the biosample between the species
  *     and remove species-specific ones.
  * @param {object} tissueObj tissue object (see Workflow)
- * @param {object} filters filters (see Workflow)
- * @returns {object} tissueResult object (see finalResult.matchedTissues)
+ * @param {Array<object>} filters filters (see Workflow)
+ * @returns {object} tissueResult object (see encodeResult.matchedTissues)
  */
 async function processSingleTissue (tissueObj, filters) {
   // For each species in tissue:
   //    use `processSingleBiosample` to get a list of experiments
   let tissueResult = {}
+  if (tissueObj['.label']) {
+    tissueResult['.label'] = tissueObj['.label']
+  }
   let speciesFilterSet = []
   for (let species in tissueObj) {
     if (!species.startsWith('__') && !species.startsWith('.') &&
@@ -362,8 +392,8 @@ async function processSingleTissue (tissueObj, filters) {
     ) {
       let experimentEntryArray = await Promise.all(
         tissueObj[species].map(
-          biosampleID => processSingleBiosample(
-            biosampleID, filters, tissueResult
+          biosampleId => processSingleBiosample(
+            biosampleId, filters, tissueResult
           ))
       )
       // construct a preliminary list of experiments
@@ -371,32 +401,45 @@ async function processSingleTissue (tissueObj, filters) {
         experiments: experimentEntryArray.reduce(
           (prev, current, index) => prev.concat(
             current.map(experimentEntry => ({
-              biosampleID: tissueObj[species][index],
+              biosampleId: tissueObj[species][index],
               id: experimentEntry.id,
-              filterID: experimentEntry.filterId
+              filterId: experimentEntry.filterId
             }))
           ), []
         )
       }
-      console.log(tissueResult[species].experiments)
+      console.log(tissueResult[species].experiments.length +
+        ' filtered experiment(s) for "' + tissueResult['.label'] +
+        '" in species ' + species)
 
       // build a filter set (for debug purposes)
       let currSpeciesFilterSet = new Set()
       tissueResult[species].experiments.forEach(
-        experimentObj => currSpeciesFilterSet.add(experimentObj.filterID)
+        experimentObj => currSpeciesFilterSet.add(experimentObj.filterId)
       )
 
       speciesFilterSet.push(currSpeciesFilterSet)
     }
   }
 
-  // find the overlapping experiments (filterID that appear in all species)
+  // find the overlapping experiments (filterId that appear in all species)
   console.log('Raw species filter set: ')
   console.log(speciesFilterSet)
   return tissueResult
 }
 
-async function filterInvalidDataSingleTissue (tissueResult) {
+/**
+ * Filter the experiment that does not have proper data available.
+ * Proper data means:
+ * *  Have data mapped to the desired assembly
+ *    (determined by `references[speciesName]`)
+ * *  Have peak files called and available (in "released" state)
+ *
+ * @param {object} tissueResult The tissueResult object
+ * @param {object} filterDict Filter object (dictionary) for filter labels
+ * @returns
+ */
+async function filterInvalidDataSingleTissue (tissueResult, filterDict) {
   for (let species in tissueResult) {
     if (!species.startsWith('__') && !species.startsWith('.') &&
       tissueResult.hasOwnProperty(species)
@@ -418,7 +461,10 @@ async function filterInvalidDataSingleTissue (tissueResult) {
       let experimentResultArray = await Promise.all(
         tissueResult[species].experiments.map(
           experimentObj => processExperimentFileObj(
-            experimentObj.id, references[species])
+            experimentObj.id, references[species], {
+              'experiment_type': filterDict[experimentObj.filterId]['.label'],
+              'biosample_label': tissueResult['.label']
+            })
         )
       )
       tissueResult[species].experiments =
@@ -436,7 +482,7 @@ async function filterInvalidDataSingleTissue (tissueResult) {
   return tissueResult
 }
 
-function filterMismatchedSingleTissue (tissueResult, filters) {
+function filterMismatchedSingleTissue (tissueResult) {
   // reconstruct speciesFilterSet
   let speciesFilterSet = []
   for (let species in tissueResult) {
@@ -445,12 +491,12 @@ function filterMismatchedSingleTissue (tissueResult, filters) {
     ) {
       let currSpeciesFilterSet = new Set()
       tissueResult[species].experiments.forEach(experimentObj =>
-        currSpeciesFilterSet.add(experimentObj.filterID))
+        currSpeciesFilterSet.add(experimentObj.filterId))
       speciesFilterSet.push(currSpeciesFilterSet)
     }
   }
 
-  // find the overlapping experiments (filterID that appear in all species)
+  // find the overlapping experiments (filterId that appear in all species)
   console.log('Processed species filter set before matching: ')
   console.log(speciesFilterSet)
 
@@ -469,17 +515,19 @@ function filterMismatchedSingleTissue (tissueResult, filters) {
     ) {
       tissueResult[species].experiments =
         tissueResult[species].experiments.filter(experiment =>
-          intersectSet.has(experiment.filterID)
+          intersectSet.has(experiment.filterId)
         )
     }
   }
   return tissueResult
 }
 
-async function downloadFileObject (fileObj, path) {
-  path = path || basePath
+async function downloadFileObject (fileObj, filePath) {
+  filePath = filePath || encodeBasePath || '.'
   let encodeId = fileObj.accession
-  await fsMkdirPromise(path + '/' + encodeId).catch(err => {
+  await fsMkdirPromise(
+    path.format({ dir: filePath, base: encodeId })
+  ).catch(err => {
     if (err.code === 'EEXIST') {
       // already exists, don't care
       return null
@@ -504,7 +552,11 @@ async function downloadFileObject (fileObj, path) {
       data = await zlibGunzipPromise(data)
       extension = fileObj.href.split('.').slice(-2)[0]
     }
-    let fileName = path + '/' + encodeId + '/' + encodeId + '.' + extension
+    let fileName = path.format({
+      dir: path.format({ dir: filePath, base: encodeId }),
+      name: encodeId,
+      ext: '.' + extension
+    })
     await fsWritefilePromise(fileName, data)
     return fileName
   })
@@ -512,13 +564,17 @@ async function downloadFileObject (fileObj, path) {
 
 async function downloadExperimentFiles (experimentResult) {
   if (experimentResult.peak_file_obj) {
-    experimentResult.peak_file =
-      await downloadFileObject(experimentResult.peak_file_obj)
+    experimentResult.peak_file = path.format({
+      dir: scriptPath,
+      base: await downloadFileObject(experimentResult.peak_file_obj)
+    })
     delete experimentResult.peak_file_obj
   }
   if (experimentResult.bigwig_file_obj) {
-    experimentResult.bigwig_file =
-      await downloadFileObject(experimentResult.bigwig_file_obj)
+    experimentResult.bigwig_file = path.format({
+      dir: scriptPath,
+      base: await downloadFileObject(experimentResult.bigwig_file_obj)
+    })
     delete experimentResult.bigwig_file_obj
   }
   return experimentResult
@@ -549,7 +605,8 @@ async function populateTissueExperiments (
 }
 
 var readTissuePromise = fsReadfilePromise(
-  basePath + '/' + matchTissueJsonFileName, 'utf8'
+  path.format({ dir: encodeBasePath, base: matchTissueJsonFileName }),
+  'utf8'
 ).then(result => {
   return JSON.parse(result)
 }).catch(err => {
@@ -557,7 +614,17 @@ var readTissuePromise = fsReadfilePromise(
 })
 
 var readFilterPromise = fsReadfilePromise(
-  basePath + '/' + filterJsonFileName, 'utf8'
+  path.format({ dir: encodeBasePath, base: filterJsonFileName }),
+  'utf8'
+).then(result => {
+  return JSON.parse(result)
+}).catch(err => {
+  console.log(err)
+})
+
+var readPublicPromise = fsReadfilePromise(
+  path.format({ dir: publicBasePath, base: publicDataName }),
+  'utf8'
 ).then(result => {
   return JSON.parse(result)
 }).catch(err => {
@@ -567,7 +634,7 @@ var readFilterPromise = fsReadfilePromise(
 Promise.all([readTissuePromise, readFilterPromise])
   .then(results => {
     let [tissues, filters] = results
-    finalResult.filters = filters.reduce((prev, curr) => {
+    encodeResult.filters = filters.reduce((prev, curr) => {
       prev[curr['.id']] = curr
       return prev
     }, {})
@@ -576,10 +643,9 @@ Promise.all([readTissuePromise, readFilterPromise])
       tissues.map(tissue => processSingleTissue(tissue, filters))
     )
   }).then(tissueResults => {
-    console.log(tissueResults)
     console.log('===== filterInvalidDataSingleTissue =====')
     return Promise.all(tissueResults.map(tissue => {
-      return filterInvalidDataSingleTissue(tissue)
+      return filterInvalidDataSingleTissue(tissue, encodeResult.filters)
     }))
   }).then(tissueResults => {
     console.log('===== filterMismatchedSingleTissue =====')
@@ -588,16 +654,15 @@ Promise.all([readTissuePromise, readFilterPromise])
   ).then(tissueResults => {
     console.log('===== populateTissueExperiments =====')
     // Now all tissues should be ready
-    finalResult.matchedTissues = tissueResults
+    encodeResult.matchedTissues = tissueResults
     // populate and download experiments
-    return Promise.all(finalResult.matchedTissues.map(
+    return Promise.all(encodeResult.matchedTissues.map(
       tissueResult =>
-        populateTissueExperiments(tissueResult, finalResult.experiments)
+        populateTissueExperiments(tissueResult, encodeResult.experiments)
     ))
   }).then(() => {
     console.log('===== Clearing _expResultDict =====')
-    // write finalResults to a JSON file
-    finalResult.matchedTissues.forEach(tissueResult => {
+    encodeResult.matchedTissues.forEach(tissueResult => {
       for (let species in tissueResult) {
         if (!species.startsWith('__') && !species.startsWith('.') &&
           tissueResult.hasOwnProperty(species)
@@ -606,8 +671,53 @@ Promise.all([readTissuePromise, readFilterPromise])
         }
       }
     })
+    console.log('===== Separating encodeResult.experiments =====')
+    experimentDict = encodeResult.experiments
+    delete encodeResult.experiments
+  }).then(() => {
+    // load public datasets and process the experiment Dict
+    console.log('===== Parsing publicData.experiments =====')
+    return readPublicPromise.then(publicDataObj => {
+      // adding filter label and biosample label to publicDataObj
+      publicDataObj.matchedTissues.forEach(tissue => {
+        for (let species in tissue) {
+          if (!species.startsWith('__') && !species.startsWith('.') &&
+            tissue.hasOwnProperty(species)
+          ) {
+            let experiments = tissue[species].experiments
+            experiments.forEach(experiment => {
+              let experimentDictEntry =
+                publicDataObj.experiments[experiment.id]
+              experimentDictEntry.experiment_type =
+                publicDataObj.filters[experiment.filterId]['.label']
+              experimentDictEntry.biosample_label = tissue['.label']
+              experimentDictEntry.peak_file = path.join(
+                scriptPath, publicBasePath, experimentDictEntry.peak_file
+              )
+              experimentDictEntry.bigwig_file = path.join(
+                scriptPath, publicBasePath, experimentDictEntry.bigwig_file
+              )
+            })
+          }
+        }
+      })
+      experimentDict = Object.assign(
+        experimentDict, publicDataObj.experiments
+      )
+      delete publicDataObj.experiments
+      publicResult = publicDataObj
+    })
+  }).then(() => {
+    // write encodeResults to a JSON file
     console.log('===== Writing to JSON =====')
     return fsWritefilePromise(
-      outputPath + '/' + outputFile, JSON.stringify(finalResult, null, 2)
-    )
+      path.format({ dir: outputPath, base: outputEncodeFile }),
+      JSON.stringify(encodeResult, null, 2)
+    ).then(() => fsWritefilePromise(
+      path.format({ dir: outputPath, base: outputPublicFile }),
+      JSON.stringify(publicResult, null, 2)
+    )).then(() => fsWritefilePromise(
+      path.format({ dir: outputPath, base: outputExperimentFile }),
+      JSON.stringify(experimentDict, null, 2)
+    ))
   })

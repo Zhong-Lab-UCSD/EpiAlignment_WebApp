@@ -15,9 +15,6 @@ rpy2.robjects.numpy2ri.activate()
 grdevices = importr('grDevices')
 rprint = ro.globalenv.get("print")
 
-datasets = importr('datasets')
-mtcars = packages.data(datasets).fetch('mtcars')['mtcars']
-
 def Extract_name(fname, ind):
   with open(fname, "r") as fin:
     for line in fin:

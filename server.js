@@ -11,21 +11,29 @@ const pythonScript = 'server_agent.py'
 const pythonPlotScript = 'Plot_selected_region.py'
 // util
 const util = require('util')
+const path = require('path')
 const readFilePromise = util.promisify(fs.readFile)
 
-var RunID_dict = {}
+var runIdDict = {}
 const RUNNING_CODE = -1
 
 function makeid () {
   let text = ''
   let possible = 'abcdefghijklmnopqrstuvwxyz0123456789'
 
-  for (var i = 0; i < 20; i++) { text += possible.charAt(Math.floor(Math.random() * possible.length)) }
+  for (var i = 0; i < 10; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length))
+  }
 
   return text
 }
 
-const cpUpload = upload.fields([{ name: 'speciesPeak1[]', maxCount: 3 }, { name: 'speciesPeak2[]', maxCount: 3 }, { name: 'speciesInput1', maxCount: 1 }, { name: 'speciesInput2', maxCount: 1 }])
+const cpUpload = upload.fields([
+  { name: 'speciesPeak1[]', maxCount: 3 },
+  { name: 'speciesPeak2[]', maxCount: 3 },
+  { name: 'speciesInput1', maxCount: 1 },
+  { name: 'speciesInput2', maxCount: 1 }
+])
 
 app.post('/form_upload', cpUpload, function (req, res) {
   // req.files is an object (String -> Array) where fieldname is the key, and the value is array of files
@@ -37,41 +45,31 @@ app.post('/form_upload', cpUpload, function (req, res) {
   // req.body will contain the text fields, if there were any
 
   // Make new folder for results
-  // flag = 1: folder exists
-  var flag = 1
-  do {
-    try {
-      var runid = makeid()
-      let tmp_stat = fs.statSync('tmp_' + runid)
-    } catch (err) {
-      // if the folder does not exist
-      console.log('Just created a new directory: ' + runid)
-      fs.mkdirSync('tmp_' + runid)
-      RunID_dict[runid] = RUNNING_CODE
-      flag = 0
-    }
-  }
-  while (flag === 1)
 
-  console.log(RunID_dict)
+  let runid = makeid()
+  while (fs.existsSync('tmp_' + runid)) {
+    runid = makeid()
+  }
+  fs.mkdirSync('tmp_' + runid)
+  runIdDict[runid] = RUNNING_CODE
 
   // construct an object for python input
-  var pyMessenger = { 'body': req.body, 'files': req.files, 'runid': 'tmp_' + runid }
-  var stdoutData = ''
-  var stderrData = ''
+  let pyMessenger = {
+    'body': req.body,
+    'files': req.files,
+    'runid': 'tmp_' + runid
+  }
 
   // execute python code on the server.
   let scriptExecution = spawn('python', [pythonScript])
 
   // Handle normal output
   scriptExecution.stdout.on('data', (data) => {
-    stdoutData += data
     console.log(data + '')
   })
 
   // Handle error output
   scriptExecution.stderr.on('data', (data) => {
-    stderrData += data
     console.log(data + '')
   })
 
@@ -91,7 +89,7 @@ app.post('/form_upload', cpUpload, function (req, res) {
       '9500 Gilman Dr.\nLa Jolla, CA 92122-0412\nUnited States'
 
     console.log('Process quit with code : ' + code)
-    RunID_dict[runid] = code
+    runIdDict[runid] = code
     if (message) {
       // needs to write an email
       let transporter = nodemailer.createTransport({
@@ -136,22 +134,19 @@ app.post('/form_upload', cpUpload, function (req, res) {
   // tell the node that sending inputs to python is done.
   scriptExecution.stdin.end()
 
-  console.log(RunID_dict)
   res.json({ runid: runid })
 })
 
 app.get('/results/:runid', function (req, res) {
-  var runid = req.params.runid
-  console.log(runid)
-  console.log(RunID_dict)
-  if (!RunID_dict.hasOwnProperty(runid)) {
+  let runid = req.params.runid
+  if (!runIdDict.hasOwnProperty(runid)) {
     // The query id does not exist.
-    console.log(runid)
+    console.log('Invalid runid requested: ' + runid)
     res.status(401)
     res.send('This query ID does not exist!')
-  } else if (RunID_dict[runid] === RUNNING_CODE) {
+  } else if (runIdDict[runid] === RUNNING_CODE) {
     res.json({ status: RUNNING_CODE })
-  } else if (RunID_dict[runid] === 0) {
+  } else if (runIdDict[runid] === 0) {
     // python exited successfully.
     // read JSON file and return it.
     readFilePromise('tmp_' + runid + '/' + runid + '.json', 'utf8')
@@ -178,26 +173,42 @@ app.get('/result_image/:runid/:index/:se.png', function (req, res) {
   let runid = req.params.runid
   let se = req.params.se
   let index = req.params.index
-  let image_name = 'tmp_' + runid + '/Image_' + index +
-    (se === 'e' ? '_epi_' : '_seq_') + runid + ".png"
+  let imageName = 'tmp_' + runid + '/Image_' + index +
+    (se === 'e' ? '_epi_' : '_seq_') + runid + '.png'
   try {
     // Check if the image exists.
-    let image_stat = fs.statSync(image_name)
-    res.sendFile(image_name)
+    fs.statSync(imageName)
+    res.sendFile(path.format({
+      dir: __dirname,
+      base: imageName
+    }))
   } catch (err) {
     // if the image does not exist
     let scriptExecution = spawn('python', [pythonPlotScript])
+
+    // Handle normal output
+    scriptExecution.stdout.on('data', (data) => {
+      console.log(data + '')
+    })
+
+    // Handle error output
+    scriptExecution.stderr.on('data', (data) => {
+      console.log(data + '')
+    })
+
     scriptExecution.on('exit', (code) => {
       try {
-        let image_stat_new = fs.statSync(image_name)
-        res.sendFile(image_name)
+        fs.statSync(imageName)
+        res.sendFile(path.format({
+          dir: __dirname,
+          base: imageName
+        }))
       } catch (err) {
-        res.status(404)
+        res.send(404, 'No image file available.')
       }
     })
     // python input
-    var pyImageMessenger = { 'mode': se === 'e' ? 'epi' : 'seq', 'index': index, 'runid': runid }
-    console.log(pyImageMessenger)
+    let pyImageMessenger = { 'mode': se === 'e' ? 'epi' : 'seq', 'index': index, 'runid': runid }
     scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
     // tell the node that sending inputs to python is done.
     scriptExecution.stdin.end()
@@ -205,7 +216,7 @@ app.get('/result_image/:runid/:index/:se.png', function (req, res) {
 })
 
 const server = app.listen(3000, function () {
-  var host = server.address().address
+  var host = server.address().address || 'localhost'
   var port = server.address().port
 
   console.log('Listening http://%s:%s', host, port)

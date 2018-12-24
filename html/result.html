@@ -49,6 +49,9 @@
         your approved sender list ("white list") and/or in your address book.
       </div>
     </div>
+    <div v-show="error">
+      Error: {{ errorMessage }}
+    </div>
     <div class="resultHolder flexColumn flexStretch flex" v-if="!loading">
       <div>
         Description |
@@ -65,7 +68,7 @@
 
         </template>
         <template slot="items" slot-scope="row">
-          <tr @click="row.expanded = !row.expanded">
+          <tr @click="toggleRow(row)">
             <td>{{ row.item.index }}</td>
             <td>{{ row.item.region_name1 || row.item.transID1 }}</td>
             <td>{{ row.item.region1 }}</td>
@@ -78,6 +81,8 @@
         <template slot="expand" slot-scope="entry">
           <v-card flat>
             Ensembl IDs: {{ entry.item.ensID1 }}, targets go here.
+            <img class="enhancerPlot" v-show="entry.item.imageSData" :src="entry.item.imageSData">
+            <img class="enhancerPlot" v-show="entry.item.imageEData" :src="entry.item.imageEData">
           </v-card>
         </template>
       </v-data-table>

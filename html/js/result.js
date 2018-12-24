@@ -7,17 +7,27 @@ const setTimeoutPromise = function (timeout, resolvedValue) {
 }
 
 const INQUIRY_TARGET_PREFIX = '/backend/results/'
+const INQUIRY_IMAGE_PREFIX = '/backend/result_image/'
 
 const STATUS_RUNNING = -1
 const POLLING_INTERVAL = 15000 // 15 seconds
 
+const imageTag = [
+  { requestId: 's', itemDataLink: 'imageSData' },
+  { requestId: 'e', itemDataLink: 'imageEData' },
+]
+
 var app = new Vue({
   el: '#result_app',
   data: {
+    runid: null,
     loading: true,
     hasEmail: false,
     emailAddress: null,
     downloadLink: '',
+    error: false,
+    errorMessage: '',
+    imageBlobUrls: {},
     headers: [
       {
         text: '#',
@@ -73,17 +83,20 @@ var app = new Vue({
   },
   created: function () {
     const urlParams = new window.URLSearchParams(window.location.search)
-    let runid = urlParams.get('runid')
-    this.pollResult(runid).then(data => {
+    this.runid = urlParams.get('runid')
+    this.pollResult(this.runid).then(data => {
       // TODO: load the submit time from server and update title accordingly
-      document.title = 'EpiAlignment - Result (runID: ' + runid + ')'
+      document.title = 'EpiAlignment - Result (runID: ' + this.runid + ')'
 
       this.loading = false
       this.downloadLink = window.location.protocol + '//' +
-        window.location.host + '/download/' + runid + '.txt'
+        window.location.host + '/download/' + this.runid + '.txt'
       this.showData(data)
     }).catch(err => {
       // TODO: err.status should say something
+      this.loading = false
+      this.error = true
+      this.errorMessage = err.message
     })
   },
   methods: {
@@ -96,8 +109,6 @@ var app = new Vue({
       return postAjax(INQUIRY_TARGET_PREFIX + runid, null, 'json', 'GET')
         .then(response => {
           if (response.status === STATUS_RUNNING) {
-            // TODO: display waiting message
-
             return setTimeoutPromise(POLLING_INTERVAL, runid)
               .then(runid => this.pollResult(runid))
           } else if (response.status > 0) {
@@ -111,6 +122,29 @@ var app = new Vue({
     showData: function (dataEntries) {
       if (Array.isArray(dataEntries)) {
         this.dataEntries = dataEntries
+      }
+    },
+    toggleRow: function (row) {
+      row.expanded = !row.expanded
+      imageTag.map(tagObj => {
+        Vue.set(row.item, tagObj.itemDataLink, null)
+      })
+      if (row.expanded) {
+        return Promise.all(imageTag.map(tagObj => {
+          let imageLink = INQUIRY_IMAGE_PREFIX + this.runid + '/' +
+            row.item.index + '/' + tagObj.requestId + '.png'
+          return postAjax(
+            imageLink, null, 'blob', 'GET'
+          ).then(imageBlob => {
+            if (this.imageBlobUrls[tagObj.requestId]) {
+              window.URL.revokeObjectURL(this.imageBlobUrls[tagObj.requestId])
+            }
+            this.imageBlobUrls[tagObj.requestId] =
+              window.URL.createObjectURL(imageBlob)
+            Vue.set(row.item, tagObj.itemDataLink,
+              this.imageBlobUrls[tagObj.requestId])
+          })
+        }))
       }
     }
   }

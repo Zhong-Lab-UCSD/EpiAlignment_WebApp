@@ -12,12 +12,14 @@ const zlipGunzipPromise = util.promisify(zlib.gunzip)
 const ncbiUrl = 'https://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/'
 const geneInfoSuffix = '.gene_info.gz'
 
-const geneAnnoPath = 'Annotation/AnnotationFiles/gene'
+const geneAnnoPath = 'Annotation/AnnotationFiles/genes'
 const rawClusterFilePath = 'Annotation/AnnotationFiles'
 const clusterSuffix = '.gene_info.gz'
 
 const MILLISECONDS_IN_A_DAY = 1000 * 60 * 60 * 24
 const MAX_MATCH_ENTRIES = 10
+
+const serverBasePath = '.'
 
 /**
  * Workflow:
@@ -54,22 +56,14 @@ const MAX_MATCH_ENTRIES = 10
  * @param {string} ncbiEntry the entry in NCBI gene_info file
  */
 class Gene {
-  constructor (ncbiEntry) {
-    let tokens = ncbiEntry.trim().split('\t')
-    this.ensemblId = null
-    tokens[5].split('|') // dbXrefs, use to populate Ensembl ID
-      .some(entry => {
-        let [key, value] = entry.split(/:(.+)/)
-        if (key === 'Ensembl') {
-          this.ensemblId = value
-        }
-      })
-    this.description = tokens[7]
-    this.symbol = tokens[2]
-    this.aliases = tokens[4] !== '-'
-      ? tokens[4].split('|').unshift(this.symbol)
-      : [this.symbol]
+  constructor (symbol, ensemblId, aliases, description) {
+    this.symbol = symbol
+    this.ensemblId = ensemblId
+    this.aliases = aliases || []
+    this.aliases.unshift(this.symbol)
+    this.description = description || ''
   }
+
   toJSON () {
     return {
       symbol: this.symbol,
@@ -77,6 +71,22 @@ class Gene {
       ensemblId: this.ensemblId,
       description: this.description
     }
+  }
+
+  static getGeneFromNcbiEntry (ncbiEntry) {
+    let tokens = ncbiEntry.trim().split('\t')
+    let ensemblId = null
+    tokens[5].split('|') // dbXrefs, use to populate Ensembl ID
+      .some(entry => {
+        let [key, value] = entry.split(/:(.+)/)
+        if (key === 'Ensembl') {
+          ensemblId = value
+        }
+      })
+    let description = tokens[8]
+    let symbol = tokens[2]
+    let aliases = tokens[4] !== '-' ? tokens[4].split('|') : []
+    return new this(symbol, ensemblId, aliases, description)
   }
 }
 
@@ -90,11 +100,11 @@ class Gene {
  * @property {string} id Unique cluster ID
  */
 class Cluster {
-  constructor (id, geneEnsemblId, speciesName, geneMap) {
+  constructor (id, geneEnsemblId, speciesName, geneMap, geneName) {
     this.id = id
     this.genesBySpecies = {}
     this.addNewSpeciesIfNotExists(speciesName)
-    this.addGeneById(geneEnsemblId, speciesName, geneMap)
+    this.addGeneById(geneEnsemblId, speciesName, geneMap, geneName)
   }
 
   addNewSpeciesIfNotExists (speciesName) {
@@ -104,8 +114,13 @@ class Cluster {
     }
   }
 
-  addGeneById (geneEnsemblId, speciesName, geneMap) {
+  addGeneById (geneEnsemblId, speciesName, geneMap, geneName) {
     this.addNewSpeciesIfNotExists(speciesName)
+    if (!geneMap[speciesName].has(geneEnsemblId)) {
+      // No such entry from NCBI data base, build a temp one
+      geneMap[speciesName].set(geneEnsemblId,
+        new Gene(geneName, geneEnsemblId))
+    }
     if (!this.genesBySpecies[speciesName]._map.has(geneEnsemblId)) {
       this.genesBySpecies[speciesName].push(
         geneMap[speciesName].get(geneEnsemblId)
@@ -121,11 +136,11 @@ class Cluster {
 }
 
 async function loadGeneAnnoFromGzipBuffer (buffer) {
-  let data = await zlipGunzipPromise(buffer)
+  let data = String(await zlipGunzipPromise(buffer))
   let speciesGeneMap = new Map()
   data.split('\n').forEach(line => {
     if (line && !line.startsWith('#')) {
-      let newGene = new Gene(line)
+      let newGene = Gene.getGeneFromNcbiEntry(line)
       if (newGene.ensemblId) {
         speciesGeneMap.set(newGene.ensemblId, newGene)
       }
@@ -136,7 +151,7 @@ async function loadGeneAnnoFromGzipBuffer (buffer) {
 
 function getSpeciesGeneAnnoFileName (species) {
   return path.format({
-    dir: geneAnnoPath,
+    dir: path.format({ dir: serverBasePath, base: geneAnnoPath }),
     name: species.latin,
     ext: geneInfoSuffix
   })
@@ -144,9 +159,18 @@ function getSpeciesGeneAnnoFileName (species) {
 
 async function loadSpeciesGeneAnnoFromUrlOrBuffer (species) {
   let geneAnnoFileName = getSpeciesGeneAnnoFileName(species)
-  let geneAnnoFileStat = await fsStatPromise(geneAnnoFileName)
+  let needsUpdate = await fsStatPromise(geneAnnoFileName)
+    .catch(err => {
+      if (err.code === 'ENOENT') {
+        return true
+      } else {
+        console.log(err)
+        throw err
+      }
+    }).then(geneAnnoFileStat =>
+      (Date.now() - geneAnnoFileStat.ctime > (90 * MILLISECONDS_IN_A_DAY)))
   let buffer
-  if (Date.now() - geneAnnoFileStat.ctime > (90 * MILLISECONDS_IN_A_DAY)) {
+  if (needsUpdate) {
     // file is more than 90 days old, update from NCBI server
     buffer = (await axios.request({
       url: ncbiUrl + species.latin + geneInfoSuffix,
@@ -161,8 +185,11 @@ async function loadSpeciesGeneAnnoFromUrlOrBuffer (species) {
 
 async function loadClustersFromFile (clusters, species, settings, geneMap) {
   let clusterFileName = path.format({
-    dir: settings.rawFilePath || rawClusterFilePath,
-    name: species.name,
+    dir: settings.rawFilePath || path.format({
+      dir: serverBasePath,
+      base: rawClusterFilePath
+    }),
+    name: species.reference,
     ext: settings.clusterSuffix || clusterSuffix
   })
   let buffer = await fsReadFilePromise(clusterFileName, 'utf8')
@@ -170,6 +197,7 @@ async function loadClustersFromFile (clusters, species, settings, geneMap) {
     if (line) {
       let clusterId = Cluster.getIdFromLine(line)
       let geneEnsemblId = line.split('\t')[0]
+      // console.log(geneEnsemblId)
       if (!clusters._map.has(clusterId)) {
         let newCluster =
           new Cluster(clusterId, geneEnsemblId, species.name, geneMap)
@@ -184,6 +212,30 @@ async function loadClustersFromFile (clusters, species, settings, geneMap) {
   return clusters
 }
 
+function addAliasClusterIdPair (alias, clusterId, mapObj, keepCase) {
+  alias = alias || ''
+  if (!keepCase) {
+    alias = alias.toLowerCase()
+  }
+  if (!mapObj.has(alias)) {
+    mapObj.set(alias, clusterId)
+  } else {
+    if (Array.isArray(mapObj.get(alias))) {
+      if (
+        mapObj.get(alias).indexOf(clusterId) < 0
+      ) {
+        mapObj.get(alias).push(clusterId)
+      }
+    } else {
+      if (mapObj.get(alias) !== clusterId) {
+        mapObj.set(alias, [
+          mapObj.get(alias), clusterId
+        ])
+      }
+    }
+  }
+}
+
 /**
  * A cluster processor for cluster search
  *
@@ -196,6 +248,8 @@ class ClusterProcesser {
     this.clusters = []
     this.clusters._map = new Map()
     this.aliasToClusterMap = new Map()
+    this.ensemblIdToClusterMap = new Map()
+    console.log('===== Building cluster table =====')
     this.clusterTableReadyPromise = Promise.all(supportedSpecies.map(
       species => loadSpeciesGeneAnnoFromUrlOrBuffer(species)
         .then(speciesGeneMap => (this.geneMap[species.name] = speciesGeneMap))
@@ -206,72 +260,82 @@ class ClusterProcesser {
         if (cluster.genesBySpecies.hasOwnProperty(species)) {
           let geneList = cluster.genesBySpecies[species]
           geneList.forEach(gene => {
+            addAliasClusterIdPair(
+              gene.ensemblId, cluster.id, this.ensemblIdToClusterMap, true
+            )
             gene.aliases.forEach(alias =>
-              this.addAliasClusterIdPair(alias, cluster.id))
+              addAliasClusterIdPair(
+                alias, cluster.id, this.aliasToClusterMap
+              )
+            )
           })
         }
       }
-    }))
-  }
-
-  addAliasClusterIdPair (alias, clusterId) {
-    alias = (alias || '').toLowerCase()
-    if (!this.aliasToClusterMap.has(alias)) {
-      this.aliasToClusterMap.set(alias, clusterId)
-    } else {
-      if (Array.isArray(this.aliasToClusterMap.get(alias))) {
-        if (
-          this.aliasToClusterMap.get(alias).indexOf(clusterId) < 0
-        ) {
-          this.aliasToClusterMap.get(alias).push(clusterId)
-        }
-      } else {
-        if (this.aliasToClusterMap.get(alias) !== clusterId) {
-          this.aliasToClusterMap.set(alias, [
-            this.aliasToClusterMap.get(alias), clusterId
-          ])
-        }
-      }
-    }
+    })).then(() => console.log('===== Cluster table built ====='))
   }
 
   getClusters (partialAlias, maxMatchEntries) {
     maxMatchEntries = maxMatchEntries || MAX_MATCH_ENTRIES
-    partialAlias = (partialAlias || '').toLowerCase()
-    return this.clusterTableReadyPromise.then(() => {
-      let fullMatchList = this.aliasToClusterMap.has(partialAlias)
-        ? this.aliasToClusterMap.get(partialAlias)
-        : []
-      if (!Array.isArray(fullMatchList)) {
-        fullMatchList = [fullMatchList]
-      }
-      let partialMatchMap = new Map()
-      let maxExceeded = false
-      for (const [key, value] of this.aliasToClusterMap) {
-        if (key.includes(partialAlias)) {
-          let valueArray = Array.isArray(value) ? value : [value]
-          valueArray.forEach(clusterId => {
-            if (!partialMatchMap.has(clusterId)) {
-              partialMatchMap.set(clusterId,
-                this.clusters._map.get(clusterId))
+    if (partialAlias.startsWith('ENSG') ||
+      partialAlias.startsWith('ENSMUSG') ||
+      partialAlias.match(/ENS[A-Z]+[0-9]{11}|[A-Z]{3}[0-9]{3}[A-Za-z](-[A-Za-z])?|CG[0-9]+|[A-Z0-9]+\.[0-9]+|YM[A-Z][0-9]{3}[a-z][0-9]/)
+    ) {
+      // ensembl ID
+      return this.clusterTableReadyPromise.then(() => {
+        let fullMatchList = this.ensemblIdToClusterMap.has(partialAlias)
+          ? this.ensemblIdToClusterMap.get(partialAlias)
+          : []
+        if (!Array.isArray(fullMatchList)) {
+          fullMatchList = [fullMatchList]
+        }
+        return {
+          fullMatchList: fullMatchList.map(
+            clusterId => this.clusters._map.get(clusterId)),
+          maxExceeded: false,
+          partialMatchList: []
+        }
+      })
+    } else {
+      partialAlias = (partialAlias || '').toLowerCase()
+      return this.clusterTableReadyPromise.then(() => {
+        let fullMatchSet = new Set()
+        let fullMatchList = this.aliasToClusterMap.has(partialAlias)
+          ? this.aliasToClusterMap.get(partialAlias)
+          : []
+        if (!Array.isArray(fullMatchList)) {
+          fullMatchList = [fullMatchList]
+        }
+        fullMatchList.forEach(cluster => fullMatchSet.add(cluster))
+        let partialMatchMap = new Map()
+        let maxExceeded = false
+        for (const [key, value] of this.aliasToClusterMap) {
+          if (key !== partialAlias && key.includes(partialAlias)) {
+            let valueArray = Array.isArray(value) ? value : [value]
+            valueArray.forEach(clusterId => {
+              if (!fullMatchSet.has(clusterId) &&
+                !partialMatchMap.has(clusterId)
+              ) {
+                partialMatchMap.set(clusterId,
+                  this.clusters._map.get(clusterId))
+              }
+            })
+            if (partialMatchMap.size > maxMatchEntries) {
+              maxExceeded = true
+              break
             }
-          })
-          if (partialMatchMap.size > maxMatchEntries) {
-            maxExceeded = true
-            break
           }
         }
-      }
-      return {
-        fullMatchList: fullMatchList.map(
-          clusterId => this.clusters._map.get(clusterId)),
-        maxExceeded: maxExceeded,
-        partialMatchList: maxExceeded ? [] : partialMatchMap.values()
-      }
-    }).catch(err => {
-      console.log(err)
-      return null
-    })
+        return {
+          fullMatchList: fullMatchList.map(
+            clusterId => this.clusters._map.get(clusterId)),
+          maxExceeded: maxExceeded,
+          partialMatchList: maxExceeded ? [] : [...partialMatchMap.values()]
+        }
+      }).catch(err => {
+        console.log(err)
+        return null
+      })
+    }
   }
 }
 

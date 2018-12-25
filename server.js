@@ -13,27 +13,27 @@ const pythonPlotScript = 'Plot_selected_region.py'
 const util = require('util')
 const path = require('path')
 const readFilePromise = util.promisify(fs.readFile)
-// const ClusterProcesser = require('./clusterProcessing')
+const ClusterProcesser = require('./clusterProcessing')
 
-// var clusterProc = new ClusterProcesser(
-//   [
-//     {
-//       name: 'human',
-//       latin: 'Homo_sapiens',
-//       reference: 'hg38',
-//       encode_reference: 'GRCh38'
-//     }, {
-//       name: 'mouse',
-//       latin: 'Mus_musculus',
-//       reference: 'mm10',
-//       encode_reference: 'mm10'
-//     }
-//   ],
-//   {
-//     rawFilePath: 'Annotation/AnnotationFiles',
-//     clusterSuffix: '_clusters'
-//   }
-// )
+var clusterProc = new ClusterProcesser(
+  [
+    {
+      name: 'human',
+      latin: 'Homo_sapiens',
+      reference: 'hg38',
+      encode_reference: 'GRCh38'
+    }, {
+      name: 'mouse',
+      latin: 'Mus_musculus',
+      reference: 'mm10',
+      encode_reference: 'mm10'
+    }
+  ],
+  {
+    rawFilePath: 'Annotation/AnnotationFiles',
+    clusterSuffix: '_clusters'
+  }
+)
 
 var runIdDict = {}
 const RUNNING_CODE = -1
@@ -235,6 +235,15 @@ app.get('/result_image/:runid/:index.png', function (req, res) {
     // tell the node that sending inputs to python is done.
     scriptExecution.stdin.end()
   }
+})
+
+app.get('/get_cluster/:partialName', (req, res) => {
+  clusterProc.getClusters(req.params.partialName).then(result => {
+    res.json(result)
+  }).catch(err => {
+    console.log(err)
+    res.send(400, 'Cannot get clusters.')
+  })
 })
 
 const server = app.listen(3000, function () {

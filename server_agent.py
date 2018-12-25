@@ -174,14 +174,14 @@ def GenesInCluster(cluster_id, sp, of_name):
   sp: genome assembly name.
   return: cluster_genes, a list of gene ensembl ids.
   '''
-  cluster_genes = []
-  cfname = of_name + "Annotation/AnnotationFiles/" + sp + "_clusters"
-  with open(cfname, "r"):
-    for line in cfname:
+  cluster_genes = set()
+  cfname =  "Annotation/AnnotationFiles/" + sp + "_clusters"
+  with open(cfname, "r") as cfin:
+    for line in cfin:
       line = line.strip().split("\t")
       if line[2] == cluster_id:
-        cluster_genes.append(line[0])
-  return cluster_genes
+        cluster_genes.add(line[0])
+  return list(cluster_genes)
 
 def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAssem, runid, of_name):
   '''
@@ -189,7 +189,7 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
   '''
   # Extract genes in the cluster
   cluster_genes2 = GenesInCluster(cluster_id, genAssem[1], of_name)
-  transDict2 = Cons_transDict(cluster_genes[0], genAssem[1], of_name)
+  transDict2 = Cons_transDict(cluster_genes2[0], genAssem[1], of_name)
   trans_list2 = []
   for gene in cluster_genes2:
     if gene in transDict2:
@@ -219,22 +219,23 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
             region_name = region1[3] + "[===]" + region2[3]
             print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
             print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
-    return input1, fname2
+    return input1 + ".bed", fname2
   else:
     # Input1 is empty
     fname1 = of_name + cluster_id + runid + "_1.bed"
     cluster_genes1 = GenesInCluster(cluster_id, genAssem[0], of_name)
-    transDict1 = Cons_transDict(cluster_genes_oppo[0], genAssem[0], of_name)
+    transDict1 = Cons_transDict(cluster_genes1[0], genAssem[0], of_name)
     trans_list1 = []
     for gene in cluster_genes1:
       if gene in transDict1:
         trans_list1 += [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[gene]]
 
-    for region1 in trans_list1:
-      for region2 in trans_list2:
-        region_name = region1[3] + "[===]" + region2[3]
-        print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
-        print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
+    with open(fname1, "w") as fout1, open(fname2, "w") as fout2:
+      for region1 in trans_list1:
+        for region2 in trans_list2:
+          region_name = region1[3] + "[===]" + region2[3]
+          print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
+          print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
     return fname1, fname2 
 
 
@@ -349,6 +350,7 @@ def CreateInputBeds(of_name, json_dict, runid):
 
     elif searchMode == "genecluster" and alignMode == "promoter":
       # Mode 3: search a specific gene cluster.
+      cluster_id = json_dict["body"]["clusters"]
       bed1, bed2 = PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAssem, runid, of_name)
 
     elif searchMode == "homoregion" and alignMode == "enhancer":
@@ -382,10 +384,12 @@ def BedToFa(bed1, bed2, out_folder, sp_list, runid):
   ["-p", "20"] +\
   ["-o", out_folder + "Input_" + runid]
 
-  exit_code = subprocess.call(cmd_list)
+  p = Popen(cmd_list, stderr=PIPE)
+  (std_out, std_err) = p.communicate()
+  exit_code = p.returncode
 
   if exit_code != 0:
-    print >> sys.stderr, "Failed to generate the input file. Exit code: " + str(exit_code)
+    print >> sys.stderr, std_err + " Exit code: " + str(exit_code)
     sys.exit(exit_code)
 
 

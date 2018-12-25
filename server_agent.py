@@ -122,45 +122,38 @@ def Cons_transDict(gene_name, sp_name, of_name):
   return transDict
 
 
+def Cons_transList(input1, intype1, promoterUp, promoterDown, sp, of_name):
+  trans_list1 = []
+  with open(input1, "r") as fin1:
+    if intype1 == "bed":
+      trans_list1 = [line.strip().split("\t") for line in fin1]
+    elif intype1 == "name":
+      i = 0
+      for line in fin1:
+        line = line.strip()
+        if i == 0:
+          transDict1 = Cons_transDict(line, sp, of_name)
+          i += 1
+        if line in transDict1:
+          trans_list1 += [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[line]]
+  return trans_list1
+
+
 def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem, of_name):
-  if intype1 == "bed" and intype2 == "bed":
-    return input1, input2
+  trans_list1 = Cons_transList(input1, intype1, promoterUp, promoterDown, genAssem[0], of_name)
+  trans_list2 = Cons_transList(input2, intype2, promoterUp, promoterDown, genAssem[1], of_name)
 
-  with open(input1, "r") as fin1, open(input2, "r") as fin2, open(input1 + ".bed", "w") as fout1, open(input2 + ".bed", "w") as fout2:
+  with open(input1 + ".bed", "w") as fout1, open(input2 + ".bed", "w") as fout2:
     i = 0
-    while True:
-      line1 = fin1.readline().strip()
-      line2 = fin2.readline().strip()
-      if line1 == "" or line2 == "":
-        break
-      if i == 0:
-        # first line
-        if intype1 == "name":
-          transDict1 = Cons_transDict(line1, genAssem[0], of_name)
-        if intype2 == "name":
-          transDict2 = Cons_transDict(line2, genAssem[1], of_name)
+    for region1 in trans_list1:
+      for region2 in trans_list2:
+        region_name = region1[3] + "[===]" + region2[3]
+        print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
+        print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
         i += 1
-
-      if intype1 == "name":
-        if line1 not in transDict1:
-          # No such gene
-          continue
-        trans_list1 = [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[line1]]
-      else:
-        trans_list1 = [line1.split("\t")]
-
-      if intype2 == "name":
-        if line2 not in transDict2:
-          continue
-        trans_list2 = [PromoterBed(x, promoterUp, promoterDown) for x in transDict2[line2]]
-      else:
-        trans_list2 = [line2.split("\t")]
-
-      for region1 in trans_list1:
-        for region2 in trans_list2:
-          region_name = region1[3] + "[===]" + region2[3]
-          print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
-          print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
+  if i > 10000:
+    print >> sys.stderr, "Too many regions..."
+    sys.exit(2)
 
   return input1 + ".bed", input2 + ".bed"
 
@@ -198,28 +191,15 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
   fname2 = of_name + cluster_id + runid + "_2.bed"
   if input1 != "":
     # uploaded file
-    i = 0
-    with open(input1, "r") as fin1, open(input1 + ".bed", "w") as fout1, open(fname2, "w") as fout2:
-      for line in fin1:
-        line = line.strip()
-        if i == 0:
-          # first line
-          if intype1 == "name":
-            transDict1 = Cons_transDict(line, genAssem[0], of_name)
-          i += 1
-
-        if intype1 == "name":
-          # gene list
-          trans_list1 = [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[line]]
-        else:
-          trans_list1 = [line.split("\t")]
-
-        for region1 in trans_list1:
-          for region2 in trans_list2:
-            region_name = region1[3] + "[===]" + region2[3]
-            print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
-            print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
+    trans_list1 = Cons_transList(input1, intype1, promoterUp, promoterDown, genAssem[0], of_name)
+    with open(input1 + ".bed", "w") as fout1, open(fname2, "w") as fout2:
+      for region1 in trans_list1:
+        for region2 in trans_list2:
+          region_name = region1[3] + "[===]" + region2[3]
+          print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
+          print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
     return input1 + ".bed", fname2
+
   else:
     # Input1 is empty
     fname1 = of_name + cluster_id + runid + "_1.bed"
@@ -336,9 +316,10 @@ def CreateInputBeds(of_name, json_dict, runid):
     # Mode 1: define search regions with bed files or gene lists.
     # Is input2 a file or a pasted text?
     input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", of_name, runid)
-    if CheckFileLength(input1, input2):
-      if alignMode == "enhancer":
+    if alignMode == "enhancer":
+      if CheckFileLength(input1, input2):
         return input1, input2, intype1, intype2
+    else:
       bed1, bed2 = PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem, of_name)
     return bed1, bed2, intype1, intype2
 

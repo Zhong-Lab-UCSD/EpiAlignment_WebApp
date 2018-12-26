@@ -14,7 +14,7 @@ body {
 	padding: 0;
 	font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
 	font-size: 16px;
-	line-height: 1.3em;
+	line-height: 1.4em;
 }
 
 div#header {
@@ -386,29 +386,6 @@ div#inputRegionContainer > * {
 	width: 20em;
 }
 
-.loadingHolder {
-	padding: 2em;
-	line-height: 1.4em;
-}
-
-.loadingHolder > *:not(:last-child) {
-	margin-bottom: 0.8em;
-}
-
-span.keyboard {
-	white-space: nowrap;
-	padding: 0.17em 0.4em;
-	background: #EEEEEE;
-	border-radius: 5px;
-	border: 0.5px solid #999999;
-	font-family: 'Consolas', 'Courier New', Courier, monospace;
-	font-size: 0.9em;
-}
-
-.resultHolder {
-	padding: 1em;
-}
-
 div#encodeDialogContainer {
 	position: fixed;
 	margin: auto;
@@ -568,19 +545,71 @@ div#encodeTableHolder {
 
 /* ***** Result page related CSS rules ***** */
 
+div#pageContainer {
+	padding: 1rem;
+}
+
+.loadingHolder {
+	padding: 2em;
+	line-height: 1.4em;
+}
+
+.loadingHolder > *:not(:last-child) {
+	margin-bottom: 0.8em;
+}
+
+span.keyboard {
+	white-space: nowrap;
+	padding: 0.17em 0.4em;
+	background: #EEEEEE;
+	border-radius: 5px;
+	border: 0.5px solid #999999;
+	font-family: 'Consolas', 'Courier New', Courier, monospace;
+	font-size: 0.9em;
+}
+
 .resultHeader {
-	margin: 1.5em 0 0.2em 0;
+	margin: 1.5rem 0 1rem 0;
 	font-size: 18px;
 	font-weight: bold;
+}
+
+.resultHeader:first-child {
+	margin-top: 0.5rem;
+}
+
+#heatmapPanel {
+	min-width: 15rem;
+	flex-basis: 35rem;
+}
+
+.resultHolder {
+	padding: 0.5rem 1rem;
+	min-width: 40rem;
+	flex-basis: 40rem;
+}
+
+a.buttonLink {
+	font-size: 14px;
+	margin-left: 3em;
+	margin-right: 3em;
+	display: inline-block;
+	padding: 0.3em 1em 0.3em 0.6em;
+	font-weight: normal;
+	background: linear-gradient(to bottom, #0095ff, #0d74dd);
+	color: #FFFFFF;
+	border-radius: 5px;
+	text-decoration: none;
 }
 
 /* ***** Heatmap related CSS rules ***** */
 div#heatmap {
 	overflow: auto;
-	margin: 0.5em;
-	padding: 0 1em 1em 1em;
+	margin: 0.5rem;
+	padding: 1rem;
 	max-width: 35em;
-	box-shadow: 1px 1px 1px 0px rgba(0,0,0,0.35);
+	box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.35);
+	font-size: 12px;
 }
 
 #heatmap > .resultHeader {
@@ -589,7 +618,6 @@ div#heatmap {
 
 #heatmap table {
 	border-collapse: collapse;
-	font-size: 12px;
 }
 
 #heatmap table td {
@@ -639,4 +667,80 @@ div.heatmapObj > div {
 	min-width: 7.5em;
 	padding-right: 0.5em;
 	font-weight: normal;
+}
+
+#heatmapLegend {
+	font-size: 14px;
+	padding: 0.5em 0.75em;
+	margin-top: 0.3em;
+	border: 1px solid #666666;
+}
+
+#heatmapLegend > :not(:last-child) {
+	margin-bottom: 0.5em;
+}
+
+#heatmapLegend #colorScaleGroup {
+	font-size: 11px;
+}
+
+#heatmapLegend #colorScale {
+	height: 0.8em;
+	width: 10em;
+	margin: 0 0.3em;
+	box-sizing: border-box;
+	border: 1px solid #666666;
+	background: linear-gradient(to right, rgba(200, 37, 0, 0), rgba(200, 37, 0, 1));
+}
+
+#heatmapLegend .heatmapObj {
+	font-size: 12px;
+	width: 1.5em;
+	height: 1.5em;
+}
+
+#heatmapDesc {
+	padding: 0.5rem 1rem;
+	min-width: 20rem;
+	flex-basis: 20rem;
+}
+
+/* ***** Enhancer image related ***** */
+
+div.enhancerHint {
+	font-size: 14px;
+	font-style: italic;
+	margin-top: -0.6em;
+	margin-bottom: 0.4em;
+}
+
+tr.clickableTableRow {
+	cursor: pointer;
+}
+
+div.enhancerCardContainer {
+	padding: 1rem;
+}
+
+div.enhancerScoreContainer {
+	background: #EEEEEE;
+	padding: 0.3rem 1rem;
+	margin-bottom: 1rem;
+}
+
+div.enhancerScoreContainer > div {
+	padding: 0.3em 0.5em;
+}
+
+div.enhancerScoreContainer > div > div:first-child {
+	width: 8em;
+	font-weight: bold;
+}
+
+div.imgHolder {
+	width: 38rem;
+	min-height: 15rem;
+	background-image: url('../assets/images/loading.svg');
+	background-repeat: no-repeat;
+	background-position: center center;
 }

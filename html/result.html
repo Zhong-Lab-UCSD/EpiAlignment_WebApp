@@ -50,63 +50,106 @@
     <div v-show="error">
       Error: {{ errorMessage }}
     </div>
-    <div class="flexRow flexWrap">
-      <div id="heatmapPanel" class="flexRow flexStart">
-      <div id="heatmap" class="flexColumn flexStart noFlex">
-        <div class="selfAlignStretch resultHeader">EpiAlign Score</div>
-        <table>
-          <thead>
-            <tr>
-              <th class="placeholder"></th>
-              <th class="heatmapColLabels" v-for="entry in promoterColumnList">
-                <div>
-                  {{ entry }}
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="rowEntry in epiHeatmapList">
-              <th>{{ rowEntry.geneId }}</th>
-              <td class="heatmapCell" v-for="value in rowEntry.values">
-                <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
-                  <div :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
+    <div id="pageContainer" class="flexRow flexWrap flexNoGap" v-if="!loading">
+      <div id="heatmapPanel" class="flexRow flexStart flex flexWrap" v-if="alignMode === 'promoter'">
+        <div id="heatmap" class="flexColumn flexStart">
+          <div class="selfAlignStretch resultHeader">EpiAlign Score</div>
+          <table>
+            <thead>
+              <tr>
+                <th class="placeholder"></th>
+                <th class="heatmapColLabels" v-for="entry in promoterColumnList">
+                  <div>
+                    {{ entry }}
                   </div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="selfAlignStretch resultHeader">Sequence-only Score</div>
-        <table v-if="hasSequence">
-          <thead>
-            <tr>
-              <th class="placeholder"></th>
-              <th class="heatmapColLabels" v-for="entry in promoterColumnList">
-                <div>{{ entry }}</div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="rowEntry in epiHeatmapList">
-              <th>{{ rowEntry.geneId }}</th>
-              <td class="heatmapCell" v-for="value in rowEntry.values">
-                <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
-                  <div :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="rowEntry in epiHeatmapList">
+                <th>{{ rowEntry.geneId }}</th>
+                <td class="heatmapCell" v-for="value in rowEntry.values">
+                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && (value.epiScore > value.seqScore) }">
+                    <div :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
+                    </div>
                   </div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="selfAlignStretch resultHeader">Sequence-only Score</div>
+          <table v-if="hasSequence">
+            <thead>
+              <tr>
+                <th class="placeholder"></th>
+                <th class="heatmapColLabels" v-for="entry in promoterColumnList">
+                  <div>{{ entry }}</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="rowEntry in epiHeatmapList">
+                <th>{{ rowEntry.geneId }}</th>
+                <td class="heatmapCell" v-for="value in rowEntry.values">
+                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && (value.epiScore > value.seqScore) }">
+                    <div :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div id="heatmapLegend" class="selfAlignStretch">
+            <!-- Scale bar -->
+            <div class="flexRow flexStart flexNoWrap">
+              <div class="flexRow flexCenter flexNoGap noFlex" id="colorScaleGroup">
+                Low
+                <div id="colorScale"></div>
+                High
+              </div>
+              <div class="flex">Alignment score</div>
+            </div>
+            <!-- Seq-best pair -->
+            <div class="flexRow flexStart flexNoWrap">
+              <div class="heatmapObj epiMax noFlex"></div>
+              <div class="flex">Best EpiAlign target</div>
+            </div>
+            <div class="flexRow flexStart flexNoWrap">
+              <div class="heatmapObj seqMax noFlex"></div>
+              <div class="flex">Best sequence-only alignment target (if different from best EpiAlign target)</div>
+            </div>
+          </div>
+        </div>
+        <div id="heatmapDesc" class="flex">
+          <div class="resultHeader">Result description</div>
+          <p>
+            EpiAlignment score are plotted in the heatmap to show scores of
+            all given target region(s) (column) against any query region (row).
+          </p>
+          <p>
+            A sequence-only alignment result is also provided for comparative
+            purposes. This result should be similar to a sequence alignment
+            algorithm.
+          </p>
+          <p>
+            <em>
+              (Note: if you set epigenomic weight to zero during input,
+              the EpiAlignment score will be the degenerated sequence-only
+              alignment score, and no sequence-only result will be reported.)
+            </em>
+          </p>
+        </div>
       </div>
-      </div>
-      <div class="resultHolder flexColumn flexStretch flex" v-if="!loading">
-        <div>
-          Description |
-          <a :href="downloadLink" download="results.txt" target="_blank">Download results</a>
-
-          | Filter
+      <div class="resultHolder flexColumn flexStretch flex flexNoGap">
+        <div class="resultHeader">
+          <span>Result data table</span>
+          <a class="buttonLink" :href="downloadLink" download="results.txt" target="_blank"><i class="material-icons">
+              save_alt
+            </i>
+            Download results</a>
+        </div>
+        <div class="enhancerHint" v-if="alignMode === 'enhancer'">
+          Please click on individual table rows to see detailed results.
         </div>
         <v-data-table :headers="headers" :items="dataEntries" item-key="index" class="elevation-1">
           <template slot="no-data">
@@ -114,18 +157,58 @@
           <template slot="items" slot-scope="row">
             <tr @click="toggleRow(row)">
               <td>{{ row.item.index }}</td>
-              <td>{{ row.item.region_name1 || row.item.transID1 }}</td>
+              <td>{{ row.item[geneIdentifier1] }}</td>
+              <td v-if="row.item.ensID1 !== '.'">{{ row.item.ensID1 }}</td>
               <td>{{ row.item.region1 }}</td>
-              <td>{{ row.item.region_name2 || row.item.transID2 }}</td>
+              <td v-if="row.item[geneIdentifier2] !== '.'">{{ row.item[geneIdentifier2] }}</td>
+              <td v-if="row.item.ensID2 !== '.'">{{ row.item.ensID2 }}</td>
               <td>{{ row.item.region2 }}</td>
-              <td class="text-xs-right">{{ row.item.scoreE }}</td>
-              <td class="text-xs-right">{{ row.item.scoreS }}</td>
+              <td :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode === 'promoter' ?
+                Number.parseFloat(row.item.scoreE).toFixed(3) : row.item.targetE }}</td>
+              <td :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode === 'promoter' ?
+                Number.parseFloat(row.item.scoreS).toFixed(3) : row.item.targetS }}</td>
             </tr>
           </template>
           <template slot="expand" slot-scope="entry">
             <v-card flat>
-              Ensembl IDs: {{ entry.item.ensID1 }}, targets go here.
-              <img class="enhancerPlot" v-show="entry.item.image" :src="entry.item.image">
+              <div class="flexRow flexStretch enhancerCardContainer">
+                <div class="imgHolder flexColumn flexStretch flexNoWrap flexNoGap noFlex">
+                  <img class="flex" v-show="entry.item.image" :src="entry.item.image">
+                </div>
+                <div>
+                  <div class="resultHeader">Result description</div>
+                  <p>
+                    The alignment score along the entire target region is
+                    plotted in the figure to the left. The hit regions are the
+                    locations with the highest alignment score.
+                  </p>
+                  <p>
+                    A sequence-only alignment result is provided below
+                    ("SeqOnly") for comparative purposes.
+                  </p>
+                  <p>
+                    The EpiAlignment scores for the hit region is shown below:
+                  </p>
+                  <div class="enhancerScoreContainer flexColumn flexNoWrap flexNoGap">
+                    <div class="flexRow flexNoWrap">
+                      <div>EpiAlign:</div>
+                      <div>{{ Number.parseFloat(entry.item.scoreE).toFixed(3) }}</div>
+                    </div>
+                    <div v-show="entry.item.targetS !== '.'" class="flexRow flexNoWrap">
+                      <div>Sequence-only:</div>
+                      <div>{{ Number.parseFloat(entry.item.scoreS).toFixed(3) }}</div>
+                    </div>
+                  </div>
+                  <p>
+                    <em>
+                      (Note: if you set epigenomic weight to zero during
+                      input, the EpiAlignment score will be the degenerated
+                      sequence-only alignment score, and no sequence-only
+                      result will be reported.)
+                    </em>
+                  </p>
+                </div>
+              </div>
             </v-card>
           </template>
         </v-data-table>

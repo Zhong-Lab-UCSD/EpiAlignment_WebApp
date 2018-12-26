@@ -566,45 +566,66 @@ div#encodeTableHolder {
 	overflow-x: hidden;
 }
 
+/* ***** Result page related CSS rules ***** */
+
+.resultHeader {
+	margin: 1.5em 0 0.2em 0;
+	font-size: 18px;
+	font-weight: bold;
+}
+
 /* ***** Heatmap related CSS rules ***** */
+div#heatmap {
+	overflow: auto;
+	margin: 0.5em;
+	padding: 0 1em 1em 1em;
+	max-width: 35em;
+	box-shadow: 1px 1px 1px 0px rgba(0,0,0,0.35);
+}
+
+#heatmap > .resultHeader {
+	margin-bottom: 0.1rem;
+}
+
 #heatmap table {
 	border-collapse: collapse;
-	font-size: 14px;
+	font-size: 12px;
 }
 
 #heatmap table td {
-	border: 0.5px solid #999999;
+	border: 0.5px solid #666666;
 }
 
 .heatmapColLabels {
 	text-align: left;
-	height: 7.5em;
-	padding: 0 1.5em 0.5em 1.5em;
-	max-width: 3em;
+	height: 8.5em;
+	padding: 0 1.2em 0.5em 1.2em;
+	max-width: 2.4em;
 	overflow: visible;
 	vertical-align: bottom;
 }
 
 .heatmapColLabels > div {
 	transform: rotate(-90deg) translate(0, 50%);
-	width: 7em;
+	width: 8em;
 	text-align: left;
 	transform-origin: left bottom;
 	line-height: 1.1em;
+	font-weight: normal;
 }
 
 div.heatmapObj {
-	width: 3em;
-	height: 3em;
+	width: 2.4em;
+	height: 2.4em;
 	box-sizing: border-box;
 }
 
 div.heatmapObj.seqMax {
-	border: 2px solid #c82500;
+	border: 4px solid #666666;
 }
 
 div.heatmapObj.epiMax {
-	border: 2px solid #c82500;
+	border: 4px solid #007e00;
 }
 
 div.heatmapObj > div {
@@ -615,6 +636,7 @@ div.heatmapObj > div {
 
 #heatmap table > tbody th {
 	text-align: right;
-	vertical-align: center;
+	min-width: 7.5em;
 	padding-right: 0.5em;
+	font-weight: normal;
 }

@@ -43,28 +43,28 @@ var app = new Vue({
         width: 'auto'
       },
       {
-        text: 'Name #1',
+        text: 'Query name',
         value: 'region_name1',
         align: 'left',
         sortable: true,
         width: 'auto'
       },
       {
-        text: 'Coordinate #1',
+        text: 'Query coordinate',
         value: 'region1',
         align: 'left',
         sortable: true,
         width: 'auto'
       },
       {
-        text: 'Name #2',
+        text: 'Target name',
         value: 'region_name2',
         align: 'left',
         sortable: true,
         width: 'auto'
       },
       {
-        text: 'Coordinate #2',
+        text: 'Target coordinate',
         value: 'region2',
         align: 'left',
         sortable: true,
@@ -130,6 +130,9 @@ var app = new Vue({
     showData: function (dataEntries) {
       if (Array.isArray(dataEntries)) {
         this.dataEntries = dataEntries
+        if (dataEntries[0]) {
+          this.verifyNameSource(dataEntries[0])
+        }
         if (this.alignMode === 'promoter') {
           this.processPromoterData(dataEntries)
         } else {
@@ -159,21 +162,41 @@ var app = new Vue({
         Vue.set(rowItem, 'image', this.imageBlobUrl)
       })
     },
-    verifyPromoterNameSource: function (dataEntry) {
+    verifyNameSource: function (dataEntry) {
+      let headerCoor1Index = 2
+      let headerCoor2Index = 4
       if (!this.geneIdentifier1) {
         this.geneIdentifier1 =
           dataEntry.transID1 === '.' ? 'region_name1' : 'transID1'
+        if (dataEntry.ensID1 !== '.') {
+          // add corresponding row to headers
+          this.headers.splice(headerCoor1Index, 0, {
+            text: 'Query Ensembl ID',
+            value: 'ensID1',
+            align: 'left',
+            sortable: true,
+            width: 'auto'
+          })
+          headerCoor2Index++
+        }
       }
       if (!this.geneIdentifier2) {
         this.geneIdentifier2 =
           dataEntry.transID2 === '.' ? 'region_name2' : 'transID2'
+        if (dataEntry.ensID2 !== '.') {
+          // add corresponding row to headers
+          this.headers.splice(headerCoor2Index, 0, {
+            text: 'Target Ensembl ID',
+            value: 'ensID2',
+            align: 'left',
+            sortable: true,
+            width: 'auto'
+          })
+        }
       }
       this.hasSequence = dataEntry.scoreS !== '.'
     },
     processPromoterData: function (data) {
-      if (data[0]) {
-        this.verifyPromoterNameSource(data[0])
-      }
       let columnMap = new Map()
       let rowMap = new Map()
       data.forEach(entry =>
@@ -270,6 +293,22 @@ var app = new Vue({
       return result
     },
     processEnhancerData: function (data) {
+      // reformat table header
+      this.headers.splice(3, 1)
+      this.headers.splice(-2, 2)
+      this.headers.push({
+        text: 'EpiAlign hit coordinate',
+        value: 'scoreE',
+        align: 'left',
+        sortable: true,
+        width: 'auto'
+      }, {
+        text: 'Sequence-only hit coordinate',
+        value: 'scoreE',
+        align: 'left',
+        sortable: true,
+        width: 'auto'
+      })
     }
   }
 })

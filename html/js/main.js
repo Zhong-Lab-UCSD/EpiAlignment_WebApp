@@ -61,6 +61,10 @@ const PARA_PI_T_DEFAULT = 0.25
 const PARA_PI_1_DEFAULT = 0.1
 
 const FORM_SUBMIT_TARGET = '/backend/form_upload'
+const CLUSTER_QUERY_TAGET = '/backend/get_cluster'
+
+const CLUSTER_QUERY_DEBOUNCE = 300
+const CLUSTER_QUERY_DEBOUNCE_WHEN_OPEN = 50
 
 var app = new Vue({
   el: '#epialign_app',
@@ -101,6 +105,15 @@ var app = new Vue({
     publicFilters: [],
     publicSamples: [],
 
+    // Cluster related
+    clusterText: null,
+    postedClusterText: null,
+    clusterCandidates: [],
+    showClusterCandidate: false,
+    selectedCluster: null,
+    showClusterMessage: false,
+    clusterMessage: '',
+
     formParams: {
       alignMode: null,
       epiName: 'H3K4me3',
@@ -113,9 +126,8 @@ var app = new Vue({
       speciesInput: [null, null],
       promoterUp: PROMOTER_UP_DEFAULT,
       promoterDown: PROMOTER_DOWN_DEFAULT,
-      searchRegionMode: 'genomeregion',
+      searchRegionMode: null,
       genetypeSelect: null,
-      clusters: null,
       enhancerUp: ENHANCER_FLANK_DEFAULT,
       enhancerDown: ENHANCER_FLANK_DEFAULT,
 
@@ -134,6 +146,37 @@ var app = new Vue({
 
       emailNote: false,
       mail: null
+    }
+  },
+  computed: {
+    promoterSelected: function () {
+      return this.formParams.alignMode === 'promoter'
+    },
+    enhancerSelected: function () {
+      return this.formParams.alignMode === 'enhancer'
+    },
+    genomeRegionLabel: function () {
+      return 'Define searching regions with a BED file' +
+        (this.enhancerSelected ? '.' : ' / a gene list.')
+    },
+    genomePlaceholder: function () {
+      return 'Paste BED data ' +
+        (this.enhancerSelected ? 'here.' : 'or gene names here.')
+    },
+    genomeRegionSelected: function () {
+      return this.formParams.searchRegionMode === 'genomeregion'
+    },
+    geneTypeSelected: function () {
+      return this.formParams.searchRegionMode === 'genetype'
+    },
+    geneClusterSelected: function () {
+      return this.formParams.searchRegionMode === 'genecluster'
+    },
+    homologRegionSelected: function () {
+      return this.formParams.searchRegionMode === 'homoregion'
+    },
+    maxSampleFilterLength: function () {
+      return Math.max(this.encodeFilters.length, this.publicFilters.length)
     }
   },
   created: function () {
@@ -156,6 +199,9 @@ var app = new Vue({
       this.presetLoaded = true
     })
   },
+  mounted: function () {
+    document.addEventListener('click', () => this.closeClusterPanel())
+  },
   methods: {
     buildDataSetFilterAndSample: function (
       filterDomArray, sampleDomArray, dataObj
@@ -165,6 +211,7 @@ var app = new Vue({
         sampleDomArray, dataObj.matchedTissues, filterDict, filterDomArray
       )
     },
+
     buildFilter: function (filterDomArray, filterObj) {
       let filterRevMap = new Map()
       for (let key in filterObj) {
@@ -180,6 +227,7 @@ var app = new Vue({
       }
       return filterRevMap
     },
+
     buildSample: function (
       sampleDomArray, sampleObj, filterRevMap, filterDomArray
     ) {
@@ -218,6 +266,7 @@ var app = new Vue({
         }
       })
     },
+
     selectEntry: function (entry) {
       this.selectedEntry = entry
       if (entry) {
@@ -229,30 +278,38 @@ var app = new Vue({
         this.selectedExperimentIds = null
       }
     },
+
     selectExperiment: function (experimentId, speciesName) {
       let tempSelectedIds = this.selectedExperimentIds
       tempSelectedIds[speciesName] = experimentId
       this.selectedExperimentIds = null
       this.selectedExperimentIds = tempSelectedIds
     },
+
     toggleShowParam: function () {
       this.showParam = !this.showParam
       this.showMoreParamText = this.showParam
         ? 'Show less parameters.' : 'Show more parameters...'
     },
+
     checkAlignMode: function () {
-      if (this.checkModeConflict()) {
-        this.searchRegionMode = 'genomeregion'
+      if (this.checkModeConflict() || (
+        !this.modeNotSelected && !this.formParams.searchRegionMode
+      )) {
+        this.formParams.searchRegionMode =
+          this.promoterSelected ? 'genecluster' : 'homoregion'
       }
     },
+
     checkModeConflict: function () {
       return (this.promoterSelected &&
-        this.searchRegionMode === 'homoregion'
+        this.formParams.searchRegionMode === 'homoregion'
       ) || (this.enhancerSelected && (
-        this.searchRegionMode === 'genetype' ||
-        this.searchRegionMode === 'genecluster'
+        this.formParams.searchRegionMode === 'genetype' ||
+        this.formParams.searchRegionMode === 'genecluster'
       ))
     },
+
     validateForm: function () {
       let hasError = false
       for (let key in this.formError) {
@@ -268,6 +325,7 @@ var app = new Vue({
       this.hasError = hasError
       return !this.hasError
     },
+
     submitForm: function () {
       // TODO: validate formParams
       if (!this.validateForm()) {
@@ -295,6 +353,9 @@ var app = new Vue({
             formData.append('encodeData[]', dataId)
           })
         }
+      }
+      if (this.selectedCluster) {
+        formData.append('clusters', this.selectedCluster.id)
       }
       postAjax(FORM_SUBMIT_TARGET, formData, 'json', 'POST')
         .then(response => {
@@ -326,6 +387,7 @@ var app = new Vue({
             err.status
         })
     },
+
     selectEncodeData: function () {
       this.showPreset = true
     },
@@ -335,34 +397,61 @@ var app = new Vue({
     },
     confirmEncodeSelection: function () {
       this.showPreset = false
-    }
-  },
-  computed: {
-    promoterSelected: function () {
-      return this.formParams.alignMode === 'promoter'
     },
-    enhancerSelected: function () {
-      return this.formParams.alignMode === 'enhancer'
+
+    clusterInputChanged: function () {
+      if (this.clusterTimeOut) {
+        window.clearTimeout(this.clusterTimeOut)
+      }
+      this.clusterTimeOut = window.setTimeout(
+        () => this.postClusterText(),
+        this.showClusterCandidate
+          ? CLUSTER_QUERY_DEBOUNCE_WHEN_OPEN
+          : CLUSTER_QUERY_DEBOUNCE
+      )
     },
-    genomeRegionLabel: function () {
-      return 'Define searching regions with a BED file' +
-        (this.enhancerSelected ? '.' : ' / a gene list.')
+
+    postClusterText: function () {
+      this.clusterTimeOut = null
+      if (this.postedClusterText !== this.clusterText) {
+        // post cluster text to remote server
+        this.postedClusterText = this.clusterText
+        if (this.postedClusterText &&
+          !this.postedClusterText.startsWith('Cluster_')
+        ) {
+          postAjax(
+            CLUSTER_QUERY_TAGET + '/' + this.postedClusterText,
+            null, 'json', 'GET'
+          ).then(response => {
+            this.clusterCandidates.splice(0)
+            response.fullMatchList.forEach(cluster =>
+              this.clusterCandidates.push(cluster)
+            )
+            response.partialMatchList.forEach(cluster =>
+              this.clusterCandidates.push(cluster)
+            )
+            this.showClusterMessage = !response.partialMatchList.length && (
+              response.maxExceeded || !response.fullMatchList.length
+            )
+            this.clusterMessage = response.maxExceeded
+              ? 'Continue typing to get ' +
+                (response.fullMatchList.length ? 'more ' : '') + 'candidates.'
+              : 'No paralogues matched in selected species.'
+            this.showClusterCandidate = true
+          }).catch(err => {
+            console.log(err)
+          })
+        }
+      }
     },
-    genomePlaceholder: function () {
-      return 'Paste BED data ' +
-        (this.enhancerSelected ? 'here.' : 'or gene names here.')
+
+    selectCluster: function (cluster) {
+      this.selectedCluster = cluster
+      this.clusterText = cluster.id
     },
-    genomeRegionSelected: function () {
-      return this.formParams.searchRegionMode === 'genomeregion'
-    },
-    geneTypeSelected: function () {
-      return this.formParams.searchRegionMode === 'genetype'
-    },
-    geneClusterSelected: function () {
-      return this.formParams.searchRegionMode === 'genecluster'
-    },
-    homologRegionSelected: function () {
-      return this.formParams.searchRegionMode === 'homoregion'
+
+    closeClusterPanel: function () {
+      this.showClusterCandidate = false
     }
   }
 })

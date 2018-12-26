@@ -14,10 +14,10 @@
 
 <body>
   <div id="header">
-    <!--Introduction-->
+    <!-- Introduction -->
     <h1>EpiAlignment: chromosomal similarity searching engine</h1>
-    EpiAlignment is a tool that can align genomic regions with both sequence and epigenomic information. For more
-    theoretical details please see our PLoS computational biology paper.
+    <span>EpiAlignment is a tool that can align genomic regions with both sequence and epigenomic information. For more
+    theoretical details please see our PLoS computational biology paper.</span>
   </div>
   <!--alignment steps-->
   <div id="epialign_app" v-cloak>
@@ -29,24 +29,26 @@
         </div>
         <div class="stepright flexColumn flexStretch flex">
           <div class="flexRow flexCenter flexWrap">
-            <div>
-              <h2>Select the alignment mode:</h2>
-            </div>
+            <h2>Select the alignment mode:</h2>
             <div class="flexRow flexCenter flexWrap">
-              <input type="radio" v-model="formParams.alignMode" name="alignMode" value="promoter" id="promoterRadio"
-                checked @change="checkAlignMode">
-              <label for="promoterRadio"> Promoter</label>
-              <input type="radio" v-model="formParams.alignMode" name="alignMode" value="enhancer" id="enhancerRadio"
-                @change="checkAlignMode">
-              <label for="enhancerRadio"> Enhancer</label>
+              <div class="flexRow flexCenter flexNoWrap">
+                <input type="radio" v-model="formParams.alignMode" name="alignMode" value="promoter" id="promoterRadio"
+                  checked @change="checkAlignMode">
+                <label for="promoterRadio"> Promoter</label>
+                <input type="radio" v-model="formParams.alignMode" name="alignMode" value="enhancer" id="enhancerRadio"
+                  @change="checkAlignMode">
+                <label for="enhancerRadio"> Enhancer</label>
+              </div>
+              <div id="modeHelp" class="help flexRow flexCenter flexNoWrap">
+                <i class="material-icons">help</i>
+                <div>Which mode should I choose?</div>
+              </div>
             </div>
-            <div id="modeHelp" class="help">
-              <i class="material-icons">help</i>
-              Which mode should I choose? </div>
           </div>
-          <div v-show="formError.modeNotSelected" class="error">
+          <div v-show="formError.modeNotSelected" class="error flexRow flexNoWrap flexCenter">
             <i class="material-icons">warning</i>
-            Please select an alignment mode.</div>
+            <div>Please select an alignment mode.</div>
+          </div>
         </div>
       </div>
       <!--step2-->
@@ -55,27 +57,35 @@
           <h2> STEP 2 </h2>
         </div>
         <div class="stepright flexColumn flexStretch">
-          <div>
-            <h2>Upload data</h2>
-          </div>
           <div class="flexRow flexCenter flexWrap">
-            <button type="button" class="selfAlignStart" @click="selectEncodeData">
-              Select paired peak data from public and ENCODE datasets
+            <h2>Upload data</h2>
+            <button type="button">
+              Use sample data
             </button>
           </div>
           <!--query region-->
           <div class="speciesData flexColumn flexStretch">
             <h3>Query regions</h3>
-            <div class="flexRow flexCenter flexWrap">
+            <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Genome assembly:</div>
-              <select name="genomeAssembly[]" v-model="formParams.genomeAssembly[0]">
-                <option value="hg38">(Homo sapiens) hg38</option>
-                <option value="mm10">(Mus musculus) mm10</option>
-              </select>
+              <div>
+                <select name="genomeAssembly[]" v-model="formParams.genomeAssembly[0]">
+                  <option value="hg38">(Homo sapiens) hg38</option>
+                  <option value="mm10">(Mus musculus) mm10</option>
+                </select>
+              </div>
             </div>
-            <div class="flexRow flexCenter flexWrap">
+            <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Peak regions:</div>
-              <input class="flex" type="file" name="speciesPeak1[]">
+              <div class="flexColumn flexStretch flexNoGap">
+                <div class="encodeButton flexColumn flexCenter flexNoGap" @click="selectEncodeData">
+                  <div>Click here to select a paired public dataset.</div>
+                </div>
+                <div class="flexRow flexStart flexWrap">
+                  <div class="subElemLabel">or upload your own:</div>
+                  <input class="flex" type="file" name="speciesPeak1[]">
+                </div>
+              </div>
             </div>
             <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Input regions:</div>
@@ -89,8 +99,8 @@
             </div>
             <div class="flexRow flexStart flexWrap" v-show="promoterSelected">
               <div class="elemLabel"></div>
-              <div>Please specify promoter region ranges if you use gene names
-                for your input:
+              <div class="textWithInput">Please specify promoter region ranges if you use gene names
+                for input:
                 <span class="shortInputContainer nobr">
                   <input type="text" name="promoterUp" v-model.number="formParams.promoterUp">
                   bps upstream from TSSs,
@@ -105,20 +115,102 @@
           <!--searching region-->
           <div class="speciesData flexColumn flexStretch">
             <h3>Searching region</h3>
-            <div class="flexRow flexCenter flexWrap">
+            <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Genome assembly:</div>
-              <select name="genomeAssembly[]" v-model="formParams.genomeAssembly[1]">
-                <option value="hg38">(Homo sapiens) hg38</option>
-                <option value="mm10" selected>(Mus musculus) mm10</option>
-              </select>
+              <div>
+                <select name="genomeAssembly[]" v-model="formParams.genomeAssembly[1]">
+                  <option value="hg38">(Homo sapiens) hg38</option>
+                  <option value="mm10" selected>(Mus musculus) mm10</option>
+                </select>
+              </div>
             </div>
-            <div class="flexRow flexCenter flexWrap">
+            <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Peak regions:</div>
-              <input class="flex" type="file" name="speciesPeak2[]">
+              <div class="flexColumn flexStretch flexNoGap">
+                <div class="encodeButton flexColumn flexCenter flexNoGap" @click="selectEncodeData">
+                  <div>Click here to select a paired public dataset.</div>
+                </div>
+                <div class="flexRow flexStart flexWrap">
+                  <div class="subElemLabel">or upload your own:</div>
+                  <input class="flex" type="file" name="speciesPeak2[]">
+                </div>
+              </div>
+            </div>
+            <div class="flexRow flexStart flexWrap">
+              <div class="elemLabel">Input:</div>
             </div>
             <!--type of searching regions-->
             <div class="flexColumn flexStretch">
-              <!--promoter mode-->
+              <div v-show="!formParams.alignMode" class="searchClassPlaceholder">
+                Please select the alignment mode to see specific search types.
+              </div>
+              <!-- promoter mode -->
+              <div v-show="promoterSelected" class="flexRow flexStart flexWrap">
+                <div class="elemLabel flexRow flexStart flexNoWrap">
+                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genecluster"
+                    id="geneClusterSearch">
+                  <label for="geneClusterSearch">Search a gene cluster.</label>
+                </div>
+                <div id="clusterPanel" :class="{ inactive: !geneClusterSelected }">
+                  <input id="clusterInput" type="text" :disabled="!geneClusterSelected" placeholder="Find a cluster by gene name or Ensembl ID"
+                    v-model="clusterText" @input="clusterInputChanged">
+                  <div v-if="showClusterCandidate" id="clusterCandidateHolder" @click.stop class="flexRow flexNoGap">
+                    <div id="clusterList">
+                      <div class="clusterListHeader">Result for "{{postedClusterText}}"</div>
+                      <ul v-show="clusterCandidates.length">
+                        <li v-for="cluster in clusterCandidates" @click="selectCluster(cluster)" :class="{ selected: cluster.id === clusterText }">
+                          {{ cluster.id }}
+                        </li>
+                      </ul>
+                      <div v-show="showClusterMessage" id="clusterMessageHolder">({{ clusterMessage }})</div>
+                    </div>
+                    <div v-if="selectedCluster" id="selectedClusterHolder">
+                      <ul>
+                        <li v-for="(genes, species) in selectedCluster.genesBySpecies">
+                          <div class="speciesGeneHeader">{{ species }}</div>
+                          <ul>
+                            <li v-for="gene in genes" class="flexRow flexWrap flexNoGap">
+                              <div class="geneName">{{ gene.symbol }}</div>
+                              <div class="geneDescription">{{ gene.description }}</div>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--
+                <div v-show="promoterSelected" class="flexRow flexStart flexWrap">
+                  <div class="elemLabel flexRow flexStart flexNoWrap">
+                    <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genetype" id="geneTypeSearch">
+                    <label for="geneTypeSearch"> Search a specific type of genes.</label>
+                  </div>
+                  <div :class="{ inactive: !geneTypeSelected }">
+                    <select :disabled="!geneTypeSelected" name="genetypeSelect" v-model="formParams.genetypeSelect">
+                      <option value="protein-coding gene" selected>protein-coding gene</option>
+                      <option value="lincRNA">lincRNA</option>
+                      <option value="pseudogene">pseudogene</option>
+                    </select>
+                  </div>
+                </div>
+              -->
+              <!-- enhancer mode -->
+              <div v-show="enhancerSelected" class="flexRow flexStart flexWrap">
+                <div class="elemLabel flexRow flexStart flexNoWrap">
+                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="homoregion"
+                    id="homologSearch">
+                  <label for="homologSearch"> Use homologous regions in this species <span class="nobr">(liftOver
+                      MinMatch = 0.1)</span>.</label>
+                </div>
+                <div :class="{ inactive: !homologRegionSelected }">
+                  <span class="shortInputContainer nobr">
+                    <input :disabled="!homologRegionSelected" type="text" name="enhancerUp" v-model.number="formParams.enhancerUp">
+                    bps upstream,</span> <span class="shortInputContainer nobr">
+                    <input :disabled="!homologRegionSelected" type="text" name="enhancerDown" v-model.number="formParams.enhancerDown">
+                    bps downstream. </span></div>
+              </div>
+              <!-- both -->
               <div class="flexRow flexStart flexWrap">
                 <div class="elemLabel flexRow flexStart flexNoWrap">
                   <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genomeregion"
@@ -133,54 +225,6 @@
                     <input :disabled="!genomeRegionSelected" class="flex" type="file" name="speciesInput2">
                   </div>
                 </div>
-              </div>
-              <div v-show="!formParams.alignMode" class="searchClassPlaceholder">
-                Please select the alignment mode to see additional search types.
-              </div>
-              <!--
-              <div v-show="promoterSelected" class="flexRow flexStart flexWrap">
-                <div class="elemLabel flexRow flexStart flexNoWrap">
-                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genetype" id="geneTypeSearch">
-                  <label for="geneTypeSearch"> Search a specific type of genes.</label>
-                </div>
-                <div :class="{ inactive: !geneTypeSelected }">
-                  <select :disabled="!geneTypeSelected" name="genetypeSelect" v-model="formParams.genetypeSelect">
-                    <option value="protein-coding gene" selected>protein-coding gene</option>
-                    <option value="lincRNA">lincRNA</option>
-                    <option value="pseudogene">pseudogene</option>
-                  </select>
-                </div>
-              </div>
-              -->
-              <div v-show="promoterSelected" class="flexRow flexStart flexWrap">
-                <div class="elemLabel flexRow flexStart flexNoWrap">
-                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genecluster"
-                    id="geneClusterSearch">
-                  <label for="geneClusterSearch"> Search a specific gene cluster.</label>
-                </div>
-                <div :class="{ inactive: !geneClusterSelected }">
-                  <input :disabled="!geneClusterSelected" name="clusters" list="clusters">
-                  <datalist>
-                    <option value="cluster1"></option>
-                    <option value="cluster2"></option>
-                    <option value="cluster3"></option>
-                  </datalist>
-                </div>
-              </div>
-              <!--enhancer mode-->
-              <div v-show="enhancerSelected" class="flexRow flexStart flexWrap">
-                <div class="elemLabel flexRow flexStart flexNoWrap">
-                  <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="homoregion"
-                    id="homologSearch">
-                  <label for="homologSearch"> Use homologous regions in this species <span class="nobr">(liftOver
-                      MinMatch = 0.1)</span>.</label>
-                </div>
-                <div :class="{ inactive: !homologRegionSelected }">
-                  <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" type="text" name="enhancerUp" v-model.number="formParams.enhancerUp">
-                    bps upstream,</span> <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" type="text" name="enhancerDown" v-model.number="formParams.enhancerDown">
-                    bps downstream. </span></div>
               </div>
             </div>
           </div>
@@ -262,12 +306,12 @@
           <div>
             <h2>Submit data</h2>
           </div>
-          <div class="flexRow flexStart">
-            <div>
+          <div class="flexRow flexStart flexWrap">
+            <div class="nobr">
               <input type="checkbox" name="emailNote" v-model="formParams.emailNote" id="emailCheckbox">
               <label for="emailCheckbox">Notify me by email when the job is done.</label>
             </div>
-            <div :class="{ inactive: !formParams.emailNote }">Email:
+            <div :class="{ inactive: !formParams.emailNote }" class="nobr">Email:
               <input id="emailField" type="text" name="mail" v-model="formParams.mail" :disabled="!formParams.emailNote"
                 placeholder="Enter your email here.">
             </div>
@@ -281,9 +325,9 @@
         </div>
       </div>
     </form>
-    <div v-show="showPreset" class="flexColumn flexCenter justifyCenter" id="encodeDialogContainer" @wheel.stop
-      @click.stop.prevent="closeEncodeDialog">
-      <div class="flexColumn flexStretch" id="encodeDialog" @click.stop>
+    <div v-show="showPreset" class="flexColumn flexCenter justifyCenter" id="encodeDialogContainer" @wheel.stop.prevent
+      @click.self.stop.prevent="closeEncodeDialog">
+      <div class="flexColumn flexStretch" id="encodeDialog">
         <h2>Select paired peak datasets from ENCODE Project</h2>
         <div id="encodeDialogBody" class="flex flexColumn">
           <div>
@@ -293,18 +337,20 @@
             More data will be added here after they are matched.
           </div>
           <div>
-            Please click on one of the green cells to use the paired data
+            Please click on one of the blue cells to use the paired data
             between human and mouse in EpiAlignment.
           </div>
           <div v-show="!presetLoaded">Loading ENCODE data ...</div>
           <div v-show="presetLoaded" class="flexRow flexStretch flex">
-            <div class="flex flexColumn" id="encodeTableHolder">
+            <div class="flex flexColumn" id="encodeTableHolder" @wheel.stop>
               <table class="encodeTable">
                 <thead>
                   <tr>
                     <th>ENCODE Datasets</th>
                     <th v-for="filter in encodeFilters" :key="filter.id">
                       {{ filter.label }}
+                    </th>
+                    <th v-for="n in (maxSampleFilterLength - encodeFilters.length)" class="tablePlaceHolder">
                     </th>
                   </tr>
                 </thead>
@@ -321,6 +367,8 @@
                         </span>
                       </template>
                     </td>
+                    <td v-for="n in (maxSampleFilterLength - encodeFilters.length)" class="tablePlaceHolder">
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -330,6 +378,8 @@
                     <th>Public Datasets</th>
                     <th v-for="filter in publicFilters" :key="filter.id">
                       {{ filter.label }}
+                    </th>
+                    <th v-for="n in (maxSampleFilterLength - publicFilters.length)" class="tablePlaceHolder">
                     </th>
                   </tr>
                 </thead>
@@ -346,12 +396,14 @@
                         </span>
                       </template>
                     </td>
+                    <td v-for="n in (maxSampleFilterLength - publicFilters.length)" class="tablePlaceHolder">
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <div id="dataPanel">
-              <div v-if="selectedEntry" class="flex">
+              <div v-if="selectedEntry" class="flex" @wheel.stop>
                 <template v-for="(experiments, species) in selectedEntry">
                   <h3>{{ experiments.length > 1 ? 'Datasets' : 'Dataset' }}
                     for {{ species }}</h3>
@@ -362,10 +414,7 @@
                         check
                       </i>
                       {{ experiment.id }}
-                      <a target="_blank"
-                        title="See experiment details / download data on ENCODE website"
-                        :href="'https://www.encodeproject.org/experiments/' + experiment.id"
-                      ><i
+                      <a target="_blank" title="See experiment details / download data on ENCODE website" :href="'https://www.encodeproject.org/experiments/' + experiment.id"><i
                           class="material-icons">
                           open_in_new
                         </i></a>
@@ -375,7 +424,7 @@
               </div>
             </div>
           </div>
-          <div id="encodePanelCommandBar" class="flexRow justifyEnd">
+          <div id="encodePanelCommandBar" class="flexRow justifyEnd noFlex">
             <!--<button id="cancelEncode" @click="closeEncodeDialog">Cancel</button>-->
             <button id="confirmEncode" @click="confirmEncodeSelection">Confirm</button>
           </div>

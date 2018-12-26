@@ -197,15 +197,17 @@ async function loadClustersFromFile (clusters, species, settings, geneMap) {
     if (line) {
       let clusterId = Cluster.getIdFromLine(line)
       let geneEnsemblId = line.split('\t')[0]
+      let geneName = line.split('\t')[1]
       // console.log(geneEnsemblId)
       if (!clusters._map.has(clusterId)) {
         let newCluster =
-          new Cluster(clusterId, geneEnsemblId, species.name, geneMap)
+          new Cluster(
+            clusterId, geneEnsemblId, species.name, geneMap, geneName)
         clusters.push(newCluster)
         clusters._map.set(clusterId, newCluster)
       } else {
         clusters._map.get(clusterId)
-          .addGeneById(geneEnsemblId, species.name, geneMap)
+          .addGeneById(geneEnsemblId, species.name, geneMap, geneName)
       }
     }
   })

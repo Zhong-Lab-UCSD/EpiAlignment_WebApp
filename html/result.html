@@ -15,11 +15,9 @@
 </head>
 
 <body>
-  <div id="header">
+  <div id="header" class="result">
     <!--Introduction-->
-    <h2>EpiAlignment: chromosomal similarity searching engine</h2>
-    EpiAlignment is a tool that can align genomic regions with both sequence and epigenomic information. For more
-    theoretical details please see our PLoS computational biology paper.
+    <h1>EpiAlignment: chromosomal similarity searching engine</h1>
   </div>
   <!--alignment steps-->
   <div data-app id="result_app" class="flex flexColumn flexStretch" v-cloak>
@@ -29,7 +27,7 @@
       <div>
         Please wait: your data is still being computed.
         <strong>
-          This page will automatically refresh every 15 seconds.
+          This page will automatically refresh every {{ pollingTime / 1000 }} seconds.
         </strong>
       </div>
       <div>
@@ -52,40 +50,83 @@
     <div v-show="error">
       Error: {{ errorMessage }}
     </div>
-    <div class="resultHolder flexColumn flexStretch flex" v-if="!loading">
-      <div>
-        Description |
-        <a :href="downloadLink" download="results.txt" target="_blank">Download results</a>
-        
-        | Filter
+    <div class="flexRow flexWrap">
+      <div id="heatmap">
+        <table>
+          <thead>
+            <tr>
+              <th class="placeholder"></th>
+              <th class="heatmapColLabels" v-for="entry in promoterColumnList">
+                <div>
+                  {{ entry }}
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="rowEntry in epiHeatmapList">
+              <th>{{ rowEntry.geneId }}</th>
+              <td class="heatmapCell" v-for="value in rowEntry.values">
+                <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
+                  <div :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table v-if="hasSequence">
+          <thead>
+            <tr>
+              <th class="placeholder"></th>
+              <th class="heatmapColLabels" v-for="entry in promoterColumnList">
+                <div>{{ entry }}</div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="rowEntry in epiHeatmapList">
+              <th>{{ rowEntry.geneId }}</th>
+              <td class="heatmapCell" v-for="value in rowEntry.values">
+                <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
+                  <div :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <v-data-table
-        :headers="headers"
-        :items="dataEntries"
-        item-key="index"
-        class="elevation-1">
-        <template slot="no-data">
+      <div class="resultHolder flexColumn flexStretch flex" v-if="!loading">
+        <div>
+          Description |
+          <a :href="downloadLink" download="results.txt" target="_blank">Download results</a>
 
-        </template>
-        <template slot="items" slot-scope="row">
-          <tr @click="toggleRow(row)">
-            <td>{{ row.item.index }}</td>
-            <td>{{ row.item.region_name1 || row.item.transID1 }}</td>
-            <td>{{ row.item.region1 }}</td>
-            <td>{{ row.item.region_name2 || row.item.transID2 }}</td>
-            <td>{{ row.item.region2 }}</td>
-            <td class="text-xs-right">{{ row.item.scoreE }}</td>
-            <td class="text-xs-right">{{ row.item.scoreS }}</td>
-          </tr>
-        </template>
-        <template slot="expand" slot-scope="entry">
-          <v-card flat>
-            Ensembl IDs: {{ entry.item.ensID1 }}, targets go here.
-            <img class="enhancerPlot" v-show="entry.item.image" :src="entry.item.image">
-          </v-card>
-        </template>
-      </v-data-table>
-      <div id="embeddedBrowser"></div>
+          | Filter
+        </div>
+        <v-data-table :headers="headers" :items="dataEntries" item-key="index" class="elevation-1">
+          <template slot="no-data">
+          </template>
+          <template slot="items" slot-scope="row">
+            <tr @click="toggleRow(row)">
+              <td>{{ row.item.index }}</td>
+              <td>{{ row.item.region_name1 || row.item.transID1 }}</td>
+              <td>{{ row.item.region1 }}</td>
+              <td>{{ row.item.region_name2 || row.item.transID2 }}</td>
+              <td>{{ row.item.region2 }}</td>
+              <td class="text-xs-right">{{ row.item.scoreE }}</td>
+              <td class="text-xs-right">{{ row.item.scoreS }}</td>
+            </tr>
+          </template>
+          <template slot="expand" slot-scope="entry">
+            <v-card flat>
+              Ensembl IDs: {{ entry.item.ensID1 }}, targets go here.
+              <img class="enhancerPlot" v-show="entry.item.image" :src="entry.item.image">
+            </v-card>
+          </template>
+        </v-data-table>
+        <div id="embeddedBrowser"></div>
+      </div>
     </div>
   </div>
 </body>

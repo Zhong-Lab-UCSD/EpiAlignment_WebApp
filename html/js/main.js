@@ -53,7 +53,7 @@ const SEQ_WEIGHT_DEFAULT = 0.9
 const EPI_WEIGHT_DEFAULT = 0.1
 const PARA_S_DEFAULT = 0.3
 const PARA_MU_DEFAULT = 0.3
-const PARA_K_DEFAULT = 0.3
+const PARA_K_DEFAULT = 0.5
 const PARA_PI_A_DEFAULT = 0.25
 const PARA_PI_C_DEFAULT = 0.25
 const PARA_PI_G_DEFAULT = 0.25
@@ -78,6 +78,7 @@ var app = new Vue({
     },
     showMoreParamText: 'Show more parameters...',
     submitStatus: null,
+    showModeHelp: false,
 
     // parameters involved in preset dataset loading
     showPreset: false,
@@ -352,7 +353,7 @@ var app = new Vue({
     submitForm: function () {
       // TODO: validate formParams
       if (!this.validateForm()) {
-        this.submitStatus = '<i class="material-icons">clear</i> ' +
+        this.submitStatus = '<i class="material-icons iconAtLeft">clear</i> ' +
           'Error encountered. Please review your ' +
           'submission before continuing.'
         return
@@ -387,7 +388,7 @@ var app = new Vue({
         .then(response => {
           let runid = response.runid
           this.submitted = true
-          this.submitStatus = '<i class="material-icons">' +
+          this.submitStatus = '<i class="material-icons iconAtLeft">' +
             'check_circle' +
             '</i> Data submitted to server. Redirecting to the ' +
             'result page ...'
@@ -407,7 +408,7 @@ var app = new Vue({
         })
         .catch(err => {
           this.hasError = true
-          this.submitStatus = '<i class="material-icons">' +
+          this.submitStatus = '<i class="material-icons iconAtLeft">' +
             'clear' +
             '</i> Error encountered. Error code: ' +
             err.status
@@ -587,6 +588,14 @@ var app = new Vue({
       this.$refs.speciesInputFile1.value = ''
       this.$refs.speciesInputFile2.value = ''
       this.clusterText = ''
+    },
+
+    toggleModeHelp: function () {
+      this.showModeHelp = !this.showModeHelp
+      if (!this.formParams.alignMode && this.showModeHelp) {
+        // no align mode is chosen, turn off showModeHelp after 2 seconds.
+        window.setTimeout(() => (this.showModeHelp = false), 2000)
+      }
     }
   }
 })

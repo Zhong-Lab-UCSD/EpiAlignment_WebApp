@@ -12,7 +12,7 @@ body {
 	height: 100vh;
 	margin: 0;
 	padding: 0;
-	font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
+	font-family: Segoe, "Segoe UI", "Helvetica", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
 	font-size: 16px;
 	line-height: 1.4em;
 }
@@ -138,6 +138,31 @@ body > div:not(.noFlex) {
 	background-image: url('../assets/images/loading.svg');
 	background-repeat: no-repeat;
 	background-position: center center;
+}
+
+.highlightBlink {
+	animation-duration: 0.6s;
+	animation-name: highlightBlinkAnimation;
+	animation-iteration-count: 3;
+	animation-direction: normal;
+}
+
+@keyframes highlightBlinkAnimation {
+	from {
+		opacity: 0.8;
+	}
+	20% {
+		opacity: 1;
+	}
+	40% {
+		opacity: 0.8;
+	}
+	70% {
+		opacity: 0.5;
+	}
+	to {
+		opacity: 0.8;
+	}
 }
 
 div.disabledDueToStep1 {
@@ -286,6 +311,9 @@ button:active {
 i.material-icons {
 	font-size: 1.4em;
 	vertical-align: text-bottom;
+}
+
+i.material-icons.iconAtLeft {
 	margin-right: 0.4rem;
 }
 
@@ -508,7 +536,7 @@ div#inputRegionContainer > * {
 .paramLabel {
 	display: inline-block;
 	width: 2em;
-	font-style: italic;
+	font-family: 'Times New Roman', Times, serif;
 }
 
 #emailField {
@@ -625,12 +653,43 @@ table.encodeTable > * > tr > td:not(.tablePlaceHolder):empty::before {
 }
 
 div#dataPanel {
-	width: 20em;
+	width: 16em;
+	padding: 0.75em 0 0 0.5em;
+	overflow-y: hidden;
+	min-width: 13em;
+}
+
+div#dataPanel > div {
+	box-sizing: border-box;
+	margin: 0;
+	border: 1px #999999 solid;
+	background: #EEEEEE;
 	overflow-y: auto;
+	overflow-x: hidden;
+	width: 100%;
+	height: 100%;
+}
+
+div#dataPanel > div > h3 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 500;
+	padding: 0.25em 0.5em;
+	color: rgba(255, 255, 255, 0.86);
+	background: #666666;
+}
+
+div#dataPanel > div > h3::first-letter {
+	text-transform: capitalize;
+}
+
+div#dataPanel > div > ul {
+	margin: 0.5em 0;
+	padding-left: 2em;
 }
 
 div#dataPanel li {
-	padding: 0.25em 0;
+	padding: 0.1em 0;
 	cursor: pointer;
 }
 
@@ -640,12 +699,12 @@ div#dataPanel li.selected {
 
 div#dataPanel li.selected > i {
 	display: inline-block;
-	margin: -0.2em 0 -0.05em -1.2em;
+	margin: 0 0.2em 0 -1.2em;
 }
 
 div#dataPanel li a > i {
-	margin-left: 0.5rem;
-	font-size: 1.1em;
+	margin: 0 0.5rem;
+	font-size: 1.25em;
 }
 
 div#dataPanel li a {
@@ -670,6 +729,7 @@ div#dataPanel li {
 div#encodeTableHolder {
 	overflow-y: auto;
 	overflow-x: hidden;
+	margin: 0.5em;
 }
 
 /* ***** Result page related CSS rules ***** */
@@ -707,11 +767,6 @@ span.keyboard {
 	margin-top: 0.5rem;
 }
 
-#heatmapPanel {
-	min-width: 15rem;
-	flex-basis: 35rem;
-}
-
 .resultHolder {
 	padding: 0.5rem 1rem;
 	min-width: 80rem;
@@ -731,7 +786,17 @@ a.buttonLink {
 	text-decoration: none;
 }
 
+.dataTableCell {
+	padding: 0 12px !important;
+}
+
 /* ***** Heatmap related CSS rules ***** */
+
+#heatmapPanel {
+	min-width: 15rem;
+	flex-basis: 35rem;
+}
+
 div#heatmap {
 	overflow: auto;
 	margin: 0.5rem;
@@ -822,16 +887,29 @@ div.heatmapObj > div {
 	background: linear-gradient(to right, rgba(200, 37, 0, 0), rgba(200, 37, 0, 1));
 }
 
-#heatmapLegend .heatmapObj {
+div.legendIcon.heatmapObj {
+	display: inline-block;
 	font-size: 12px;
 	width: 1.5em;
 	height: 1.5em;
+	margin-top: 0.25em;
+	vertical-align: top;
 }
 
 #heatmapDesc {
 	padding: 0.5rem 1rem;
 	min-width: 20rem;
 	flex-basis: 20rem;
+	font-size: 14px;
+}
+
+#heatmapDesc p {
+	margin-bottom: 1em;
+	line-height: 1.4em;
+}
+
+#heatmapDesc ul {
+	margin: -1em 1em 0 1em;
 }
 
 /* ***** Enhancer image related ***** */
@@ -878,27 +956,25 @@ div.imgHolder {
 
 div.manualHeader > h1 {
 	font-size: 28px;
-	margin: 2rem 2rem 1rem 2rem;
+	margin: 2rem 2.5rem 1rem 2.5rem;
 }
 
 div.section {
-	margin: 0.5rem 2rem;
+	margin: 0.5rem 3rem;
 }
 
 div.section > h1 {
 	font-size: 24px;
-	margin: 0 -0.5rem 0.5rem -0.75rem;
+	margin: 0.5rem -0.5rem 1rem -0.75rem;
 	padding: 0.75rem;
 	background: linear-gradient(to right, rgba(0, 45, 122, 0.86) 10em,
 		rgba(0, 45, 122, 0.15) 98%, rgba(0, 45, 122, 0) 100%);
-	border-top: 2px #002d7a solid;
-	border-bottom: 2px #002d7a solid;
 	color: #ffffff;
 }
 
 div.section > h2 {
 	font-size: 24px;
-	margin: 1rem 0 0.5rem 0;
+	margin: 1rem 0 1rem 0;
 	padding: 0.5rem 0;
 	border-bottom: 1px #002d7a dotted;
 	color: #002d7a;
@@ -917,7 +993,7 @@ div.section > h4 {
 div.section > h5 {
 	font-size: 1em;
 	font-weight: 500;
-	margin: 0.5rem 0 0 0;
+	margin: 0.5rem 0 0 0.5rem;
 	padding: 0.25rem 0;
 }
 
@@ -926,35 +1002,29 @@ div.section > h6 {
 	font-style: italic;
 	font-weight: 500;
 	text-decoration: underline solid #999999;
-	margin: 0.25rem 0 0 0;
+	margin: 0.25rem 0 0 1rem;
 	padding: 0.25rem 0;
-}
-
-div.section > div.Submode {
-	font-size: 1em;
-	font-style: italic;
-	font-weight: normal;
-	text-decoration: underline solid #999999;
-	margin: 0.25rem 0 0 0;
-	padding: 0;
 }
 
 div.section > div#EntireCluster {
 	font-size: 1em;
 	font-style: italic;
 	font-weight: normal;
-	margin: 0.25rem 0 0 0;
+	margin: 0.25rem 0 0 1rem;
 	padding: 0;
 }
 
-div.section > p {
-	margin: 0.5rem 0;
+div.section p {
+	margin: 0.5rem 0.5rem 0.5rem 1rem;
+	line-height: 1.4em;
 }
 
 div.exampleSteps {
+	font-size: 14px;
 	padding: 0.5rem;
 	border: 1px dotted #666666; 
 	background: #faf5de;
+	margin-left: 1rem;
 }
 
 div.exampleSteps > ul {
@@ -962,9 +1032,15 @@ div.exampleSteps > ul {
 }
 
 div.exampleSteps ul > li {
-	font-size: 14px;
-	list-style-type: circle;
 	line-height: 1.5em;
+}
+
+div.exampleSteps > ul > li {
+	list-style-type: disc;
+}
+
+div.exampleSteps li ul > li {
+	list-style-type: circle;
 }
 
 div.exampleSteps ul > div {
@@ -982,7 +1058,7 @@ div.exampleSteps ul > div > pre {
 }
 
 div.section table {
-	margin: 0.5rem;
+	margin: 1rem;
 	border-collapse: collapse;
 	border-top: 2px solid #666666;
 	border-bottom: 2px solid #666666;
@@ -1014,7 +1090,12 @@ div.section table > tbody > tr:nth-child(even) {
 	background: #e0e0e0;
 }
 
-div.equation {
+div.section table.verticalBorder * tr > *:not(:last-child) {
+	border-right: 1px solid #999999;
+}
+
+span.equation {
+	white-space: nowrap;
 	font-family: 'Times New Roman', Times, serif;
 }
 

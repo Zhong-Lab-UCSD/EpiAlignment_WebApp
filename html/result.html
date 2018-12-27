@@ -118,11 +118,11 @@
             </div>
             <!-- Seq-best pair -->
             <div class="flexRow flexStart flexNoWrap">
-              <div class="heatmapObj epiMax noFlex"></div>
+              <div class="legendIcon heatmapObj epiMax noFlex"></div>
               <div class="flex">Best EpiAlign target</div>
             </div>
             <div class="flexRow flexStart flexNoWrap">
-              <div class="heatmapObj seqMax noFlex"></div>
+              <div class="legendIcon heatmapObj seqMax noFlex"></div>
               <div class="flex">Best sequence-only alignment target (if different from best EpiAlign target)</div>
             </div>
           </div>
@@ -139,6 +139,31 @@
             algorithm.
           </p>
           <p>
+            EpiAlignment can detects if the best it for any query region (row)
+            switches from one target region to another with EpiAlign and
+            Sequence-only alignment. For any query region, if:
+            <ul>
+              <li>
+                the best hit region with EpiAlign (<em>the new hit</em>) is
+                different from the best hit region with Sequence-only (<em>the
+                old hit</em>), and
+              </li>
+              <li>
+                <em>the new hit</em> has a <em>higher</em> score with
+                EpiAlign than with Sequence-only alignment, and
+              </li>
+              <li>
+                <em>the old hit</em> has a <em>lower</em> score with
+                EpiAlign than with Sequence-only alignment,
+              </li>
+            </ul>
+            <em>the new hit</em> will be marked on the heatmap with a green
+            square ( <div class="legendIcon heatmapObj epiMax"></div> ), and
+            <em>the old hit</em> will be marked with a gray square (
+              <div class="legendIcon heatmapObj seqMax"></div>
+            ).
+          </p>
+          <p>
             <em>
               (Note: if you set epigenomic weight to zero during input,
               the EpiAlignment score will be the degenerated sequence-only
@@ -148,7 +173,7 @@
         </div>
       </div>
       <div class="resultHolder flexColumn flexStretch flex flexNoGap">
-        <div class="resultHeader">
+        <div class="resultHeader flexRow flexWrap flexCenter flexNoGap">
           <span>Result data table</span>
           <a class="buttonLink" :href="downloadLink" download="results.txt" target="_blank"><i class="material-icons">
               save_alt
@@ -158,23 +183,22 @@
         <div class="enhancerHint" v-if="alignMode === 'enhancer'">
           Please click on individual table rows to see detailed results.
         </div>
-        <v-data-table :headers="headers" :items="dataEntries" 
-          item-key="index" class="elevation-1" :pagination.sync="paginationObj"
-          :rows-per-page-items="rowsPerPageItems">
+        <v-data-table :headers="headers" :items="dataEntries" item-key="index" class="elevation-1" :pagination.sync="paginationObj"
+          :rows-per-page-items="rowsPerPageItems" sort-icon="keyboard_arrow_down">
           <template slot="no-data">
           </template>
           <template slot="items" slot-scope="row">
             <tr @click="toggleRow(row)">
-              <td>{{ row.item.index }}</td>
-              <td>{{ row.item[geneIdentifier1] }}</td>
-              <td v-if="row.item.ensID1 !== '.'">{{ row.item.ensID1 }}</td>
-              <td>{{ row.item.region1 }}</td>
-              <td v-if="row.item[geneIdentifier2] !== '.'">{{ row.item[geneIdentifier2] }}</td>
-              <td v-if="row.item.ensID2 !== '.'">{{ row.item.ensID2 }}</td>
-              <td>{{ row.item.region2 }}</td>
-              <td :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode === 'promoter' ?
+              <td class="dataTableCell">{{ row.item.index }}</td>
+              <td class="dataTableCell">{{ row.item[geneIdentifier1] }}</td>
+              <td class="dataTableCell" v-if="row.item.ensID1 !== '.'">{{ row.item.ensID1 }}</td>
+              <td class="dataTableCell">{{ row.item.region1 }}</td>
+              <td class="dataTableCell" v-if="row.item[geneIdentifier2] !== '.'">{{ row.item[geneIdentifier2] }}</td>
+              <td class="dataTableCell" v-if="row.item.ensID2 !== '.'">{{ row.item.ensID2 }}</td>
+              <td class="dataTableCell">{{ row.item.region2 }}</td>
+              <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode === 'promoter' ?
                 Number.parseFloat(row.item.scoreE).toFixed(3) : row.item.targetE }}</td>
-              <td :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode === 'promoter' ?
+              <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode === 'promoter' ?
                 Number.parseFloat(row.item.scoreS).toFixed(3) : row.item.targetS }}</td>
             </tr>
           </template>

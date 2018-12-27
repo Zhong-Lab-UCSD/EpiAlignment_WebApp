@@ -127,11 +127,11 @@
               <div class="textWithInput">Please specify promoter region ranges if you use gene names
                 for input:
                 <span class="shortInputContainer nobr">
-                  <input type="text" name="promoterUp" v-model.number="formParams.promoterUp">
+                  <input type="text" autocomplete="off" name="promoterUp" v-model.number="formParams.promoterUp">
                   bps upstream from TSSs,
                 </span>
                 <span class="shortInputContainer nobr">
-                  <input type="text" name="promoterDown" v-model.number="formParams.promoterDown">
+                  <input type="text" autocomplete="off" name="promoterDown" v-model.number="formParams.promoterDown">
                   bps downstream from TSSs.
                 </span>
               </div>
@@ -177,7 +177,7 @@
                   <label for="geneClusterSearch">Search a gene cluster.</label>
                 </div>
                 <div id="clusterPanel" :class="{ inactive: !geneClusterSelected }" @click.stop>
-                  <input id="clusterInput" type="text" :disabled="!geneClusterSelected" placeholder="Find a cluster by gene name or Ensembl ID"
+                  <input id="clusterInput" autocomplete="off" type="text" :disabled="!geneClusterSelected" placeholder="Find a cluster by gene name or Ensembl ID"
                     v-model="clusterText" @input="clusterInputChanged">
                   <div v-if="showClusterCandidate" id="clusterCandidateHolder" class="flexRow flexNoGap">
                     <div id="clusterList">
@@ -233,9 +233,9 @@
                 </div>
                 <div :class="{ inactive: !homologRegionSelected }">
                   <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" type="text" name="enhancerUp" v-model.number="formParams.enhancerUp">
+                    <input :disabled="!homologRegionSelected" autocomplete="off" type="text" name="enhancerUp" v-model.number="formParams.enhancerUp">
                     bps upstream,</span> <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" type="text" name="enhancerDown" v-model.number="formParams.enhancerDown">
+                    <input :disabled="!homologRegionSelected" autocomplete="off" type="text" name="enhancerDown" v-model.number="formParams.enhancerDown">
                     bps downstream. </span></div>
               </div>
               <!-- both -->
@@ -270,11 +270,11 @@
           <div class="flexRow flexCenter flexWrap">
             <div class="flexRow flexNoWrap shortInputContainer">
               <div class="subElemLabel">Sequence weight:</div>
-              <input type="text" name="seqweight" v-model.number="formParams.seqweight" value="0.9">
+              <input type="text" autocomplete="off" name="seqweight" v-model.number="formParams.seqweight" value="0.9">
             </div>
             <div class="flexRow flexNoWrap shortInputContainer">
               <div class="subElemLabel">Epigenome weight:</div>
-              <input type="text" name="epiweight" v-model.number="formParams.epiweight" value="0.1">
+              <input type="text" autocomplete="off" name="epiweight" v-model.number="formParams.epiweight" value="0.1">
             </div>
           </div>
           <button type="button" class="selfAlignStart" @click="toggleShowParam">
@@ -286,39 +286,39 @@
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>s</em>:</div>
-                  <input type="text" name="paras" v-model.number="formParams.paras" value="0.3">
+                  <input type="text" autocomplete="off" name="paras" v-model.number="formParams.paras" value="0.3">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#956</em>:</div>
-                  <input type="text" name="paramu" v-model.number="formParams.paramu" value="0.3">
+                  <input type="text" autocomplete="off" name="paramu" v-model.number="formParams.paramu" value="0.3">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#954</em>:</div>
-                  <input type="text" name="parak" v-model.number="formParams.parak" value="0.3">
+                  <input type="text" autocomplete="off" name="parak" v-model.number="formParams.parak" value="0.3">
                 </div>
               </div>
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960<sub>A</sub></em>:</div>
-                  <input type="text" name="piA" v-model.number="formParams.piA" value="0.25">
+                  <input type="text" autocomplete="off" name="piA" v-model.number="formParams.piA" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960<sub>C</sub></em>:</div>
-                  <input type="text" name="piC" v-model.number="formParams.piC" value="0.25">
+                  <input type="text" autocomplete="off" name="piC" v-model.number="formParams.piC" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960<sub>G</sub></em>:</div>
-                  <input type="text" name="piG" v-model.number="formParams.piG" value="0.25">
+                  <input type="text" autocomplete="off" name="piG" v-model.number="formParams.piG" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960<sub>T</sub></em>:</div>
-                  <input type="text" name="piT" v-model.number="formParams.piT" value="0.25">
+                  <input type="text" autocomplete="off" name="piT" v-model.number="formParams.piT" value="0.25">
                 </div>
               </div>
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960</em><sub>1</sub>:</div>
-                  <input type="text" name="pi1" v-model.number="formParams.pi1" value="0.1">
+                  <input type="text" autocomplete="off" name="pi1" v-model.number="formParams.pi1" value="0.1">
                 </div>
               </div>
             </div>
@@ -340,7 +340,7 @@
               <label for="emailCheckbox">Notify me by email when the job is done.</label>
             </div>
             <div :class="{ inactive: !formParams.emailNote }" class="nobr">Email:
-              <input id="emailField" type="text" name="mail" v-model="formParams.mail" :disabled="!formParams.emailNote"
+              <input id="emailField" autocomplete="email" type="text" name="mail" v-model="formParams.mail" :disabled="!formParams.emailNote"
                 placeholder="Enter your email here.">
             </div>
             <br>

@@ -1,0 +1,344 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EpiAlignment Manual</title>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
+  <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-78231712-3"></script>
+  <script src="js/googleAnalytics.js"></script>
+</head>
+
+<body>
+  <div class="manualHeader">
+    <h1>EpiAlignment documentation</h1>
+  </div>
+  <div class="section">
+    <!--Introduction-->
+    <h1>Introduction</h1>
+    Sequence similarity has been the primary information used for annotating regulatory sequences across species.
+    However, this strategy has limited capability on sequences less selectively constrained. It also takes no account
+    of the dynamics of genomic functions in different tissues. The epigenome, on the other hand, contains both
+    structural and functional information. Hence, considering both the genome and the epigenome in similarity search
+    may help to identify regions with similar structures and functions. Here, we present EpiAlignment, a web-based
+    engine for chromosomal similarity search.
+  </div>
+  <div class="section">
+    <!--Quick Start-->
+    <h1>Quick start</h1>
+    <p>EpiAlignment has two major alignment modes: promoter and enhancer. Given an input query region, the promoter
+      mode is useful for finding the best hit among a set of target regions, whereas the enhancer mode can be used to
+      match the query region with a sub-region of the target region.</p>
+
+    <h3>An example for using the promoter mode</h3>
+    <!--Example 1-->
+    <p>In this example, we attempt to search the promoters of two human melanoma antigen family genes, MAGEB6 and
+      MAGEB6B, against a mouse gene cluster to find mouse promoters with the highest chromosomal similarities within
+      it. The mouse gene cluster contains promoters of five mouse genes: Mageb1, Mageb2, Mageb3, Gm5072 and Gm8914.</p>
+    <h4>Import sample data with one click:</h4>
+    <div class="exampleSteps">
+      <ul>
+        <li>Select the "Promoter" alignment mode in STEP1.</li>
+        <li>Click the "Use sample data" button in STEP2.</li>
+        <li>Click "Submit" in STEP4</li>
+      </ul>
+    </div>
+    <h4>Enter data manually:</h4>
+    <div class="exampleSteps">
+      <ul class="sampleSteps">
+        <li>Select the "Promoter" alignment mode in STEP1.</li>
+        <li>In STEP2, "Query region" box:</li>
+        <ul class="sampleStepsSub">
+          <li>Press "Click here to select a paired public dataset" and select "Round spermatids ChIP-Seq (h2K4me3)".
+            Press the confirm button. </li>
+          <li>Paste or type the following gene names into the "Input regions" textarea:</li>
+          <div>
+            MAGEB6<br>
+            MAGEB6B
+          </div>
+        </ul>
+        <li>In the "Target region" box, select "Search a gene cluster", and type "MAGEB6" in the search bar. Select the
+          listed gene cluster (Cluster_13680).</li>
+        <li>Click "Submit" in STEP4.</li>
+      </ul>
+    </div>
+
+    <h4>Output</h4>
+    <p>After successfully submitting the data, you will be redirect to the result page. For the promoter mode, the
+      result page shows two heatmaps and a table. The heatmaps illustrate alignment scores between every pair of
+      promoters and the best hits found for each query promoter.</p>
+    <!--Figure here-->
+    <p>The table shows details of the alignments between each pair of promoters. You can sort the table by each column
+      by clicking the arrow beside column name. Click the arrow beside "index" to reset the order. The table can be
+      downloaded by clicking "Download results".</p>
+    <!--Figure here-->
+
+    <h3>An example for using the enhancer mode</h3>
+    <!--Example 2-->
+    <p>In this example, we will search a mouse genomic region against the large neighboring region around its
+      homologous region in human.</p>
+    <h4>Import sample data with one click:</h4>
+    <div class="exampleSteps">
+      <ul>
+        <li>Select the "Enhancer" alignment mode in STEP1.</li>
+        <li>Click the "Use sample data" button in STEP2.</li>
+        <li>Click "Submit" in STEP4</li>
+      </ul>
+    </div>
+
+    <h4>Enter data manually:</h4>
+    <div class="exampleSteps">
+      <ul class="sampleSteps">
+        <li>Select the "Enhancer" alignment mode in STEP1.</li>
+        <li>In STEP2, "Query region" box:</li>
+        <ul class="sampleStepsSub">
+          <li>Set "Genome assembly" to mm10.</li>
+          <li>Press "Click here to select a paired public dataset" and select "Round spermatids ChIP-Seq (h2K4me3)".
+            Press the confirm button. </li>
+          <li>Paste the following mouse genomic region into the "Input regions" textarea:</li>
+          <div>
+            <pre>chr12&#9;8207583&#9;8209349&#9;Region_example&#9;0&#9;+</pre>
+          </div>
+        </ul>
+        <li>In the "Target region" box, set "Genome assembly" to mm10.</li>
+        <li>Make sure that "Use homologous regions in this species" is selected. This is the default mode we are going
+          to use.</li>
+        <li>Click "Submit" in STEP4.</li>
+      </ul>
+    </div>
+
+    <h4>Output</h4>
+    <p>You will be redirect to the result page after submitting the data. For the enhancer mode, the result page shows
+      an interactive table with region information. You can click on each row to expand it and view the alignment score
+      distribution along the target region.</p>
+    <!--Figure here-->
+    <p>The table can be downloaded by clicking "Download results".</p>
+
+    <p>EpiAlignment also provides many other ways of defining query and target regions. Please check out the Usage
+      section for more information.</p>
+  </div>
+
+  <div class="section">
+    <!--Usage-->
+    <h1>Usage</h1>
+    <h2>Overview</h2>
+    <p>EpiAlignment provides two major alignment modes: promoter and enhancer. It uses a semi-global approach to
+      identify the best alignment between a pair of regions for both modes, whereas the result presentation and
+      interpretation are different. </p>
+    <p>Enhancer modes, on the other hand, would be more useful if </p>
+    <p>Each alignment mode also has two sub-modes for defining target regions. An overview of the alignment modes and
+      submodes is shown below:</p>
+    <div>
+      <table>
+        <caption>EpiAlignment modes and submodes</caption>
+        <thead>
+          <tr>
+            <th>Alignment mode</th>
+            <th>Submode</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th rowspan="2">Promoter mode</th>
+            <td>Search a gene cluster</td>
+            <td>Align each input query region against all gene promoters in a selected gene cluster and report the
+              best-matching promoter.</td>
+          </tr>
+          <tr>
+            <td>Define target regions with a BED file/a gene list</td>
+            <td>Align each input query regions against all input target regions and report the best hit.</td>
+          </tr>
+          <tr>
+            <th rowspan="2">Enhancer mode</th>
+            <td>Use homologous regions in this species.</td>
+            <td>Align each input query region against the neighboring region of its homologous region to find the
+              best-matching sub-region within it.</td>
+          </tr>
+          <tr>
+            <td>Define target regions with a BED file.</td>
+            <td>Align each input query region against a designated input target region to find the best-matching
+              sub-region of the target region.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Promoter mode</h3>
+    <h4>Search a gene cluster</h4>
+    <p>Add here</p>
+    <h4>Define target regions with a BED file / a gene list</h4>
+    <p>Add here</p>
+    <h3>Enhancer mode</h3>
+    <h4>Use homologous regions in this species</h4>
+    <p>Add here</p>
+    <h4>Define target regions with a BED file</h4>
+    <p>Add here</p>
+
+
+    <h2>Input</h2>
+    <!--Input-->
+    <p>EpiAlignment takes a pair of input region files and a pair of peak files from ChIP-Seq experiments as inputs.
+      The input file formats are different depending on the alignment mode and submode selected.</p>
+    <h3>Genome assembly</h3>
+    <p>EpiAlignment currently supports two genome assemblies: hg38 (Homo sapiens) and mm10 (Mus musculus). Please note
+      that the genome assemblies for the query and target regions have to be different if you choose to define target
+      regions using homologous regions under the enhancer mode. For other modes, the two genome assemblies can be
+      identical whereas not recommanded.</p>
+
+    <h3>Peak files and public datasets</h3>
+    <p>EpiAlignment provides users with paired epigenomic peak files of matching tissues, curated from epigenome
+      consortia including the RoadMap Project, ENCODE and mouse ENCODE, and public comparative epigenomic studies.</p>
+    <p>To select public peak files, in the Query regions box, click "Click here to select a paired public dataset."</p>
+    <!--Figure here-->
+    <p>In the pop-up window, click the cell representing the tissue type and histone mark that you want to select.
+      There are two numbers on each cell in the format of "H:x M:y". The two numbers represents number of peak files
+      available in human and mouse, respectively. Once you click the cell, available peak files will be listed on the
+      rightside. You may click the icon beside the file name to see experiment details on their original ENCODE/GEO
+      database page.</p>
+    <p>Click on file names to check peak files you'd like to select, then press confirm. The selected peak file names
+      will display in the Query regions and Target regions boxes afterwards. You may click anywhere outside the pop-up
+      window to close it.</p>
+    <!--Figure here-->
+    <p>The user can also uploads their own peak files. To do this, choose and upload your peak file for the first
+      species in the Query regions box, and the peak file for the second species in the Target regions box.</p>
+    <!--Figure here-->
+
+    <h3>Query and target regions</h3>
+    <h4>Promoter mode</h4>
+    <h5>Query regions</h5>
+    <p>For the promoter mode, the input query regions can be defined by either a BED6 file or a gene name list, one
+      name per line. The web service will fetch promoter regions automatically if gene names are provided. The BED file
+      should have 6 columns, and each region should have its unique id. For the gene name list, both Ensembl ID and
+      gene symbols are accepted. Sample query regions are shown below: </p>
+    <!--Figure here-->
+    <p>Please note that gene symbols are case-sensitive. For human gene symbols, all letters should be uppercase,
+      whereas for mouse gene symbols, only the first letter should be uppercase.</p>
+    <p>Input query regions can either be pasted in the textarea of the Query region box, or uploaded as a file. If you
+      are using gene names, you may specify which range around TSSs should be used as promoters. By default, it is
+      defined as 500kb upstream and 1000kb downstream the TSS.</p>
+    <!--Figure here-->
+    <h5>Target regions</h5>
+    <h6>Submode: search a gene cluster</h6>
+    <p>In this mode, you may search for a gene cluster and define target regions with gene names in the cluster. You
+      can type an Ensembl ID or a gene symbol in the searching bar. A search results window will pop up with candidate
+      clusters listed in it. Please note that there will be no cluster available if the gene has no matching paralogues
+      in the species. You may click on any cluster name to further examine genes and their descriptions in this
+      cluster. Click the circled check on the rightside of the cluster namt to select the cluster you would like to
+      use. You may click anywhere outside the pop-up window at anytime to close it.</p>
+    <!--Figure here-->
+
+    <div id="EntireCluster">Align the entire gene cluster</div>
+    <p>EpiAlignment provides a special mode for functional comparison among genes in the same cluster. It can fetch all
+      human and mouse genes in the same gene cluster and align them all-against-all. To use this mode, do not provide
+      any query regions, and simply search for a gene cluster in the Target regions box, then submit.</p>
+
+    <h6>Submode: define target regions with a BED file / a gene list.</h6>
+    <p>In this mode, you may define target regions by yourself with a BED6 file or a gene name list. In this case, the
+      format of the input target regions is exactly the same as query regions. The query and target region files do not
+      need to have the same row counts, as EpiAlignment will perform an all-against all alignment.</p>
+
+    <h4>Enhancer mode</h4>
+    <h5>Query regions</h5>
+    <p>For the enhancer mode, the input query regions need to be defined with a BED6 file, in which each line should
+      have a unique name. A sample data is shown below:</p>
+    <!--Figure here-->
+    <h5>Target regions</h5>
+    <h6>Submode: use homologous regions in this species</h6>
+    <p>This mode allows users to define target regions using homologous information. The user needs to specify how long
+      the homologous regions will be extended. By default, they will be extended 20,000 kb from the two ends,
+      respectively.</p>
+    <!--Figure here-->
+
+    <h6>Submode: define target regions with a BED file</h6>
+    <p>In this mode, you may define target regions by yourself with a BED6 file. This BED6 file should have the same
+      row count and order as the query region BED6 file, as EpiAlignment will directly pair them based on their line
+      number, and align each pair separately. A sample input file is shown below:</p>
+    <!--Figure here-->
+
+    <h2>Output</h2>
+    <p>You will be redirect to the result page after successfully submitting your data. The result page will refresh
+      automatically until the task is done. To align a pair of regions of lengths m and n, O(mn) time is required by
+      EpiAlignment. Therefore, given your region lengths and numbers, the task may take minutes to hours to finish. You
+      may provide your email and choose to be notified by email after the task is done, or you can bookmark the page
+      and come back later. We recommend that the users select either way if there are more than 100 region pairs,
+      especially when using the enhancer mode.</p>
+
+    <h3>Promoter mode</h3>
+    <p>For the promoter mode, the result page shows two heatmaps and a table. EpiAlignment scores are plotted in the
+      first heatmap to show scores of any query region (row) against all target region(s) (column). A sequence-only
+      alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap.</p>
+    <p>For each query region (row), EpiAlignment detects if its best hit switches from one target region to another
+      with EpiAlign and Sequence-only alignment. The best hit is considered as "changed" if it meets the following
+      criteria:</p>
+
+    <div class="flexRow flexStart flexWrap">
+      <table>
+        <caption>EpiAlign</caption>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Target region A</th>
+            <th>Target region B</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Query region</th>
+            <td><div class="equation">E<sub>A</sub></div></td>
+            <td><div class="equation">E<sub>B</sub></div></td>
+          </tr>
+        </tbody>
+      </table>
+      <table>
+        <caption>Sequence-only alignment</caption>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Target region A</th>
+            <th>Target region B</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Query region</th>
+            <td><div class="equation">S<sub>A</sub></div></td>
+            <td><div class="equation">S<sub>B</sub></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Assume that in Sequence-only alignment, S<sub>A</sub> &#62; S<sub>B</sub>, whereas in EpiAlign, E<sub>A</sub>
+      &#60; E<sub>B</sub>. For the queryregion, the best hit of the query region will be considered as switched from
+      Target A to B when using EpiAlign if E<sub>B</sub> &#62; S<sub>B</sub> and E<sub>A</sub> &#60; S<sub>A</sub>. In
+      other words, we required that for the hit found by EpiAlign, the epigenomic information has to reinforce the
+      chromosomal similarity, where as for the hit found by Sequence-only alignment, the epigenomic information has to
+      undermine the chromosomal similarity.</p>
+
+    <p>For query regions with switched target, the best hit found by EpiAlign is highlighted by a green box, and the
+      best hit found by Sequence-only alignment is highlighted by a gray box.</p>
+    <p>The table shows details of the alignments between each pair of promoters. You can sort the table by each column
+      by clicking the arrow beside column name. Click the arrow beside "index" to reset the order. The table can be
+      downloaded by clicking "Download results".</p>
+    <p>Note: if you set epigenomic weight to zero during input, the EpiAlignment score will be the degenerated
+      sequence-only alignment score, and no sequence-only result will be reported.</p>
+    <!--Figure here-->
+
+    <h3>Enhancer mode</h3>
+    <p>For the enhancer mode, the result page shows an interactive table with alignment details. The table can be
+      sorted by each column by clicking the arrow beside column name. You can also click on each row to expand it and
+      view the highest alignment scores and the alignment score distributions along the target region. The table can be
+      downloaded by clicking "Download results".</p>
+
+  </div>
+
+
+  <div class="footer">
+    <!--Citations-->
+  </div>
+
+</body>
+
+</html>

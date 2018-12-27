@@ -1094,6 +1094,11 @@ div.section table.verticalBorder * tr > *:not(:last-child) {
 	border-right: 1px solid #999999;
 }
 
+div.section img {
+	max-width: 800px;
+	margin: 0.5rem 1rem 0.5rem 1.5rem;
+}
+
 span.equation {
 	white-space: nowrap;
 	font-family: 'Times New Roman', Times, serif;

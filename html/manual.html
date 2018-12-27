@@ -91,11 +91,11 @@
     <p>After successfully submitting the data, you will be redirect to the result page. For the promoter mode, the
       result page shows two heatmaps and a table. The heatmaps illustrate alignment scores between every pair of
       promoters and the best hits found for each query promoter.</p>
-    <!--Figure here-->
+    <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
     <p>The table shows details of the alignments between each pair of promoters. You can sort the table by each column
       by clicking the arrow beside column name. Click the arrow beside "index" to reset the order. The table can be
       downloaded by clicking "Download results".</p>
-    <!--Figure here-->
+    <img alt="Data table for promoter mode" src="assets/images/PromoterTable_comments.png">
 
     <h3>An example for using the enhancer mode</h3>
     <!--Example 2-->
@@ -132,10 +132,11 @@
     </div>
 
     <h4>Output</h4>
-    <p>You will be redirected to the result page after submitting the data. For the enhancer mode, the result page shows
+    <p>You will be redirected to the result page after submitting the data. For the enhancer mode, the result page
+      shows
       an interactive table with region information. You can click on each row to expand it and view the alignment score
       distribution along the target region.</p>
-    <!--Figure here-->
+    <img alt="Expandable data table for enhancer mode" src="assets/images/Enhancer_result_comment.png">
     <p>The table can be downloaded by clicking "Download results".</p>
     <p>&nbsp;</p>
     <p>EpiAlignment also provides many other ways of defining query and target regions. Please check out the Usage
@@ -231,7 +232,8 @@
       <em>APH1B</em>.</p>
 
     <h4>Define target regions with a BED file / a gene list</h4>
-    <p>This mode is designed so that users can customize their query and target regions. Users can use BED6 files or
+    <p>This mode is designed so that users can customize their query and target regions. Users can use
+      <a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format1" target="_blank">BED6</a> files or
       gene names to define the regions. If gene names are provided, EpiAlignment will automatically fetch all promoters
       of the genes, which could be handy if you don't want to retrieve promoter regions by yourself. EpiAlignment will
       then align each input query region to all input target regions to find top hits.</p>
@@ -240,7 +242,8 @@
     <h4>Use homologous regions in this species</h4>
     <p>This mode allows users to define target regions using homologous information. Specifically, EpiAlignment will
       first extend each query region by a specified distance (default: 20,000kb) upstream and downstream, and then use
-      liftOver to remap the extended region to the other species. If the remapping succeeds, the result region will be
+      <a href="https://genome.ucsc.edu/cgi-bin/hgLiftOver" target="_blank">liftOver</a> to remap the extended region to
+      the other species. If the remapping succeeds, the result region will be
       used as the target region.</p>
     <h4>Define target regions with a BED file</h4>
     <p>Similar to the second submode of the promoter mode, this is developed so that the users can define their own
@@ -263,10 +266,11 @@
     <p>EpiAlignment provides users with paired epigenomic peak files of matching tissues, curated from epigenome
       consortia including the RoadMap Project, ENCODE and mouse ENCODE, and public comparative epigenomic studies.</p>
     <p>To select public peak files, in the Query regions box, click "Click here to select a paired public dataset."</p>
-    <!--Figure here-->
+    <img alt="Public dataset selection button" src="assets/images/presetDataButton.png">
     <p>In the pop-up window, click the cell representing the tissue type and histone mark that you want to select.
       There are two numbers on each cell in the format of "H:x M:y". The two numbers represents number of peak files
-      available in human and mouse, respectively. Once you click the cell, available experiment IDs will be listed on the
+      available in human and mouse, respectively. Once you click the cell, available experiment IDs will be listed on
+      the
       rightside. You may click the icon beside the experiment ID to see experiment details on their original ENCODE/GEO
       database page.</p>
     <p>Click on the experiment ID you'd like to select, then press confirm. The selected experiment
@@ -274,11 +278,11 @@
     <p>You may also click anywhere outside the pop-up window at any time to close it without making any changes to your
       peak file selection.
     </p>
-    <!--Figure here-->
+    <img alt="Public dataset selection window" src="assets/images/presetWindow.png">
     <p>The user can also upload their own peak files. To do this, choose and upload your peak file (BED6 format) for
       the first species in the Query regions box, and the peak file for the second species in the Target regions box.
       <em>Uploading your own peak file will clear any previously selected public data in all references.</em></p>
-    <!--Figure here-->
+    <img alt="Upload your own peak file" src="assets/images/UploadPeak_comment.png">
 
     <h3>Query and target regions</h3>
     <h4>Promoter mode</h4>
@@ -287,22 +291,23 @@
       name per line. The web service will fetch promoter regions automatically if gene names are provided. The BED file
       should have 6 columns, and each region should have its unique id. For the gene name list, both Ensembl ID and
       gene symbols are accepted. Sample query regions are shown below: </p>
-    <!--Figure here-->
+    <img alt="Sample files for promoter query regions" src="assets/images/sampleGeneName.png">
     <p>Please note that gene symbols are case-sensitive. For human gene symbols, all letters should be uppercase,
       whereas for mouse gene symbols, only the first letter should be uppercase.</p>
     <p>Input query regions can either be pasted in the textarea of the Query region box, or uploaded as a file. If you
       are using gene names, you may specify which range around TSSs should be used as promoters. By default, it is
       defined as 500kb upstream and 1000kb downstream the TSS.</p>
-    <!--Figure here-->
+    <img alt="Select TSS flanking ranges for promoters" src="assets/images/TSSrange_comments.png">
     <h5>Target regions</h5>
     <h6>Submode: search a gene cluster</h6>
     <p>In this mode, you may search for a gene cluster and define target regions with gene names in the cluster. You
       can type an Ensembl ID or a gene symbol in the searching bar. A search results panel will pop up with candidate
       clusters listed in it. Please note that there will be no cluster available if the gene has no matching paralogues
       in the species. You may click on any cluster name to further examine genes and their descriptions in this
-      cluster. Click the circled check (<i class="material-icons">check_circle_outline</i>) on the rightside of the cluster name to select the cluster you would like to
+      cluster. Click the circled check (<i class="material-icons">check_circle_outline</i>) on the rightside of the
+      cluster name to select the cluster you would like to
       use. You may click anywhere outside the pop-up panel at anytime to close it.</p>
-    <!--Figure here-->
+    <img alt="Gene cluster search and selection panel" src="assets/images/GeneClusters_comment.png">
 
     <div id="EntireCluster">Align the entire gene cluster</div>
     <p>EpiAlignment provides a special mode for functional comparison among genes in the same cluster. It can fetch all
@@ -318,19 +323,22 @@
     <h5>Query regions</h5>
     <p>For the enhancer mode, the input query regions need to be defined with a BED6 file, in which each line should
       have a unique name. A sample data is shown below:</p>
-    <!--Figure here-->
+    <img alt="Enhancer mode sample query regions" src="assets/images/Enhancer_s1.png">
     <h5>Target regions</h5>
     <h6>Submode: use homologous regions in this species</h6>
     <p>This mode allows users to define target regions using homologous information. The user needs to specify how long
-      the homologous regions will be extended. By default, they will be extended 20,000 kb from the two ends,
+      the query regions will be extended to be remapped with liftOver. By default, they will be extended 20,000 kb from
+      the two ends,
       respectively.</p>
-    <!--Figure here-->
+    <img alt="Use homologous regions for enhancer targets" src="assets/images/OrthoMode_comments.png">
 
     <h6>Submode: define target regions with a BED file</h6>
     <p>In this mode, you may define target regions by yourself with a BED6 file. This BED6 file should have the same
       row count and order as the query region BED6 file, as EpiAlignment will directly pair them based on their line
-      number, and align each pair separately. A sample input file is shown below:</p>
-    <!--Figure here-->
+      number, and align each pair separately. EpiAlignment will only use region names from the query region file to
+      refer to individual pairs, so it is recommended to keep the names same between query regions and the target
+      regions. A sample input file is shown below, paired with the sample query region file shown above:</p>
+    <img alt="Enhancer mode sample target regions" src="assets/images/Enhancer_s2.png">
 
     <h2>Output</h2>
     <p>You will be redirect to the result page after successfully submitting your data. The result page will refresh
@@ -408,7 +416,7 @@
       downloaded by clicking "Download results".</p>
     <p>Note: if you set epigenomic weight to zero during input, the EpiAlignment score will be the degenerated
       sequence-only alignment score, and no sequence-only result will be reported.</p>
-    <!--Figure here-->
+    <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
 
     <h3>Enhancer mode</h3>
     <p>For the enhancer mode, the result page shows an interactive table with alignment details. The table can be

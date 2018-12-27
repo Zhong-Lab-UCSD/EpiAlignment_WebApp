@@ -15,9 +15,16 @@
 </head>
 
 <body>
-  <div id="header" class="result">
+  <div id="header" class="result noFlex flexRow flexCenter flexWrap">
     <!--Introduction-->
-    <h1>EpiAlignment: chromosomal similarity searching engine</h1>
+    <div id="headerContainer" class="flex flexColumn flexStretch flexNoWrap flexNoGap">
+      <h1 class="flex">EpiAlignment: a chromosomal similarity search engine</h1>
+    </div>
+    <div id="headerButtonHolder" class="flex flexRow flexWrap flexCenter justifyEnd">
+      <a class="buttons flexRow flexCenter justifyCenter" target="_blank" href="manual.html"><i class="material-icons">help_outline</i>Manual</a>
+      <a class="buttons flexRow flexCenter justifyCenter" target="_blank" href="https://github.com/Zhong-Lab-UCSD/EpiAlignment_WebApp">
+        <img src="assets/images/GitHub-Mark-Light-32px.png">View on Github</a>
+    </div>
   </div>
   <!--alignment steps-->
   <div data-app id="result_app" class="flex flexColumn flexStretch" v-cloak>
@@ -151,7 +158,9 @@
         <div class="enhancerHint" v-if="alignMode === 'enhancer'">
           Please click on individual table rows to see detailed results.
         </div>
-        <v-data-table :headers="headers" :items="dataEntries" item-key="index" class="elevation-1">
+        <v-data-table :headers="headers" :items="dataEntries" 
+          item-key="index" class="elevation-1" :pagination.sync="paginationObj"
+          :rows-per-page-items="rowsPerPageItems">
           <template slot="no-data">
           </template>
           <template slot="items" slot-scope="row">
@@ -215,6 +224,21 @@
         <div id="embeddedBrowser"></div>
       </div>
     </div>
+  </div>
+  <div id="footer" class="flexRow flexNoWrap flexCenter noFlex">
+    <div class="flex flexColumn flexStretch flexNoGap">
+      <!-- footer text -->
+      <div>Copyright © 2018 The Regents of the University of California. All Rights
+        Reserved.</div>
+      <div class="flex flexRow flexWrap flexStretch flexNoGap">
+        <div>Created by Jia Lu, Xiaoyi Cao and Sheng Zhong, Department of
+          Bioengineering.</div>
+        <a href='&#109;&#097;&#105;&#108;&#116;&#111;:&#115;&#122;&#104;&#111;&#110;&#103;&#064;&#101;&#110;&#103;&#046;&#117;&#099;&#115;&#100;&#046;&#101;&#100;&#117;'>Contact
+          us via email</a>
+        <a href="https://github.com/Zhong-Lab-UCSD/EpiAlignment_WebApp" target="_blank">Find us on Github</a>
+      </div>
+    </div>
+    <img id="ucsdLogo" src="assets/images/UCSanDiegoLogo-White.png">
   </div>
 </body>
 

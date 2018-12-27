@@ -34,6 +34,15 @@ var app = new Vue({
     geneIdentifier1: null, // ['transID1', 'region_name1']
     geneIdentifier2: null, // ['transID2', 'region_name2']
     showHeatmap: false,
+    rowsPerPageItems: [
+      10,
+      20,
+      50,
+      { 'text': '$vuetify.dataIterator.rowsPerPageAll', 'value': -1 }
+    ],
+    paginationObj: {
+      rowsPerPage: 20
+    },
     headers: [
       {
         text: '#',

@@ -96,6 +96,9 @@ var app = new Vue({
       }
     ],
     // selected datasets
+    tempSelectedEntry: null,
+    tempSelectedExperimentIds: null,
+    selectedEntryDescHtml: null,
     selectedEntry: null,
     selectedExperimentIds: null,
     // ENCODE datasets
@@ -104,6 +107,8 @@ var app = new Vue({
     // Other public datasets
     publicFilters: [],
     publicSamples: [],
+
+    peakFiles: [ [], [] ],
 
     // Cluster related
     clusterText: null,
@@ -156,7 +161,7 @@ var app = new Vue({
       return this.formParams.alignMode === 'enhancer'
     },
     genomeRegionLabel: function () {
-      return 'Define searching regions with a BED file' +
+      return 'Define target regions with a BED file' +
         (this.enhancerSelected ? '.' : ' / a gene list.')
     },
     genomePlaceholder: function () {
@@ -177,6 +182,19 @@ var app = new Vue({
     },
     maxSampleFilterLength: function () {
       return Math.max(this.encodeFilters.length, this.publicFilters.length)
+    },
+
+    presetButtonText: function () {
+      if (!this.selectedExperimentIds) {
+        if (this.peakFiles.some(peakFile => peakFile.length)) {
+          return 'Custom peak file uploaded. ' +
+            'Click here to use public datasets instead.'
+        } else {
+          return 'Click here to select a paired public dataset.'
+        }
+      }
+      return 'Experiment ' + this.selectedEntryDescHtml +
+        ' selected. Click here to change.'
     }
   },
   created: function () {
@@ -267,23 +285,26 @@ var app = new Vue({
       })
     },
 
-    selectEntry: function (entry) {
-      this.selectedEntry = entry
+    tempSelectEntry: function (entry, sampleDesc, filter) {
+      this.tempSelectedEntry = entry
       if (entry) {
-        this.selectedExperimentIds = {}
+        this.tempSelectedEntryDescHtml = '<strong>' + filter.label +
+          '</strong> on <strong>' + sampleDesc + '</strong>'
+        this.tempSelectedExperimentIds = {}
         this.speciesSupported.forEach(species => {
-          this.selectedExperimentIds[species.name] = entry[species.name][0].id
+          this.tempSelectedExperimentIds[species.name] = entry[species.name][0].id
         })
       } else {
-        this.selectedExperimentIds = null
+        this.tempSelectedExperimentIds = null
+        this.tempSelectedEntryDescHtml = null
       }
     },
 
     selectExperiment: function (experimentId, speciesName) {
-      let tempSelectedIds = this.selectedExperimentIds
+      let tempSelectedIds = this.tempSelectedExperimentIds
       tempSelectedIds[speciesName] = experimentId
-      this.selectedExperimentIds = null
-      this.selectedExperimentIds = tempSelectedIds
+      this.tempSelectedExperimentIds = null
+      this.tempSelectedExperimentIds = tempSelectedIds
     },
 
     toggleShowParam: function () {
@@ -293,6 +314,8 @@ var app = new Vue({
     },
 
     checkAlignMode: function () {
+      // clear all input regions (peaks can be retained)
+      this.clearSample()
       if (this.checkModeConflict() || (
         !this.modeNotSelected && !this.formParams.searchRegionMode
       )) {
@@ -346,9 +369,10 @@ var app = new Vue({
               return false
             }
             encodeData.push(this.selectedExperimentIds[species.name])
+            return true
           })
         })
-        if (encodeData.length === 2) {
+        if (encodeData.length === this.formParams.genomeAssembly.length) {
           encodeData.forEach(dataId => {
             formData.append('encodeData[]', dataId)
           })
@@ -356,6 +380,8 @@ var app = new Vue({
       }
       if (this.selectedCluster) {
         formData.append('clusters', this.selectedCluster.id)
+      } else if (this.clusterText.match(/Cluster_[1-9][0-9]*/)) {
+        formData.append('clusters', this.clusterText)
       }
       postAjax(FORM_SUBMIT_TARGET, formData, 'json', 'POST')
         .then(response => {
@@ -365,19 +391,19 @@ var app = new Vue({
             'check_circle' +
             '</i> Data submitted to server. Redirecting to the ' +
             'result page ...'
-          // Testing code
-          // if (window.confirm('Please click "Ok" to go to the result ' +
+          // /* ***** Testing code *****
+          //  * This is added to prevent redirecting to the result page
+          //  * so that form submission process can be captured in console.
+          //  */
+          // if (!window.confirm('Please click "Ok" to go to the result ' +
           //   'page, click "Cancel" to remain at this page.')
           // ) {
-          //   window.setTimeout(() => {
-          //     window.location.href = '/result_page/' + runid
-          //   }, 500)
-          // } else {
-
+          //   return
           // }
+          //
           window.setTimeout(() => {
             window.location.href = '/result_page/' + runid
-          }, 3500)
+          }, 2000)
         })
         .catch(err => {
           this.hasError = true
@@ -391,12 +417,32 @@ var app = new Vue({
     selectEncodeData: function () {
       this.showPreset = true
     },
+    clearEncodeData: function () {
+      this.selectedEntry = null
+      this.selectedExperimentIds = null
+      this.selectedEntryDescHtml = null
+    },
     closeEncodeDialog: function () {
-      this.selectEntry(null)
+      this.tempSelectEntry(null)
       this.showPreset = false
     },
     confirmEncodeSelection: function () {
       this.showPreset = false
+      this.selectedEntry = this.tempSelectedEntry
+      this.selectedExperimentIds = this.tempSelectedExperimentIds
+      this.selectedEntryDescHtml = this.tempSelectedEntryDescHtml
+      this.peakFiles.forEach(peakFile => peakFile.splice(0))
+      // Manually clear this.$ref.peakFile1 and this.$ref.peakFile2
+      this.$refs.peakFile1.value = ''
+      this.$refs.peakFile2.value = ''
+    },
+
+    peakFileChanged: function (event, index) {
+      this.peakFiles[index].splice(0, this.peakFiles[index].length,
+        ...event.target.files)
+      if (event.target.files.length) {
+        this.clearEncodeData()
+      }
     },
 
     clusterInputChanged: function () {
@@ -419,6 +465,7 @@ var app = new Vue({
         if (this.postedClusterText &&
           !this.postedClusterText.startsWith('Cluster_')
         ) {
+          this.selectedCluster = null
           postAjax(
             CLUSTER_QUERY_TAGET + '/' + this.postedClusterText,
             null, 'json', 'GET'
@@ -447,11 +494,99 @@ var app = new Vue({
 
     selectCluster: function (cluster) {
       this.selectedCluster = cluster
-      this.clusterText = cluster.id
+    },
+    applyCluster: function (clusterId) {
+      this.clusterText = clusterId
+      this.showClusterCandidate = false
+      this.postedClusterText = ''
+    },
+    closeClusterPanel: function () {
+      if (this.showClusterCandidate) {
+        this.showClusterCandidate = false
+        this.selectedCluster = null
+      }
     },
 
-    closeClusterPanel: function () {
-      this.showClusterCandidate = false
+    getGeneSymbolAlias: function (gene, query) {
+      if (gene.symbol.toLowerCase().includes(query.toLowerCase())) {
+        return this.getHighlightedString(gene.symbol, query)
+      }
+      let aliasResult = null
+      gene.aliases.some(alias => {
+        if (alias.toLowerCase() === query.toLowerCase()) {
+          aliasResult = '<strong>' + alias + '</strong>'
+        }
+      })
+      if (!aliasResult) {
+        gene.aliases.some(alias => {
+          if (alias.toLowerCase().includes(query.toLowerCase())) {
+            aliasResult = this.getHighlightedString(alias, query)
+          }
+        })
+      }
+      return gene.symbol + (aliasResult ? ' (' + aliasResult + ')' : '')
+    },
+    getHighlightedString: function (haystack, needle) {
+      haystack = haystack || ''
+      let index = haystack.toLowerCase().indexOf(needle.toLowerCase())
+      if (index < 0) {
+        return haystack
+      }
+      return haystack.slice(0, index) + '<strong>' +
+        haystack.slice(index, index + needle.length) +
+        '</strong>' + haystack.slice(index + needle.length)
+    },
+
+    getDatasetHref: function (experimentId) {
+      if (experimentId.startsWith('ENC')) {
+        // ENOCDE
+        return 'https://www.encodeproject.org/experiments/' + experimentId
+      } else if (experimentId.startsWith('GS')) {
+        // GEO
+        return 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=' + experimentId
+      }
+    },
+    getDatasetLinkTitle: function (experimentId) {
+      if (experimentId.startsWith('ENC')) {
+        // ENOCDE
+        return 'See experiment details / download data on ENCODE website.'
+      } else if (experimentId.startsWith('GS')) {
+        // GEO
+        return 'See experiment details / download data on the GEO.'
+      }
+    },
+
+    useSample: function () {
+      if (!this.formParams.alignMode) {
+        console.log('Please select an align mode first!')
+      }
+      this.selectedExperimentIds = {
+        human: 'GSM1673960',
+        mouse: 'GSM1674003'
+      }
+      this.selectedEntryDescHtml = '<strong>ChIP-Seq (H3K4me3)</strong>' +
+        ' on <strong>round spermatids</strong>'
+      if (this.formParams.alignMode === 'promoter') {
+        this.formParams.genomeAssembly.splice(
+          0, this.formParams.genomeAssembly.length, 'hg38', 'mm10')
+        this.formParams.speciesText.splice(0, 1, 'MAGEB6\nMAGEB6B')
+        this.clusterText = 'Cluster_13680'
+        this.formParams.searchRegionMode = 'genecluster'
+      } else {
+        // enhancer mode
+        this.formParams.genomeAssembly.splice(
+          0, this.formParams.genomeAssembly.length, 'mm10', 'hg38')
+        this.formParams.speciesText.splice(
+          0, 1, 'chr12\t8207583\t8209349\tRegion_example\t0\t+\n')
+        this.formParams.searchRegionMode = 'homoregion'
+      }
+    },
+
+    clearSample: function () {
+      this.formParams.speciesText.splice(0, 2, '', '')
+      this.$refs.speciesInputFile1.value = ''
+      this.$refs.speciesInputFile2.value = ''
+      this.clusterText = ''
     }
   }
 })

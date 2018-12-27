@@ -20,22 +20,113 @@ body {
 div#header {
 	background: linear-gradient(150deg, #002d7a 0%, #01775e 100%);
 	color: #FFFFFF;
-	padding: 1.5em;
+	padding: 1em;
 }
 
 div#header.result {
 	font-size: 0.75em;
-	padding: 0.5em 1.5em;
+	padding: 1em 1.5em;
 }
 
-div#header > h1 {
-	margin: 0.5em 0;
+div#header h1 {
+	display: block;
 	font-size: 2em;
+	line-height: 1.3em;
+	margin: 0;
+}
+
+div#headerContainer {
+	padding: 0.5em;
+}
+
+div#header h1:not(:last-child) {
+	margin-bottom: 0.5em;
+}
+
+div#header #headerButtonHolder {
+	padding: 0.5em 0 0 0.5em;
+	min-width: 12em;
+	flex-basis: 12em;
+}
+
+div#header.result #headerButtonHolder {
+	flex-basis: 25em;
+}
+
+div#header #headerButtonHolder > * {
+	margin-bottom: 0.5em;
+	margin-right: 1em;
+}
+
+div#header a.buttons {
+	text-decoration: none;
+	color: #FFFFFF;
+	border: 2px #FFFFFF solid;
+	border-radius: 5px;
+	padding: 0.25em;
+	text-align: center;
+	width: 11em;
+	box-sizing: border-box;
+}
+
+div#header a.buttons:active {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+div#header a.buttons:hover {
+	background: rgba(255, 255, 255, 0.15);
+}
+
+div#header a.buttons:active {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+div#header a.buttons > img {
+	max-width: 1.2em;
+}
+
+div#header a.buttons > :first-child {
+	margin-right: 0.2rem;
+}
+
+div#footer {
+	background: linear-gradient(150deg, #01775e -30%, #002308 100%);
+	color: white;
+	font-size: 14px;
+	padding: 0.75em 2em;
 	line-height: 1.3em;
 }
 
-div#header > h1:not(:last-child) {
-	margin-bottom: 1em;
+div#footer .flexRow > *:not(:last-child) {
+	margin-right: 1em;
+}
+
+div#footer .flexRow > *:not(:last-child)::after {
+	content: '|';
+	margin-left: 1em;
+}
+
+div#footer .flexColumn > *:not(:last-child) {
+	margin-bottom: 0.2em;
+}
+
+div#footer a {
+	color: white;
+	text-decoration: none;
+}
+
+div#footer a:active,
+div#footer a:hover {
+	text-decoration: underline;
+}
+
+img#ucsdLogo {
+	width: 150px;
+	margin: 0 10px 0 25px;
+}
+
+body > div:not(.noFlex) {
+	flex: 1 0 auto;
 }
 
 [v-cloak] > * { display:none !important; }
@@ -43,10 +134,24 @@ div#header > h1:not(:last-child) {
   content: " ";
   display: block;
   width: 160px;
-  height: 160px;
+	height: 160px;
 	background-image: url('../assets/images/loading.svg');
 	background-repeat: no-repeat;
 	background-position: center center;
+}
+
+div.disabledDueToStep1 {
+	opacity: 0.5;
+	filter: grayscale(100%);
+	pointer-events: none;
+}
+
+div.tooltipPanel {
+	padding: 0.5em;
+	border: #000000 dotted 0.5px;
+	opacity: 0.8;
+	background: #FFFFCC;
+	font-size: 14px;
 }
 
 form {
@@ -237,17 +342,12 @@ div.stepright div.help {
 	cursor: pointer;
 }
 
-div.stepright > div.help:hover {
+div.stepright div.help:hover {
 	opacity: 1;
 }
 
 div.searchClassPlaceholder {
 	font-style: italic;
-	padding: 0.5em;
-	border: #000000 dotted 0.5px;
-	opacity: 0.6;
-	background: #FFFFCC;
-	font-size: 14px;
 }
 
 div.submitStatus {
@@ -317,6 +417,13 @@ div#clusterList {
 	width: 12em;
 }
 
+div#clusterList > .clusterListHeader {
+	padding: 0.5em;
+	background: #CCCCCC;
+	font-weight: bold;
+	font-style: italic;
+}
+
 div#clusterList > ul {
 	padding: 0;
 	margin: 0;
@@ -326,7 +433,11 @@ div#clusterList > ul {
 div#clusterList > ul > li {
 	margin: 0;
 	cursor: pointer;
-	padding: 0.5em;
+	padding: 0.25em 0.5em;
+}
+
+div#clusterList > ul > li > i {
+	font-size: 1.5em;
 }
 
 div#clusterList > ul > li.selected {
@@ -335,10 +446,10 @@ div#clusterList > ul > li.selected {
 }
 
 div#selectedClusterHolder {
-	max-width: 23rem;
+	max-width: 20rem;
+	max-height: 23rem;
 	background: #FFFFFF;
 	padding-left: 0.5rem;
-	max-width: 20rem;
 	overflow-y: auto;
 	font-size: 12px;
 }
@@ -349,14 +460,32 @@ div#selectedClusterHolder ul {
 	list-style: none;
 }
 
-div#selectedClusterHolder li {
+div#selectedClusterHolder li > .speciesGeneHeader {
+	margin: 0.5em;
 	padding: 0.5em;
-	margin: 0;
+	background: #EEEEEE;
+	font-weight: bold;
+}
+
+div#selectedClusterHolder li > .speciesGeneHeader::first-letter {
+	text-transform: capitalize;
+}
+
+div#selectedClusterHolder li > ul {
+	margin: 0.5em;
 }
 
 div#selectedClusterHolder li > ul > li {
 	padding: 0.2em 0.5em;
 	margin: 0;
+}
+
+div#selectedClusterHolder li > ul > li > .geneName {
+	margin-right: 1em;
+}
+
+div#selectedClusterHolder li > ul > li > .geneDescription {
+	flex-basis: 10em;
 }
 
 div#inputRegionContainer > * {
@@ -585,8 +714,8 @@ span.keyboard {
 
 .resultHolder {
 	padding: 0.5rem 1rem;
-	min-width: 40rem;
-	flex-basis: 40rem;
+	min-width: 80rem;
+	flex-basis: 80rem;
 }
 
 a.buttonLink {
@@ -744,3 +873,148 @@ div.imgHolder {
 	background-repeat: no-repeat;
 	background-position: center center;
 }
+
+/* ***** Manual related styles ***** */
+
+div.manualHeader > h1 {
+	font-size: 28px;
+	margin: 2rem 2rem 1rem 2rem;
+}
+
+div.section {
+	margin: 0.5rem 2rem;
+}
+
+div.section > h1 {
+	font-size: 24px;
+	margin: 0 -0.5rem 0.5rem -0.75rem;
+	padding: 0.75rem;
+	background: linear-gradient(to right, rgba(0, 45, 122, 0.86) 10em,
+		rgba(0, 45, 122, 0.15) 98%, rgba(0, 45, 122, 0) 100%);
+	border-top: 2px #002d7a solid;
+	border-bottom: 2px #002d7a solid;
+	color: #ffffff;
+}
+
+div.section > h2 {
+	font-size: 24px;
+	margin: 1rem 0 0.5rem 0;
+	padding: 0.5rem 0;
+	border-bottom: 1px #002d7a dotted;
+	color: #002d7a;
+}
+
+div.section > h3 {
+	margin: 1rem 0 0.5rem 0;
+	padding: 0.5rem 0;
+}
+
+div.section > h4 {
+	margin: 0.5rem 0 0 0;
+	padding: 0.5rem 0;
+}
+
+div.section > h5 {
+	font-size: 1em;
+	font-weight: 500;
+	margin: 0.5rem 0 0 0;
+	padding: 0.25rem 0;
+}
+
+div.section > h6 {
+	font-size: 1em;
+	font-style: italic;
+	font-weight: 500;
+	text-decoration: underline solid #999999;
+	margin: 0.25rem 0 0 0;
+	padding: 0.25rem 0;
+}
+
+div.section > div.Submode {
+	font-size: 1em;
+	font-style: italic;
+	font-weight: normal;
+	text-decoration: underline solid #999999;
+	margin: 0.25rem 0 0 0;
+	padding: 0;
+}
+
+div.section > div#EntireCluster {
+	font-size: 1em;
+	font-style: italic;
+	font-weight: normal;
+	margin: 0.25rem 0 0 0;
+	padding: 0;
+}
+
+div.section > p {
+	margin: 0.5rem 0;
+}
+
+div.exampleSteps {
+	padding: 0.5rem;
+	border: 1px dotted #666666; 
+	background: #faf5de;
+}
+
+div.exampleSteps > ul {
+	margin: 0;
+}
+
+div.exampleSteps ul > li {
+	font-size: 14px;
+	list-style-type: circle;
+	line-height: 1.5em;
+}
+
+div.exampleSteps ul > div {
+	font-size: 14px;
+	font-family: Consolas, 'Courier New', Courier, monospace;
+	width: auto;
+	padding: 0.5em 1em;
+	margin: 0.25em 0;
+	background: #EEEEEE;
+	border: 1px solid #999999;
+}
+
+div.exampleSteps ul > div > pre {
+	margin: 0;
+}
+
+div.section table {
+	margin: 0.5rem;
+	border-collapse: collapse;
+	border-top: 2px solid #666666;
+	border-bottom: 2px solid #666666;
+}
+
+div.section table > caption {
+	padding: 0 1rem 0.5rem 1rem;
+	font-weight: bold;
+}
+
+div.section table > thead {
+	border-bottom: 1px solid #666666;
+	background: #cccccc;
+}
+
+div.section table tr > * {
+	padding: 0.3em 1em;
+}
+
+div.section table > tbody > tr {
+	border-bottom: 1px solid #999999;
+}
+
+div.section table > tbody > tr:nth-child(odd) {
+	background: #FFFFFF;
+}
+
+div.section table > tbody > tr:nth-child(even) {
+	background: #e0e0e0;
+}
+
+div.equation {
+	font-family: 'Times New Roman', Times, serif;
+}
+

@@ -49,6 +49,7 @@ var app = new Vue({
         value: 'id',
         align: 'left',
         sortable: true,
+        class: 'dataTableCell',
         width: 'auto'
       },
       {
@@ -56,6 +57,7 @@ var app = new Vue({
         value: 'region_name1',
         align: 'left',
         sortable: true,
+        class: 'dataTableCell',
         width: 'auto'
       },
       {
@@ -63,6 +65,7 @@ var app = new Vue({
         value: 'region1',
         align: 'left',
         sortable: true,
+        class: 'dataTableCell',
         width: 'auto'
       },
       {
@@ -70,6 +73,7 @@ var app = new Vue({
         value: 'region_name2',
         align: 'left',
         sortable: true,
+        class: 'dataTableCell',
         width: 'auto'
       },
       {
@@ -77,6 +81,7 @@ var app = new Vue({
         value: 'region2',
         align: 'left',
         sortable: true,
+        class: 'dataTableCell',
         width: 'auto'
       },
       {
@@ -84,6 +89,7 @@ var app = new Vue({
         value: 'scoreE',
         align: 'right',
         sortable: true,
+        class: 'dataTableCell',
         width: 'auto'
       },
       {
@@ -91,6 +97,7 @@ var app = new Vue({
         value: 'scoreS',
         align: 'right',
         sortable: true,
+        class: 'dataTableCell',
         width: 'auto'
       }
     ],
@@ -184,6 +191,7 @@ var app = new Vue({
             value: 'ensID1',
             align: 'left',
             sortable: true,
+            class: 'dataTableCell',
             width: 'auto'
           })
           headerCoor2Index++
@@ -199,6 +207,7 @@ var app = new Vue({
             value: 'ensID2',
             align: 'left',
             sortable: true,
+            class: 'dataTableCell',
             width: 'auto'
           })
         }
@@ -310,12 +319,14 @@ var app = new Vue({
         value: 'scoreE',
         align: 'left',
         sortable: true,
+        class: 'dataTableCell',
         width: 'auto'
       }, {
         text: 'Sequence-only hit coordinate',
-        value: 'scoreE',
+        value: 'scoreS',
         align: 'left',
         sortable: true,
+        class: 'dataTableCell',
         width: 'auto'
       })
     }

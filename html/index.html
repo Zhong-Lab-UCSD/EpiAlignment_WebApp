@@ -51,17 +51,25 @@
                 @change="checkAlignMode">
               <label for="enhancerRadio"> Enhancer</label>
             </div>
-            <div id="modeHelp" class="help flexRow flexCenter flexNoWrap">
-              <i class="material-icons">help</i>
+            <div id="modeHelp" class="help flexRow flexCenter flexNoWrap" @click="toggleModeHelp">
+              <i class="material-icons iconAtLeft">help</i>
               <div>Which mode should I choose?</div>
             </div>
           </div>
           <div v-show="formError.modeNotSelected" class="error flexRow flexNoWrap flexCenter">
-            <i class="material-icons">warning</i>
+            <i class="material-icons iconAtLeft">warning</i>
             <div>Please select an alignment mode.</div>
           </div>
-          <div v-show="!formParams.alignMode" class="tooltipPanel flexRow flexNoWrap flexCenter">
-            <div>Please select an alignment mode first.</div>
+          <div v-show="!formParams.alignMode || showModeHelp" class="tooltipPanel flexColumn flexNoWrap flexStretch"
+            :class="{ highlightBlink: !formParams.alignMode && showModeHelp }">
+            <div>The promoter mode attempts to align every input query region to all target regions to find the best hit
+            (all-against-all alignment). Therefore, it would be useful if you have query and target regions of similar lengths, and
+            would like to find one best match for the query region among a set of target regions. The promoter mode could also be
+            handy if you'd like to define promoter regions with gene names.</div>
+            <div>The enhancer mode, on the other hand, is more useful if you have target regions much longer than the query regions, and
+            you are trying to match the query regions to a sub-region of the target region (one-against-one alignment). This mode
+            allows defining target regions using homologous information.</div>
+            <div><a href="manual.html#overview">More information ...</a></div>
           </div>
         </div>
       </div>
@@ -128,7 +136,7 @@
           </div>
           <!--searching region-->
           <div class="speciesData flexColumn flexStretch">
-            <h3>Target region</h3>
+            <h3>Target regions</h3>
             <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Genome assembly:</div>
               <div>
@@ -274,39 +282,39 @@
             <div class="parameterContainer flexColumn flexStretch">
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel">s:</div>
+                  <div class="paramLabel"><em>s</em>:</div>
                   <input type="text" name="paras" v-model.number="formParams.paras" value="0.3">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel">&#956:</div>
+                  <div class="paramLabel"><em>&#956</em>:</div>
                   <input type="text" name="paramu" v-model.number="formParams.paramu" value="0.3">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel">&#954:</div>
+                  <div class="paramLabel"><em>&#954</em>:</div>
                   <input type="text" name="parak" v-model.number="formParams.parak" value="0.3">
                 </div>
               </div>
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel">&#960<sub>A</sub>:</div>
+                  <div class="paramLabel"><em>&#960<sub>A</sub></em>:</div>
                   <input type="text" name="piA" v-model.number="formParams.piA" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel">&#960<sub>C</sub>:</div>
+                  <div class="paramLabel"><em>&#960<sub>C</sub></em>:</div>
                   <input type="text" name="piC" v-model.number="formParams.piC" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel">&#960<sub>G</sub>:</div>
+                  <div class="paramLabel"><em>&#960<sub>G</sub></em>:</div>
                   <input type="text" name="piG" v-model.number="formParams.piG" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel">&#960<sub>T</sub>:</div>
+                  <div class="paramLabel"><em>&#960<sub>T</sub></em>:</div>
                   <input type="text" name="piT" v-model.number="formParams.piT" value="0.25">
                 </div>
               </div>
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel">&#960<sub>1</sub>:</div>
+                  <div class="paramLabel"><em>&#960</em><sub>1</sub>:</div>
                   <input type="text" name="pi1" v-model.number="formParams.pi1" value="0.1">
                 </div>
               </div>
@@ -358,7 +366,7 @@
             between human and mouse in EpiAlignment.
           </div>
           <div v-show="!presetLoaded">Loading ENCODE data ...</div>
-          <div v-show="presetLoaded" class="flexRow flexStretch flex">
+          <div v-show="presetLoaded" class="flexRow flexStretch flex flexNoGap">
             <div class="flex flexColumn" id="encodeTableHolder" @wheel.stop>
               <table class="encodeTable">
                 <thead>
@@ -420,18 +428,17 @@
               </table>
             </div>
             <div id="dataPanel">
-              <div v-if="tempSelectedEntry" class="flex" @wheel.stop>
+              <div v-if="tempSelectedEntry" @wheel.stop>
                 <template v-for="(experiments, species) in tempSelectedEntry">
-                  <h3>{{ experiments.length > 1 ? 'Datasets' : 'Dataset' }}
-                    for {{ species }}</h3>
+                  <h3>{{ species }} {{ experiments.length > 1 ? 'datasets' : 'dataset' }}</h3>
                   <ul>
-                    <li v-for="experiment in experiments" :class="{ selected: experiment.id === tempSelectedExperimentIds[species] }"
+                    <li class="flexRow flexNoGap flexNoWrap flexCenter" v-for="experiment in experiments" :class="{ selected: experiment.id === tempSelectedExperimentIds[species] }"
                       @click="selectExperiment(experiment.id, species)">
-                      <i class="material-icons" v-show="experiment.id === tempSelectedExperimentIds[species]">
+                      <i class="noFlex material-icons" v-show="experiment.id === tempSelectedExperimentIds[species]">
                         check
                       </i>
-                      {{ experiment.id }}
-                      <a target="_blank" :title="getDatasetLinkTitle(experiment.id)" :href="getDatasetHref(experiment.id)"><i
+                      <div class="flex">{{ experiment.id }}</div>
+                      <a class="noFlex" target="_blank" :title="getDatasetLinkTitle(experiment.id)" :href="getDatasetHref(experiment.id)"><i
                           class="material-icons">
                           open_in_new
                         </i></a>

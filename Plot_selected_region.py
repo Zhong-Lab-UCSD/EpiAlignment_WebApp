@@ -84,10 +84,11 @@ def Main():
   json_dict = json.loads(lines[0])
   #runid = sys.argv[1]
   #ind = int(sys.argv[2])
+  allpath_res = json_dict["path"]
   runid = json_dict["runid"]
   ind = int(json_dict["index"])
 
-  out_folder = "tmp_" + runid + "/"
+  out_folder = allpath_res + "/tmp_" + runid + "/"
 
   fename = out_folder + "epi_scores_" + runid
   if not os.path.isfile(fename):

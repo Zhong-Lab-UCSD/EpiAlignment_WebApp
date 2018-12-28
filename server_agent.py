@@ -567,7 +567,7 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
       else:
         json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi)
 
-      if (alignMode == "enhancer") or (intype1 == "bed" and intype2 == "bed"):
+      if (alignMode == "enhancer"):
         # a pair of bed.
         json_obj["region_name1"] = pair_name
 
@@ -598,9 +598,12 @@ def Main():
   # Parse the json string passed by node js. 
   web_json = ParseJson()
   # Output folder name
-  runid = web_json["runid"].split("_")[1]
-  out_folder = web_json["runid"] + "/"
+  runid = web_json["runid"]
+  allres_path = web_json["path"]
+  out_folder = allres_path + "/tmp_" + web_json["runid"] + "/"
   print runid
+  print out_folder
+  sys.stdout.flush()
   # Move all uploaded files to the output folder.
   MoveUploadFiles(out_folder, web_json["files"])
 

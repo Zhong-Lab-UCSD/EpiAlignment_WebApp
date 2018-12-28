@@ -40,13 +40,13 @@ def ReadHistones(fhist_name):
       line = fhist.readline().strip()
       if "@" in line:
         break
-      line = line.split("\t")
+      line = line.split()
       sp1.append(DBI.init(line[0], "bed"))
     while True:
       line = fhist.readline().strip()
       if line == "":
         break
-      line = line.split("\t")
+      line = line.split()
       sp2.append(DBI.init(line[0], "bed"))
  
   return sp1, sp2
@@ -146,11 +146,11 @@ def Main():
   input_list=[]
   with open(args.q_region[0],"r") as fbed1, open(args.q_region[1],"r") as fbed2:
     while True:
-      line1=fbed1.readline().strip().split("\t")
-      line2=fbed2.readline().strip().split("\t")
-      if line1[0]=="":
+      line1=fbed1.readline().strip().split()
+      line2=fbed2.readline().strip().split()
+      if len(line1) == 0:
         break
-      if line2[0]=="":
+      if len(line2) == 0:
         break
 
       bed1=Bed(line1)

@@ -42,7 +42,7 @@ def CheckFileLength(file1, file2):
 
 def CheckFileType(file1):
   with open(file1, "r") as fin:
-    line = fin.readline().strip().split("\t")
+    line = fin.readline().strip().split()
     if len(line) == 6:
       return "bed"
     elif len(line) == 1:
@@ -126,7 +126,7 @@ def Cons_transList(input1, intype1, promoterUp, promoterDown, sp, of_name):
   trans_list1 = []
   with open(input1, "r") as fin1:
     if intype1 == "bed":
-      trans_list1 = [line.strip().split("\t") for line in fin1]
+      trans_list1 = [line.strip().split() for line in fin1]
     elif intype1 == "name":
       i = 0
       for line in fin1:
@@ -171,7 +171,7 @@ def GenesInCluster(cluster_id, sp, of_name):
   cfname =  "Annotation/AnnotationFiles/" + sp + "_clusters"
   with open(cfname, "r") as cfin:
     for line in cfin:
-      line = line.strip().split("\t")
+      line = line.strip().split()
       if line[2] == cluster_id:
         cluster_genes.add(line[0])
   return list(cluster_genes)
@@ -230,7 +230,7 @@ def ExtendBed(fname, enhUp, enhDown):
   '''
   with open(fname, "r") as fin, open(fname + ".extend", "w") as fout:
     for line in fin:
-      line = line.strip().split("\t")
+      line = line.strip().split()
       if line[5] == "+":
         line[1] = str(int(line[1]) - enhUp)
         line[2] = str(int(line[2]) + enhDown)
@@ -272,12 +272,14 @@ def RemoveNonlift(input_bed, lift_bed):
           sys.exit(209)
         break
       i += 1
-      line2 = line2.split("\t")
+      line2 = line2.split()
 
       while True:
-        line1 = fin1.readline().strip().split("\t")
+        line1 = fin1.readline().strip().split()
         if line1[3] == line2[3]:
           print >> fout, "\t".join(line1) 
+          break
+        if len(line1) == 0:
           break
   return input_bed + ".clean"
 
@@ -498,7 +500,7 @@ def BedDict(fname):
   bed_dict = {}
   with open(fname, "r") as fin:
     for line in fin:
-      line = line.strip().split("\t")
+      line = line.strip().split()
       bed_dict[line[3]] = line[0:3] + [line[5]]
   return bed_dict
 
@@ -552,10 +554,10 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
   with open(epi_fname, "r") as fepi, open(out_name, "w") as fout:
     i = 1
     while True:
-      line_epi = fepi.readline().strip().split("\t")
+      line_epi = fepi.readline().strip().split()
       if seq_stat:
-        line_seq = fseq.readline().strip().split("\t")
-      if line_epi[0] == "":
+        line_seq = fseq.readline().strip().split()
+      if len(line_epi) == 0:
         break
       pair_name = line_epi[0].split("_", 2)[-1]
 
@@ -586,8 +588,9 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
       json_list.append(json_obj)
       i += 1
 
+  json_dump_dict = {"data": json_list, "alignMode": alignMode, "searchRegionMode": searchRegionMode, "runid": runid}
   with open(of_name + runid + ".json", "w") as fjson:
-    json.dump({"data": json_list}, fjson)
+    json.dump(json_dump_dict, fjson)
       
 
 

@@ -60,7 +60,7 @@ class Gene {
     this.symbol = symbol
     this.ensemblId = ensemblId
     this.aliases = aliases || []
-    this.aliases.unshift(this.symbol)
+    this.aliases.unshift(this.symbol.toLowerCase())
     this.description = description || ''
   }
 
@@ -280,7 +280,7 @@ class ClusterProcesser {
     maxMatchEntries = maxMatchEntries || MAX_MATCH_ENTRIES
     if (partialAlias.startsWith('ENSG') ||
       partialAlias.startsWith('ENSMUSG') ||
-      partialAlias.match(/ENS[A-Z]+[0-9]{11}|[A-Z]{3}[0-9]{3}[A-Za-z](-[A-Za-z])?|CG[0-9]+|[A-Z0-9]+\.[0-9]+|YM[A-Z][0-9]{3}[a-z][0-9]/)
+      partialAlias.match(/ENS[A-Z]+[0-9]{3}/)
     ) {
       // ensembl ID
       return this.clusterTableReadyPromise.then(() => {

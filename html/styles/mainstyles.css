@@ -8,7 +8,6 @@ html {
 body {
 	display: flex;
 	flex-direction: column;
-	width: 100vw;
 	height: 100vh;
 	margin: 0;
 	padding: 0;
@@ -733,6 +732,37 @@ div#encodeTableHolder {
 }
 
 /* ***** Result page related CSS rules ***** */
+
+div#runInfo {
+	padding: 1rem 1.5rem;
+	font-size: 12px;
+	background: #eeeeee;
+	border-bottom: 1px dashed #666666;
+}
+
+div#runInfo > div > div {
+	width: 20em;
+	margin: 0 0.5rem;
+}
+
+div#runInfo > div > div > span {
+	white-space: nowrap;
+}
+
+div#runInfo > div > div > span.entryKey {
+	margin-right: 1em;
+	color: #002d7a;
+	font-weight: 500;
+}
+
+div#runInfo > div > div > span.entryKey::after {
+	content: ': ';
+}
+
+div#runInfo > div > div.parameter {
+	width: 10em;
+	margin: 0 0.5rem;
+}
 
 div#pageContainer {
 	padding: 1rem;

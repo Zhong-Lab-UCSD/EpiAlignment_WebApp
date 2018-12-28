@@ -9,25 +9,76 @@ const setTimeoutPromise = function (timeout, resolvedValue) {
 const INQUIRY_TARGET_PREFIX = '/backend/results/'
 const INQUIRY_IMAGE_PREFIX = '/backend/result_image/'
 
+const RUN_INFO_DICT = 'assets/runInfoDict.json'
+
 const STATUS_RUNNING = -1
 const POLLING_INTERVAL_ENHANCER = 20000 // 20 seconds
-const POLLING_INTERVAL_PROMOTER = 5000 // 5 seconds
+const POLLING_INTERVAL_PROMOTER = 3000 // 5 seconds
 
 const MINIMUM_HEATMAP_GAP = 10
+
+const expandedRunInfoKeyList = [
+  [
+    'runid',
+    'submitTime',
+    'completeTime'
+  ], [
+    'alignMode',
+    'subMode',
+    'publicDataDesc'
+  ], [
+    'queryGenomeAssembly',
+    'queryInput',
+    'queryPeak'
+  ], [
+    'targetGenomeAssembly',
+    'targetPeak',
+    'targetInput',
+    'clusters'
+  ], [
+    'promoterUp',
+    'promoterDown'
+  ], [
+    'enhancerUp',
+    'enhancerDown'
+  ], [
+    'seqWeight',
+    'epiWeight'
+  ], [
+    'paraS',
+    'paraMu',
+    'paraK',
+    'piA',
+    'piC',
+    'piG',
+    'piT',
+    'pi1'
+  ]
+]
+
+const collapsedRunInfoKeyList = [
+  [
+    'runid',
+    'alignMode',
+    'publicDataDesc'
+  ]
+]
 
 var app = new Vue({
   el: '#result_app',
   data: {
+    expandedRunInfoList: [],
+    collapsedRunInfoList: [],
     runid: null,
     loading: true,
-    hasEmail: false,
-    emailAddress: null,
+    runInfoDictPromise: null,
+    email: null,
     downloadLink: '',
     error: false,
     errorMessage: '',
     imageBlobUrl: null,
     alignMode: null,
-    pollingTime: POLLING_INTERVAL_PROMOTER,
+    pollingTime: null,
     promoterColumnList: [],
     epiHeatmapList: [],
     hasSequence: true,
@@ -106,13 +157,15 @@ var app = new Vue({
   created: function () {
     const urlParams = new window.URLSearchParams(window.location.search)
     this.runid = urlParams.get('runid')
-    this.pollResult(this.runid).then(data => this.showData(data)
+    this.pollResult(this.runid).then(
+      data => this.showData(data)
     ).catch(err => {
       // TODO: err.status should say something
       this.loading = false
       this.error = true
       this.errorMessage = err.message
     })
+    this.runInfoDictPromise = postAjax(RUN_INFO_DICT, null, 'json', 'GET')
   },
   methods: {
     pollResult: function (runid) {
@@ -123,7 +176,22 @@ var app = new Vue({
       }
       return postAjax(INQUIRY_TARGET_PREFIX + runid, null, 'json', 'GET')
         .then(response => {
+          this.email = response.email || this.email
+
+          if (!this.expandedRunInfoList.length) {
+            // Add run info to expandedRunInfoList and collapsedRunInfoList
+            this.populateInfoList(
+              expandedRunInfoKeyList, this.expandedRunInfoList, response
+            )
+            this.populateInfoList(
+              collapsedRunInfoKeyList, this.collapsedRunInfoList, response
+            )
+          }
           if (response.status === STATUS_RUNNING) {
+            if (!this.pollingTime) {
+              this.pollingTime = response.alignMode === 'promoter'
+                ? POLLING_INTERVAL_PROMOTER : POLLING_INTERVAL_ENHANCER
+            }
             return setTimeoutPromise(this.pollingTime, runid)
               .then(runid => this.pollResult(runid))
           } else if (response.status > 0) {
@@ -135,8 +203,38 @@ var app = new Vue({
           }
         })
     },
+    populateInfoList: function (keyList, infoList, response) {
+      this.runInfoDictPromise.then(runInfoDict => {
+        keyList.forEach(keyRow => {
+          let infoRow = []
+          keyRow.forEach(key => {
+            if (response.hasOwnProperty(key)) {
+              let value = response[key]
+              if (runInfoDict.hasOwnProperty(key) &&
+                runInfoDict[key].values
+              ) {
+                runInfoDict[key].values.some(valueEntry => {
+                  if (valueEntry.key === value) {
+                    value = valueEntry.name
+                    return true
+                  }
+                  return false
+                })
+              }
+              infoRow.push({
+                key: runInfoDict[key].html || runInfoDict[key].name,
+                value: value,
+                parameter: runInfoDict[key].parameter
+              })
+            }
+          })
+          infoList.push(infoRow)
+        })
+      })
+    },
     setRunParameters: function (response) {
-      document.title = 'EpiAlignment - Result (runID: ' + this.runid + ')'
+      document.title = 'EpiAlignment - Result (submitted at: ' +
+        this.runid + ')'
 
       this.alignMode = response.alignMode
       this.downloadLink = window.location.protocol + '//' +

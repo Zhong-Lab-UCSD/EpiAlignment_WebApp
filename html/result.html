@@ -9,8 +9,12 @@
   <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@1.3.15/dist/vuetify.min.css" rel="stylesheet" type="text/css">
   <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-78231712-3"></script>
+  <script src="js/googleAnalytics.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/vuetify@1.3.15/dist/vuetify.js"></script>
+  <script defer src="js/lib/moment.min.js"></script>
+  <script defer src="js/lib/moment-timezone-with-data.min.js"></script>
   <script defer src="js/result.js" type="module"></script>
 </head>
 
@@ -28,6 +32,14 @@
   </div>
   <!--alignment steps-->
   <div data-app id="result_app" class="flex flexColumn flexStretch" v-cloak>
+    <div id="runInfo" class="noFlex flexColumn flexNoWrap flexNoGap">
+      <div class="noFlex flexRow flexWrap justifyStart" v-for="row in expandedRunInfoList">
+        <div class="flexRow flexWrap noFlex flexStart flexNoGap" :class="{ parameter: entry.parameter }" v-for="entry in row">
+          <span class="entryKey" v-html="entry.key"></span>
+          <span class="entryValue">{{ entry.value }}</span>
+        </div>
+      </div>
+    </div>
     <div class="loadingHolder flexColumn flexStretch" v-show="loading">
       <h3>Calculating...</h3>
       <img class="selfAlignStart" src="assets/images/loading.svg">
@@ -47,9 +59,9 @@
         Once the results are available, you may fetch your results via the
         bookmarked page in <strong>14 days</strong>.
       </div>
-      <div v-show="hasEmail">
+      <div v-show="email">
         You will also receive an email at your email address at
-        {{ emailAddress }} once the computation is done. Please check your spam
+        {{ email }} once the computation is done. Please check your spam
         folder regularly, or make sure messenger@mail.beta.givengine.org is on
         your approved sender list ("white list") and/or in your address book.
       </div>
@@ -57,7 +69,7 @@
     <div v-show="error">
       Error: {{ errorMessage }}
     </div>
-    <div id="pageContainer" class="flexRow flexWrap flexNoGap" v-if="!loading">
+    <div id="pageContainer" class="flexRow flexWrap flexNoGap" v-if="!loading && !error">
       <div id="heatmapPanel" class="flexRow flexStart flex flexWrap" v-if="alignMode === 'promoter'">
         <div id="heatmap" class="flexColumn flexStart">
           <div class="selfAlignStretch resultHeader">EpiAlign Score</div>
@@ -76,7 +88,7 @@
               <tr v-for="rowEntry in epiHeatmapList">
                 <th>{{ rowEntry.geneId }}</th>
                 <td class="heatmapCell" v-for="value in rowEntry.values">
-                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && (value.epiScore > value.seqScore) }">
+                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
                     <div :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
                     </div>
                   </div>
@@ -98,7 +110,7 @@
               <tr v-for="rowEntry in epiHeatmapList">
                 <th>{{ rowEntry.geneId }}</th>
                 <td class="heatmapCell" v-for="value in rowEntry.values">
-                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && (value.epiScore > value.seqScore) }">
+                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
                     <div :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
                     </div>
                   </div>
@@ -146,7 +158,7 @@
               <li>
                 the best hit region with EpiAlign (<em>the new hit</em>) is
                 different from the best hit region with Sequence-only (<em>the
-                old hit</em>), and
+                  old hit</em>), and
               </li>
               <li>
                 <em>the new hit</em> has a <em>higher</em> score with
@@ -160,7 +172,7 @@
             <em>the new hit</em> will be marked on the heatmap with a green
             square ( <div class="legendIcon heatmapObj epiMax"></div> ), and
             <em>the old hit</em> will be marked with a gray square (
-              <div class="legendIcon heatmapObj seqMax"></div>
+            <div class="legendIcon heatmapObj seqMax"></div>
             ).
           </p>
           <p>
@@ -196,9 +208,11 @@
               <td class="dataTableCell" v-if="row.item[geneIdentifier2] !== '.'">{{ row.item[geneIdentifier2] }}</td>
               <td class="dataTableCell" v-if="row.item.ensID2 !== '.'">{{ row.item.ensID2 }}</td>
               <td class="dataTableCell">{{ row.item.region2 }}</td>
-              <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode === 'promoter' ?
+              <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode ===
+                'promoter' ?
                 Number.parseFloat(row.item.scoreE).toFixed(3) : row.item.targetE }}</td>
-              <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode === 'promoter' ?
+              <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode ===
+                'promoter' ?
                 Number.parseFloat(row.item.scoreS).toFixed(3) : row.item.targetS }}</td>
             </tr>
           </template>

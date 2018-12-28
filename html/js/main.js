@@ -46,8 +46,8 @@
 
 import postAjax from './promisedAjax.js'
 
-const PROMOTER_UP_DEFAULT = 500
-const PROMOTER_DOWN_DEFAULT = 1000
+const PROMOTER_UP_DEFAULT = 1000
+const PROMOTER_DOWN_DEFAULT = 500
 const ENHANCER_FLANK_DEFAULT = 20000
 const SEQ_WEIGHT_DEFAULT = 0.9
 const EPI_WEIGHT_DEFAULT = 0.1
@@ -384,6 +384,10 @@ var app = new Vue({
       } else if (this.clusterText.match(/Cluster_[1-9][0-9]*/)) {
         formData.append('clusters', this.clusterText)
       }
+
+      // Add timezone data
+      formData.append('timeZone', moment.tz.guess())
+
       postAjax(FORM_SUBMIT_TARGET, formData, 'json', 'POST')
         .then(response => {
           let runid = response.runid

@@ -13,6 +13,10 @@ const pythonPlotScript = 'Plot_selected_region.py'
 const util = require('util')
 const path = require('path')
 const readFilePromise = util.promisify(fs.readFile)
+const writeFilePromise = util.promisify(fs.writeFile)
+
+const E_CANNOT_READ_RESULTS = 401
+
 const ClusterProcesser = require('./clusterProcessing')
 
 var clusterProc = new ClusterProcesser(
@@ -34,6 +38,9 @@ var clusterProc = new ClusterProcesser(
     clusterSuffix: '_clusters'
   }
 )
+
+const RunInfo = require('./runInfoParser')
+const resultFolder = 'userResults'
 
 var runIdDict = {}
 const RUNNING_CODE = -1
@@ -71,30 +78,54 @@ app.post('/form_upload', cpUpload, function (req, res) {
   // Make new folder for results
 
   let runid = makeid()
-  while (fs.existsSync('tmp_' + runid)) {
+  let tmpPath = path.format({
+    dir: resultFolder,
+    name: 'tmp_' + runid
+  })
+  while (fs.existsSync(tmpPath)) {
     runid = makeid()
+    tmpPath = path.format({
+      dir: resultFolder,
+      name: 'tmp_' + runid
+    })
   }
-  fs.mkdirSync('tmp_' + runid)
+  fs.mkdirSync(tmpPath)
   runIdDict[runid] = RUNNING_CODE
 
   // construct an object for python input
   let pyMessenger = {
     'body': req.body,
     'files': req.files,
-    'runid': 'tmp_' + runid
+    'runid': runid,
+    'path': resultFolder
   }
+
+  let runInfoPath = path.format({
+    dir: tmpPath,
+    name: runid,
+    ext: '.runInfo.json'
+  })
+
+  let runInfoObject = new RunInfo(req.body, req.files, runid)
+
+  let writePromise = writeFilePromise(
+    runInfoPath, JSON.stringify(runInfoObject, null, 2))
 
   // execute python code on the server.
   let scriptExecution = spawn('python', [pythonScript])
 
+  let stdErrData = ''
   // Handle normal output
   scriptExecution.stdout.on('data', (data) => {
     console.log(data + '')
   })
 
   // Handle error output
-  scriptExecution.stderr.on('data', (data) => {
-    console.log(data + '')
+  scriptExecution.stderr.on('data', data => {
+    if (data && data.startsWith && data.startsWith('[EpiAlignment]')) {
+      data = data.replace('[EpiAlignment]', '').trim()
+      stdErrData += (stdErrData ? '\n' : '') + data
+    }
   })
 
   scriptExecution.on('exit', (code) => {
@@ -112,8 +143,11 @@ app.post('/form_upload', cpUpload, function (req, res) {
       'University of California, San Diego\n' +
       '9500 Gilman Dr.\nLa Jolla, CA 92122-0412\nUnited States'
 
-    console.log('Process quit with code : ' + code)
-    runIdDict[runid] = code
+    console.log('[' + runid + '] Process quit with code : ' + code)
+    runInfoObject.status = code
+    writePromise.then(() =>
+      writeFilePromise(runInfoPath, JSON.stringify(runInfoObject, null, 2))
+    )
     if (message) {
       // needs to write an email
       let transporter = nodemailer.createTransport({
@@ -131,6 +165,8 @@ app.post('/form_upload', cpUpload, function (req, res) {
           'In some cases this may be caused by an erroneous input format, ' +
           'in which case you may try again by providing the correctly ' +
           'formatted input at https://beta.epialign.ucsd.edu/. \n\n' +
+          'Details of your run: \n\n' +
+          runInfoObject.toString('email') + '\n' +
           'If the error keeps happening, please let us know by replying to ' +
           'this email, or sending an email to Jia Lu<jil430@eng.ucsd.edu> ' +
           'or Xiaoyi Cao <x9cao@eng.ucsd.edu>. \n\n ' +
@@ -144,6 +180,8 @@ app.post('/form_upload', cpUpload, function (req, res) {
           'https://beta.epialign.ucsd.edu/result_page/' + runid + '\n\n' +
           'If the link above does not work, please copy the entire link ' +
           'and paste it into the address bar of your web browser.\n\n' +
+          'Details of your run: \n\n' +
+          runInfoObject.toString('email') + '\n' +
           'If you have any questions, please let us know by replying to ' +
           'this email, or sending an email to Jia Lu<jil430@eng.ucsd.edu> ' +
           'or Xiaoyi Cao <x9cao@eng.ucsd.edu>. \n\n' +
@@ -163,48 +201,83 @@ app.post('/form_upload', cpUpload, function (req, res) {
 
 app.get('/results/:runid', function (req, res) {
   let runid = req.params.runid
-  if (!runIdDict.hasOwnProperty(runid)) {
+  let tmpPath = path.format({
+    dir: resultFolder,
+    name: 'tmp_' + runid
+  })
+  let runInfoPath = path.format({
+    dir: tmpPath,
+    name: runid,
+    ext: '.runInfo.json'
+  })
+  if (!fs.existsSync(runInfoPath)) {
     // The query id does not exist.
     console.log('Invalid runid requested: ' + runid)
     res.status(401)
     res.send('This query ID does not exist!')
-  } else if (runIdDict[runid] === RUNNING_CODE) {
-    res.json({ status: RUNNING_CODE })
-  } else if (runIdDict[runid] === 0) {
-    // python exited successfully.
-    // read JSON file and return it.
-    readFilePromise('tmp_' + runid + '/' + runid + '.json', 'utf8')
-      .then(result => {
-        let resObj = JSON.parse(result)
-        resObj.status = 0
-        res.json(resObj)
-      })
-      .catch(err => {
-        res.status(401)
-        res.send(err.message)
-      })
   } else {
-    // python exited with error.
-    res.json({
-      // TODO: find a way to insert error code and msg here
-      status: 1,
-      message: 'EpiAlignment exited with an error.'
-    })
+    readFilePromise(runInfoPath, 'utf8')
+      .then(infoString => {
+        let infoObj = JSON.parse(infoString)
+        if (infoObj.status === undefined) {
+          infoObj.status = RUNNING_CODE
+          res.json(infoObj)
+        } else if (infoObj.status === 0) {
+          // python exited successfully.
+          // read JSON file and return it.
+          let resultFilePath = path.format({
+            dir: tmpPath,
+            name: runid,
+            ext: '.json'
+          })
+          readFilePromise(resultFilePath, 'utf8')
+            .then(result => {
+              let resDataObj = JSON.parse(result)
+              res.json(Object.assign(resDataObj, infoObj))
+            })
+            .catch(err => {
+              res.status(401)
+              console.log(err)
+              infoObj.status = E_CANNOT_READ_RESULTS
+              res.json(infoObj)
+            })
+        } else {
+          // python exited with error.
+          res.json(Object.assign({
+            // TODO: find a way to insert error code and msg here
+            errMessage: 'EpiAlignment exited with an error.'
+          }, infoObj))
+        }
+      }).catch(err => {
+        res.status(401)
+        console.log(err)
+        res.json({
+          status: E_CANNOT_READ_RESULTS,
+          errMessage: 'Cannot read run info file.'
+        })
+      })
   }
 })
 
 app.get('/result_image/:runid/:index.png', function (req, res) {
   let runid = req.params.runid
   let index = req.params.index
-  let imageName = 'tmp_' + runid + '/Image_' + index + '_' + runid + '.png'
-  try {
-    // Check if the image exists.
-    fs.statSync(imageName)
+  let tmpPath = path.format({
+    dir: resultFolder,
+    name: 'tmp_' + runid
+  })
+  let imageName = path.format({
+    dir: tmpPath,
+    name: 'Image_' + index + '_' + runid,
+    ext: '.png'
+  })
+  // Check if the image exists.
+  if (fs.existsSync(imageName)) {
     res.sendFile(path.format({
       dir: __dirname,
       base: imageName
     }))
-  } catch (err) {
+  } else {
     // if the image does not exist
     let scriptExecution = spawn('python', [pythonPlotScript])
 
@@ -230,7 +303,11 @@ app.get('/result_image/:runid/:index.png', function (req, res) {
       }
     })
     // python input
-    let pyImageMessenger = { 'index': index, 'runid': runid }
+    let pyImageMessenger = {
+      'index': index,
+      'runid': runid,
+      'path': resultFolder
+    }
     scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
     // tell the node that sending inputs to python is done.
     scriptExecution.stdin.end()

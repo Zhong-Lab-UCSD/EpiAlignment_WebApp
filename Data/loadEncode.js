@@ -542,7 +542,7 @@ async function downloadFileObject (fileObj, filePath) {
   })
   let needUpdateFile = await fsMkdirPromise(
     path.format({ dir: filePath, base: encodeId })
-  ).then(() => false
+  ).then(() => true
   ).catch(async err => {
     if (err.code === 'EEXIST') {
       // already exists, use fs.stat to test if file is too old

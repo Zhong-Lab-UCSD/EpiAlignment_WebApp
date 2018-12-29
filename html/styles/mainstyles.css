@@ -939,6 +939,7 @@ div.heatmapObj > div.overlay {
 	z-index: 1;
 	font-weight: bold;
 	font-size: 10px;
+	background: none;
 }
 
 div.heatmapObj.seqMax {

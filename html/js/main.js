@@ -291,6 +291,7 @@ var app = new Vue({
       if (entry) {
         this.tempSelectedEntryDescHtml = '<strong>' + filter.label +
           '</strong> on <strong>' + sampleDesc + '</strong>'
+        this.tempSelectedEntryDesc = filter.label + ' on ' + sampleDesc
         this.tempSelectedExperimentIds = {}
         this.speciesSupported.forEach(species => {
           this.tempSelectedExperimentIds[species.name] = entry[species.name][0].id
@@ -377,8 +378,10 @@ var app = new Vue({
           encodeData.forEach(dataId => {
             formData.append('encodeData[]', dataId)
           })
+          formData.append('publicDataDesc', this.selectedEntryDesc)
         }
       }
+
       if (this.selectedCluster) {
         formData.append('clusters', this.selectedCluster.id)
       } else if (this.clusterText.match(/Cluster_[1-9][0-9]*/)) {
@@ -436,6 +439,7 @@ var app = new Vue({
       this.selectedEntry = this.tempSelectedEntry
       this.selectedExperimentIds = this.tempSelectedExperimentIds
       this.selectedEntryDescHtml = this.tempSelectedEntryDescHtml
+      this.selectedEntryDesc = this.tempSelectedEntryDesc
       this.peakFiles.forEach(peakFile => peakFile.splice(0))
       // Manually clear this.$ref.peakFile1 and this.$ref.peakFile2
       this.$refs.peakFile1.value = ''
@@ -571,6 +575,7 @@ var app = new Vue({
       }
       this.selectedEntryDescHtml = '<strong>ChIP-Seq (H3K4me3)</strong>' +
         ' on <strong>round spermatids</strong>'
+      this.selectedEntryDesc = 'ChIP-Seq (H3K4me3) on round spermatids'
       if (this.formParams.alignMode === 'promoter') {
         this.formParams.genomeAssembly.splice(
           0, this.formParams.genomeAssembly.length, 'hg38', 'mm10')

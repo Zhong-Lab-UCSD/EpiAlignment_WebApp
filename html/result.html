@@ -11,8 +11,8 @@
   <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-78231712-3"></script>
   <script src="js/googleAnalytics.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/vuetify@1.3.15/dist/vuetify.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/vuetify@1.3.15/dist/vuetify.min.js"></script>
   <script defer src="js/lib/moment.min.js"></script>
   <script defer src="js/lib/moment-timezone-with-data.min.js"></script>
   <script defer src="js/result.js" type="module"></script>
@@ -22,7 +22,7 @@
   <div id="header" class="result noFlex flexRow flexCenter flexWrap">
     <!--Introduction-->
     <div id="headerContainer" class="flex flexColumn flexStretch flexNoWrap flexNoGap">
-      <h1 class="flex">EpiAlignment: a chromosomal similarity search engine</h1>
+      <h1 class="flex"><a href="index.html">EpiAlignment</a></h1>
     </div>
     <div id="headerButtonHolder" class="flex flexRow flexWrap flexCenter justifyEnd">
       <a class="buttons flexRow flexCenter justifyCenter" target="_blank" href="manual.html"><i class="material-icons">help_outline</i>Manual</a>
@@ -32,12 +32,24 @@
   </div>
   <!--alignment steps-->
   <div data-app id="result_app" class="flex flexColumn flexStretch" v-cloak>
-    <div id="runInfo" class="noFlex flexColumn flexNoWrap flexNoGap">
-      <div class="noFlex flexRow flexWrap justifyStart" v-for="row in expandedRunInfoList">
-        <div class="flexRow flexWrap noFlex flexStart flexNoGap" :class="{ parameter: entry.parameter }" v-for="entry in row">
-          <span class="entryKey" v-html="entry.key"></span>
-          <span class="entryValue">{{ entry.value }}</span>
+    <div id="runInfo" class="noFlex">
+      <div v-show="!showRunDetails" class="collapsedRunInfo noFlex flexRow flexCenter flexWrap flexNoGap justifyStart">
+        <div class="noFlex flexRow flexWrap flexNoGap justifyStart" v-for="row in collapsedRunInfoList">
+          <div class="flexRow flexWrap noFlex flexStart flexNoGap" :class="{ parameter: entry.parameter }" v-for="entry in row">
+            <span class="entryKey" v-html="entry.key"></span>
+            <span class="entryValue">{{ entry.value }}</span>
+          </div>
         </div>
+        <div class="runInfoShowHide selfAlignStart" @click="showRunInfoDetails">(Show more details ...)</div>
+      </div>
+      <div v-show="showRunDetails" class="expandedRunInfo noFlex flexColumn flexNoWrap flexNoGap">
+        <div class="noFlex flexRow flexWrap flexNoGap justifyStart" v-for="row in expandedRunInfoList">
+          <div class="flexRow flexWrap noFlex flexStart flexNoGap" :class="{ parameter: entry.parameter }" v-for="entry in row">
+            <span class="entryKey" v-html="entry.key"></span>
+            <span class="entryValue">{{ entry.value }}</span>
+          </div>
+        </div>
+        <div class="runInfoShowHide selfAlignStart" @click="foldRunInfoDetails">(Fold details)</div>
       </div>
     </div>
     <div class="loadingHolder flexColumn flexStretch" v-show="loading">
@@ -59,6 +71,11 @@
         Once the results are available, you may fetch your results via the
         bookmarked page in <strong>14 days</strong>.
       </div>
+      <div v-show="alignMode === 'enhancer' && !email">
+        Due to the many processing steps and larger search regions
+        involved, enhancer mode may take minutes to run. Therefore,
+        <strong>bookmarking this page is highly recommended</strong>.
+      </div>
       <div v-show="email">
         You will also receive an email at your email address at
         {{ email }} once the computation is done. Please check your spam
@@ -66,7 +83,7 @@
         your approved sender list ("white list") and/or in your address book.
       </div>
     </div>
-    <div v-show="error">
+    <div id="errorContainer" v-show="error">
       Error: {{ errorMessage }}
     </div>
     <div id="pageContainer" class="flexRow flexWrap flexNoGap" v-if="!loading && !error">
@@ -91,6 +108,7 @@
                   <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
                     <div :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
                     </div>
+                    <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.epiMax">H</div>
                   </div>
                 </td>
               </tr>
@@ -113,6 +131,7 @@
                   <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
                     <div :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
                     </div>
+                    <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.seqMax">H</div>
                   </div>
                 </td>
               </tr>

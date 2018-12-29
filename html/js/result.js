@@ -59,8 +59,7 @@ const expandedRunInfoKeyList = [
 const collapsedRunInfoKeyList = [
   [
     'runid',
-    'alignMode',
-    'publicDataDesc'
+    'alignMode'
   ]
 ]
 
@@ -71,6 +70,7 @@ var app = new Vue({
     collapsedRunInfoList: [],
     runid: null,
     loading: true,
+    showRunDetails: false,
     runInfoDictPromise: null,
     email: null,
     downloadLink: '',
@@ -104,24 +104,8 @@ var app = new Vue({
         width: 'auto'
       },
       {
-        text: 'Query name',
-        value: 'region_name1',
-        align: 'left',
-        sortable: true,
-        class: 'dataTableCell',
-        width: 'auto'
-      },
-      {
         text: 'Query coordinate',
         value: 'region1',
-        align: 'left',
-        sortable: true,
-        class: 'dataTableCell',
-        width: 'auto'
-      },
-      {
-        text: 'Target name',
-        value: 'region_name2',
         align: 'left',
         sortable: true,
         class: 'dataTableCell',
@@ -161,13 +145,23 @@ var app = new Vue({
       data => this.showData(data)
     ).catch(err => {
       // TODO: err.status should say something
+      let response = err.response || err
+      this.setRunParameters(response)
+
       this.loading = false
       this.error = true
-      this.errorMessage = err.message
+      this.errorCode = response.status
+      this.errorMessage = response.errMessage
     })
     this.runInfoDictPromise = postAjax(RUN_INFO_DICT, null, 'json', 'GET')
   },
   methods: {
+    foldRunInfoDetails: function () {
+      this.showRunDetails = false
+    },
+    showRunInfoDetails: function () {
+      this.showRunDetails = true
+    },
     pollResult: function (runid) {
       // TODO: validate formParams
       if (!runid) {
@@ -178,15 +172,7 @@ var app = new Vue({
         .then(response => {
           this.email = response.email || this.email
 
-          if (!this.expandedRunInfoList.length) {
-            // Add run info to expandedRunInfoList and collapsedRunInfoList
-            this.populateInfoList(
-              expandedRunInfoKeyList, this.expandedRunInfoList, response
-            )
-            this.populateInfoList(
-              collapsedRunInfoKeyList, this.collapsedRunInfoList, response
-            )
-          }
+          this.setRunParameters(response)
           if (response.status === STATUS_RUNNING) {
             if (!this.pollingTime) {
               this.pollingTime = response.alignMode === 'promoter'
@@ -198,7 +184,8 @@ var app = new Vue({
             // error, reject the promise and let .catch to handle
             return Promise.reject(response)
           } else {
-            this.setRunParameters(response)
+            this.loading = false
+            this.setRunParameters(response, true)
             return response.data
           }
         })
@@ -232,14 +219,26 @@ var app = new Vue({
         })
       })
     },
-    setRunParameters: function (response) {
+    setRunParameters: function (response, refresh) {
       document.title = 'EpiAlignment - Result (submitted at: ' +
-        this.runid + ')'
+        response.completeTime + ')'
 
       this.alignMode = response.alignMode
+      if (refresh) {
+        this.expandedRunInfoList.splice(0)
+        this.collapsedRunInfoList.splice(0)
+      }
+      if (!this.expandedRunInfoList.length) {
+        // Add run info to expandedRunInfoList and collapsedRunInfoList
+        this.populateInfoList(
+          expandedRunInfoKeyList, this.expandedRunInfoList, response
+        )
+        this.populateInfoList(
+          collapsedRunInfoKeyList, this.collapsedRunInfoList, response
+        )
+      }
       this.downloadLink = window.location.protocol + '//' +
         window.location.host + '/download/' + this.runid + '.txt'
-      this.loading = false
     },
     showData: function (dataEntries) {
       if (Array.isArray(dataEntries)) {
@@ -277,14 +276,22 @@ var app = new Vue({
       })
     },
     verifyNameSource: function (dataEntry) {
-      let headerCoor1Index = 2
-      let headerCoor2Index = 4
+      let headerName1Index = 1
+      let headerName2Index = 3
       if (!this.geneIdentifier1) {
         this.geneIdentifier1 =
           dataEntry.transID1 === '.' ? 'region_name1' : 'transID1'
+        this.headers.splice(headerName1Index, 0, {
+          text: 'Query name',
+          value: this.geneIdentifier1,
+          align: 'left',
+          sortable: true,
+          class: 'dataTableCell',
+          width: 'auto'
+        })
         if (dataEntry.ensID1 !== '.') {
           // add corresponding row to headers
-          this.headers.splice(headerCoor1Index, 0, {
+          this.headers.splice(headerName1Index + 1, 0, {
             text: 'Query Ensembl ID',
             value: 'ensID1',
             align: 'left',
@@ -292,15 +299,23 @@ var app = new Vue({
             class: 'dataTableCell',
             width: 'auto'
           })
-          headerCoor2Index++
+          headerName2Index++
         }
       }
       if (!this.geneIdentifier2) {
         this.geneIdentifier2 =
           dataEntry.transID2 === '.' ? 'region_name2' : 'transID2'
+        this.headers.splice(headerName2Index, 0, {
+          text: 'Target name',
+          value: this.geneIdentifier2,
+          align: 'left',
+          sortable: true,
+          class: 'dataTableCell',
+          width: 'auto'
+        })
         if (dataEntry.ensID2 !== '.') {
           // add corresponding row to headers
-          this.headers.splice(headerCoor2Index, 0, {
+          this.headers.splice(headerName2Index + 1, 0, {
             text: 'Target Ensembl ID',
             value: 'ensID2',
             align: 'left',

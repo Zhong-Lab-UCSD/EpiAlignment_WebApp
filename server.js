@@ -109,7 +109,7 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
   let runInfoPath = getRunIdInfoPath(runid)
   if (email) {
     message = {
-      from: 'EpiAlignment Notification <messenger@mail.beta.givengine.org>',
+      from: 'EpiAlignment Notification <messenger@mail.givengine.org>',
       to: email,
       replyTo: 'x9cao@eng.ucsd.edu'
     }

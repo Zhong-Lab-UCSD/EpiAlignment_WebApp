@@ -362,7 +362,6 @@ readDirPromise(resultFolder)
     if (fileName.startsWith('tmp_')) {
       let runid = fileName.replace('tmp_', '')
       let runInfoPath = getRunIdInfoPath(runid)
-      console.log(runid)
       readFilePromise(runInfoPath, 'utf8')
         .then(infoString => {
           let infoObj = RunInfo.fromJSON(infoString)

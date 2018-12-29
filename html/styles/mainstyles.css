@@ -24,7 +24,7 @@ div#header {
 
 div#header.result {
 	font-size: 0.75em;
-	padding: 1em 1.5em;
+	padding: 0.75em 1.5em;
 }
 
 div#header h1 {
@@ -32,6 +32,11 @@ div#header h1 {
 	font-size: 2em;
 	line-height: 1.3em;
 	margin: 0;
+}
+
+div#header h1 > a {
+	color: #FFFFFF;
+	text-decoration: none;
 }
 
 div#headerContainer {
@@ -172,7 +177,7 @@ div.disabledDueToStep1 {
 
 div.tooltipPanel {
 	padding: 0.5em;
-	border: #000000 dotted 0.5px;
+	border: #000000 dotted 1px;
 	opacity: 0.8;
 	background: #FFFFCC;
 	font-size: 14px;
@@ -321,7 +326,7 @@ div.stepright .inactive {
 }
 
 div.speciesData {
-	border: 0.5px dashed #999999;
+	border: 1px dashed #999999;
 	padding: 0.75em 1em 0.25em 1em;
 	background: #EEEEEE;
 }
@@ -358,7 +363,7 @@ div.stepright h3 {
 
 div.stepright .error {
 	padding: 0.5em;
-	border: #B00020 dotted 0.5px;
+	border: #B00020 dotted 1px;
 	background: #F9EFAD;
 	color: #B00020;
 	font-size: 14px;
@@ -429,7 +434,7 @@ div#clusterCandidateHolder {
 	z-index: 5;
 	position: absolute;
 	background: #EEEEEE;
-	border: 0.5px solid #999999;
+	border: 1px solid #999999;
 	padding: 0.8em;
 	font-size: 14px;
 }
@@ -734,34 +739,86 @@ div#encodeTableHolder {
 /* ***** Result page related CSS rules ***** */
 
 div#runInfo {
-	padding: 1rem 1.5rem;
 	font-size: 12px;
 	background: #eeeeee;
 	border-bottom: 1px dashed #666666;
 }
 
-div#runInfo > div > div {
-	width: 20em;
-	margin: 0 0.5rem;
+div#runInfo > div.expandedRunInfo {
+	padding: 1rem;
 }
 
-div#runInfo > div > div > span {
+div#runInfo > div.expandedRunInfo > div > div {
+	width: 24em;
+}
+
+div#runInfo > div.collapsedRunInfo {
+	padding: 0.25rem 1rem;
+}
+
+div#runInfo > div.collapsedRunInfo > div > div {
+	margin-right: 1rem;
+}
+
+div#runInfo > div > div > div {
+	padding: 0 0.5rem;
+}
+
+div#runInfo > div > div > div > span {
 	white-space: nowrap;
 }
 
-div#runInfo > div > div > span.entryKey {
+div#runInfo > div > div > div > span.entryKey {
 	margin-right: 1em;
 	color: #002d7a;
 	font-weight: 500;
 }
 
-div#runInfo > div > div > span.entryKey::after {
+div#runInfo > div.expandedRunInfo > div > div.parameter > span.entryKey::after {
+	font-family: Segoe, "Segoe UI", "Helvetica", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
+	content: ' : ';
+}
+
+div#runInfo > div > div > div > span.entryKey::after {
 	content: ': ';
 }
 
-div#runInfo > div > div.parameter {
-	width: 10em;
-	margin: 0 0.5rem;
+div#runInfo > div.expandedRunInfo > div > div.parameter {
+	width: 8em;
+	padding: 0 0.5rem;
+}
+
+div#runInfo > div > div > div.parameter > span.entryKey {
+	font-family: 'Times New Roman', Times, serif;
+}
+
+div.runInfoShowHide {
+	cursor: pointer; 
+	border: 1px solid #999999;
+	border-radius: 3px;
+	background: #CCCCCC;
+}
+
+div.expandedRunInfo div.runInfoShowHide {
+	margin: 0.1rem 0.5rem 0 0.5rem;
+	padding: 0 2.5rem;
+}
+
+div.collapsedRunInfo div.runInfoShowHide {
+	margin: 0.1rem 0.5rem;
+	padding: 0 1rem;
+}
+
+div.runInfoShowHide:hover {
+	background: #BBBBBB;
+}
+
+div.runInfoShowHide:active {
+	background: #AAAAAA;
+}
+
+div#errorContainer {
+	padding: 1rem 2rem;
 }
 
 div#pageContainer {
@@ -782,7 +839,7 @@ span.keyboard {
 	padding: 0.17em 0.4em;
 	background: #EEEEEE;
 	border-radius: 5px;
-	border: 0.5px solid #999999;
+	border: 1px solid #999999;
 	font-family: 'Consolas', 'Courier New', Courier, monospace;
 	font-size: 0.9em;
 }
@@ -845,14 +902,14 @@ div#heatmap {
 }
 
 #heatmap table td {
-	border: 0.5px solid #666666;
+	border: 1px solid #666666;
 }
 
 .heatmapColLabels {
 	text-align: left;
 	height: 8.5em;
-	padding: 0 1.2em 0.5em 1.2em;
-	max-width: 2.4em;
+	padding: 0 1.25em 0.5em 1.25em;
+	max-width: 2.5em;
 	overflow: visible;
 	vertical-align: bottom;
 }
@@ -867,9 +924,21 @@ div#heatmap {
 }
 
 div.heatmapObj {
-	width: 2.4em;
-	height: 2.4em;
+	width: 2.5em;
+	height: 2.5em;
 	box-sizing: border-box;
+	position: relative;
+}
+
+div.heatmapObj > div.overlay {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 1;
+	font-weight: bold;
+	font-size: 10px;
 }
 
 div.heatmapObj.seqMax {

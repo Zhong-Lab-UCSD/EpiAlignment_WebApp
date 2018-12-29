@@ -10,7 +10,7 @@
   <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-78231712-3"></script>
   <script src="js/googleAnalytics.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.min.js"></script>
   <script defer src="js/lib/moment.min.js"></script>
   <script defer src="js/lib/moment-timezone-with-data.min.js"></script>
   <script defer src="js/main.js" type="module"></script>
@@ -346,6 +346,14 @@
                 placeholder="Enter your email here.">
             </div>
             <br>
+          </div>
+          <div v-show="formParams.alignMode === 'enhancer' && !formParams.emailNote" class="tooltipPanel">
+            <div>Due to the many processing steps and larger search regions
+            involved, enhancer mode runs longer than promoter mode and may
+            take minutes.</div>
+            <div> It is highly recommended to provide an email here
+            to get notified when results become available. You may also
+            bookmark the result page after submitting your data.</div>
           </div>
           <div class="flexRow flexCenter">
             <input type="submit" value="Submit">

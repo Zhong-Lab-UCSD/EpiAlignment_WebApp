@@ -384,8 +384,17 @@ var app = new Vue({
     },
     markRowMaxFlags: function () {
       this.epiHeatmapList.forEach(entry => {
-        this.markSingleRowMaxFlag(entry, 'epiScore', 'epiMax')
-        this.markSingleRowMaxFlag(entry, 'seqScore', 'seqMax')
+        let epiMaxIndex =
+          this.markSingleRowMaxFlag(entry, 'epiScore', 'epiMax')
+        let seqMaxIndex =
+          this.markSingleRowMaxFlag(entry, 'seqScore', 'seqMax')
+        entry.labelMax = (epiMaxIndex !== seqMaxIndex) && (
+          entry.values[epiMaxIndex].epiScore >
+            entry.values[epiMaxIndex].seqScore
+        ) && (
+          entry.values[seqMaxIndex].seqScore >
+            entry.values[seqMaxIndex].epiScore
+        )
       })
     },
     markSingleRowMaxFlag: function (row, property, propertyToMark) {
@@ -399,6 +408,7 @@ var app = new Vue({
         delete value[propertyToMark]
       })
       row.values[maxIndex][propertyToMark] = true
+      return maxIndex
     },
     findMinMaxTableValue: function (table, entryPropertyList) {
       let result = {

@@ -40,7 +40,7 @@
             <span class="entryValue">{{ entry.value }}</span>
           </div>
         </div>
-        <div class="runInfoShowHide selfAlignStart" @click="showRunInfoDetails">(Show more details ...)</div>
+        <div class="runInfoShowHide selfAlignStart" @click="showRunInfoDetails">Show more details ...</div>
       </div>
       <div v-show="showRunDetails" class="expandedRunInfo noFlex flexColumn flexNoWrap flexNoGap">
         <div class="noFlex flexRow flexWrap flexNoGap justifyStart" v-for="row in expandedRunInfoList">
@@ -49,7 +49,7 @@
             <span class="entryValue">{{ entry.value }}</span>
           </div>
         </div>
-        <div class="runInfoShowHide selfAlignStart" @click="foldRunInfoDetails">(Fold details)</div>
+        <div class="runInfoShowHide selfAlignStart" @click="foldRunInfoDetails">Fold details</div>
       </div>
     </div>
     <div class="loadingHolder flexColumn flexStretch" v-show="loading">
@@ -105,7 +105,7 @@
               <tr v-for="rowEntry in epiHeatmapList">
                 <th>{{ rowEntry.geneId }}</th>
                 <td class="heatmapCell" v-for="value in rowEntry.values">
-                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
+                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
                     <div :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
                     </div>
                     <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.epiMax">H</div>
@@ -128,7 +128,7 @@
               <tr v-for="rowEntry in epiHeatmapList">
                 <th>{{ rowEntry.geneId }}</th>
                 <td class="heatmapCell" v-for="value in rowEntry.values">
-                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && !value.epiMax && (value.seqScore > value.epiScore), epiMax: value.epiMax && !value.seqMax && (value.epiScore > value.seqScore) }">
+                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
                     <div :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
                     </div>
                     <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.seqMax">H</div>

@@ -144,7 +144,7 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
         '). We were unable to complete your request. \n\n' +
         'In some cases this may be caused by an erroneous input format, ' +
         'in which case you may try again by providing the correctly ' +
-        'formatted input at https://beta.epialign.ucsd.edu/. \n\n' +
+        'formatted input at https://epialign.ucsd.edu/. \n\n' +
         'Details of your run: \n\n' +
         runInfo.toString('email') + '\n' +
         'If the error keeps happening, please let us know by replying to ' +
@@ -157,7 +157,7 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
       message.text = header +
         'Your EpiAlignment results are now ready and can be downloaded ' +
         'by following this link:\n\n' +
-        'https://beta.epialign.ucsd.edu/result_page/' + runid + '\n\n' +
+        'https://epialign.ucsd.edu/result_page/' + runid + '\n\n' +
         'If the link above does not work, please copy the entire link ' +
         'and paste it into the address bar of your web browser.\n\n' +
         'Details of your run: \n\n' +

@@ -43,6 +43,8 @@ var clusterProc = new ClusterProcesser(
 const RunInfo = require('./runInfoParser')
 const resultFolder = 'userResults'
 
+const fallbackHostName = 'epialign.ucsd.edu'
+
 var runIdDict = {}
 
 const RUNNING_CODE = -1
@@ -105,6 +107,7 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
   let runid = runInfo.getDisplayValue('runid')
   let email = runInfo.getDisplayValue('email')
   runInfo.status = code
+  let hostName = runInfo.getDisplayValue('hostName') || fallbackHostName
 
   let runInfoPath = getRunIdInfoPath(runid)
   if (email) {
@@ -144,7 +147,7 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
         '). We were unable to complete your request. \n\n' +
         'In some cases this may be caused by an erroneous input format, ' +
         'in which case you may try again by providing the correctly ' +
-        'formatted input at https://epialign.ucsd.edu/. \n\n' +
+        'formatted input at https://' + hostName + '/. \n\n' +
         'Details of your run: \n\n' +
         runInfo.toString('email') + '\n' +
         'If the error keeps happening, please let us know by replying to ' +
@@ -157,7 +160,7 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
       message.text = header +
         'Your EpiAlignment results are now ready and can be downloaded ' +
         'by following this link:\n\n' +
-        'https://epialign.ucsd.edu/result_page/' + runid + '\n\n' +
+        'https://' + hostName + '/result_page/' + runid + '\n\n' +
         'If the link above does not work, please copy the entire link ' +
         'and paste it into the address bar of your web browser.\n\n' +
         'Details of your run: \n\n' +
@@ -172,7 +175,8 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
 }
 
 app.post('/form_upload', cpUpload, function (req, res) {
-  // req.files is an object (String -> Array) where fieldname is the key, and the value is array of files
+  // req.files is an object (String -> Array) where fieldname is the key,
+  //    and the value is array of files
   //
   // e.g.
   //  req.files['avatar'][0] -> File
@@ -198,10 +202,13 @@ app.post('/form_upload', cpUpload, function (req, res) {
     'runid': runid,
     'path': resultFolder
   }
-
   let runInfoPath = getRunIdInfoPath(runid)
 
   let runInfoObject = new RunInfo(req.body, req.files, runid)
+
+  if (req.headers.host) {
+    runInfoObject.addProperty('hostName', req.headers.host)
+  }
 
   let writePromise = writeFilePromise(
     runInfoPath, JSON.stringify(runInfoObject, null, 2))

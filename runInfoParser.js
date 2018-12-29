@@ -6,6 +6,7 @@ const util = require('util')
 const writeFilePromise = util.promisify(fs.writeFile)
 
 const runInfoDictPath = 'html/assets/runInfoDict.json'
+const MAX_INPUT_LENGTH = 35
 
 const runInfoArray = [
   {
@@ -62,7 +63,7 @@ const runInfoArray = [
   },
   {
     key: 'publicDataDesc',
-    name: 'Public data description',
+    name: 'Public data used',
     description: 'Description for selected public (ENCODE / GEO) dataset.'
   },
   {
@@ -88,7 +89,12 @@ const runInfoArray = [
       {
         key: 'speciesPeak1[]',
         index: 0,
-        property: 'originalname'
+        property: 'originalname',
+        transformFunc: (value, runInfoResults) => (
+          value.length > MAX_INPUT_LENGTH
+            ? value.slice(0, MAX_INPUT_LENGTH) + ' ...'
+            : value
+        )
       }
     ]
   },
@@ -100,12 +106,20 @@ const runInfoArray = [
       {
         key: 'speciesInput1',
         index: 0,
-        property: 'originalname'
+        property: 'originalname',
+        transformFunc: (value, runInfoResults) => (
+          value.length > MAX_INPUT_LENGTH
+            ? value.slice(0, MAX_INPUT_LENGTH) + ' ...'
+            : value
+        )
       },
       {
         key: 'speciesText',
         index: 0,
-        transformFunc: value => (value || '').split(/\r?\n/, 1)[0] + ' ...'
+        transformFunc: (value, runInfoResults) => (
+          (value || '').split(/\r?\n/, 1)[0].slice(0, MAX_INPUT_LENGTH) +
+          ' ...'
+        )
       }
     ]
   },
@@ -132,7 +146,12 @@ const runInfoArray = [
       {
         key: 'speciesPeak2[]',
         index: 0,
-        property: 'originalname'
+        property: 'originalname',
+        transformFunc: (value, runInfoResults) => (
+          value.length > MAX_INPUT_LENGTH
+            ? value.slice(0, MAX_INPUT_LENGTH) + ' ...'
+            : value
+        )
       }
     ]
   },
@@ -144,13 +163,20 @@ const runInfoArray = [
       {
         key: 'speciesInput2',
         index: 0,
-        property: 'originalname'
+        property: 'originalname',
+        transformFunc: (value, runInfoResults) => (
+          value.length > MAX_INPUT_LENGTH
+            ? value.slice(0, MAX_INPUT_LENGTH) + ' ...'
+            : value
+        )
       },
       {
         key: 'speciesText',
         index: 1,
-        transformFunc: (value, runInfoResults) =>
-          (value || '').split(/\r?\n/, 1)[0] + ' ...'
+        transformFunc: (value, runInfoResults) => (
+          (value || '').split(/\r?\n/, 1)[0].slice(0, MAX_INPUT_LENGTH) +
+          ' ...'
+        )
       }
     ],
     depends: {
@@ -174,71 +200,93 @@ const runInfoArray = [
     generatorFunc: runInfoResults => moment().toISOString(),
     displayFunc: (entry, runInfoResults) =>
       moment(entry).tz(runInfoResults.timeZone || moment.tz.guess()).format(
-        'MMM D, Y, HH:mm:ss (UTCZ)'
+        'MMM D, Y, HH:mm:ss'
       )
   },
   {
     key: 'promoterUp',
     name: 'Promoter upstream length',
-    description: 'Number of bps upstream TSS as promoter threshold.'
+    description: 'Number of bps upstream TSS as promoter threshold.',
+    depends: {
+      key: 'alignMode',
+      value: 'promoter'
+    },
+    displayFunc: (entry, runInfoResults) => parseInt(entry) + ' bp'
   },
   {
     key: 'promoterDown',
     name: 'Promoter downstream length',
-    description: 'Number of bps downstream TSS as promoter threshold.'
+    description: 'Number of bps downstream TSS as promoter threshold.',
+    depends: {
+      key: 'alignMode',
+      value: 'promoter'
+    },
+    displayFunc: (entry, runInfoResults) => parseInt(entry) + ' bp'
   },
   {
     key: 'enhancerUp',
-    name: 'Enhancer upstream extension length',
+    name: 'Enhancer upstream extension',
     description: 'Number of upstream bps for query region extension before remapping to the target reference.',
     depends: {
       key: 'subMode',
       value: 'homoregion'
-    }
+    },
+    displayFunc: (entry, runInfoResults) => parseInt(entry) + ' bp'
   },
   {
     key: 'enhancerDown',
-    name: 'Enhancer downstream extension length',
+    name: 'Enhancer downstream extension',
     description: 'Number of downstream bps for query region extension before remapping to the target reference.',
     depends: {
       key: 'subMode',
       value: 'homoregion'
-    }
+    },
+    displayFunc: (entry, runInfoResults) => parseInt(entry) + ' bp'
   },
   {
     key: 'piA',
     name: 'pi_A',
     html: '<em>&#960<sub>A</sub></em>',
     parameter: true,
-    description: 'EpiAlignment parameter pi_A'
+    description: 'EpiAlignment parameter pi_A',
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'piC',
     name: 'pi_C',
     html: '<em>&#960<sub>C</sub></em>',
     parameter: true,
-    description: 'EpiAlignment parameter pi_C'
+    description: 'EpiAlignment parameter pi_C',
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'piG',
     name: 'pi_G',
     html: '<em>&#960<sub>G</sub></em>',
     parameter: true,
-    description: 'EpiAlignment parameter pi_G'
+    description: 'EpiAlignment parameter pi_G',
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'piT',
     name: 'pi_T',
     html: '<em>&#960<sub>T</sub></em>',
     parameter: true,
-    description: 'EpiAlignment parameter pi_T'
+    description: 'EpiAlignment parameter pi_T',
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'pi1',
     name: 'pi_1',
     html: '<em>&#960<sub>1</sub></em>',
     parameter: true,
-    description: 'EpiAlignment parameter pi_1'
+    description: 'EpiAlignment parameter pi_1',
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'paraS',
@@ -250,7 +298,9 @@ const runInfoArray = [
       {
         key: 'paras'
       }
-    ]
+    ],
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'paraMu',
@@ -262,7 +312,9 @@ const runInfoArray = [
       {
         key: 'paramu'
       }
-    ]
+    ],
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'paraK',
@@ -274,7 +326,9 @@ const runInfoArray = [
       {
         key: 'parak'
       }
-    ]
+    ],
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'seqWeight',
@@ -284,7 +338,9 @@ const runInfoArray = [
       {
         key: 'seqweight'
       }
-    ]
+    ],
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'epiWeight',
@@ -294,7 +350,9 @@ const runInfoArray = [
       {
         key: 'epiweight'
       }
-    ]
+    ],
+    displayFunc: (value, runInfoResults) =>
+      parseFloat(Number.parseFloat(value).toFixed(3))
   },
   {
     key: 'email',
@@ -312,7 +370,7 @@ const runInfoArray = [
     description: 'The time when job is completed (ISO8601 String)',
     displayFunc: (entry, runInfoResults) =>
       moment(entry).tz(runInfoResults.timeZone || moment.tz.guess()).format(
-        'MMM D, Y, HH:mm:ss (UTCZ)'
+        'MMM D, Y, HH:mm:ss'
       )
   },
   {
@@ -358,22 +416,27 @@ const propertyListMap = {
 class RunInfo {
   constructor (formBody, formFiles, runid) {
     if (typeof formBody === 'string') {
-      this.result = JSON.parse(formBody)
+      this._resultFormatted = JSON.parse(formBody)
+      this._result = {}
+      if (this._resultFormatted.hasOwnProperty('status')) {
+        this.status = this._resultFormatted.status
+      }
     } else {
       let formData = Object.assign({}, formBody, formFiles, { runid: runid })
-      this.result = {}
+      this._resultFormatted = {}
+      this._result = {}
       runInfoArray.forEach(infoEntry => {
         let key = infoEntry.key
         if (infoEntry.generatorFunc) {
-          this.result[key] = infoEntry.generatorFunc(this.result)
+          this._result[key] = infoEntry.generatorFunc(this._result)
         } else {
           // no generator, needs to parse from formData
           let valueToWrite = null
 
           // check entry dependency
           if (!infoEntry.depends || (
-            this.result.hasOwnProperty(infoEntry.depends.key) &&
-            this.result[infoEntry.depends.key] === infoEntry.depends.value
+            this._result.hasOwnProperty(infoEntry.depends.key) &&
+            this._result[infoEntry.depends.key] === infoEntry.depends.value
           )) {
             if (infoEntry.formFields) {
               infoEntry.formFields.some(field => {
@@ -406,8 +469,8 @@ class RunInfo {
               infoEntry.values.some(listedCandidate => {
                 if (valueCandidate === listedCandidate.key) {
                   if (!listedCandidate.depends || (
-                    this.result.hasOwnProperty(listedCandidate.depends.key) &&
-                    this.result[listedCandidate.depends.key] ===
+                    this._result.hasOwnProperty(listedCandidate.depends.key) &&
+                    this._result[listedCandidate.depends.key] ===
                       listedCandidate.depends.value
                   )) {
                     valueToWrite = valueCandidate
@@ -420,27 +483,39 @@ class RunInfo {
           }
 
           if (valueToWrite !== null) {
-            this.result[key] = valueToWrite
+            this._result[key] = valueToWrite
           }
         }
       })
     }
   }
 
+  addProperty (propName, value) {
+    if (value && !this._resultFormatted.hasOwnProperty(propName) &&
+      !this._result.hasOwnProperty(propName)
+    ) {
+      this._result[propName] = value
+    }
+  }
+
   toJSON () {
     let jsonResult = {}
-    for (let key in this.result) {
-      let dispResult = this.result[key]
+    for (let key in this._result) {
+      let dispResult = this._result[key]
       if (runInfoDict.hasOwnProperty(key) && runInfoDict[key].displayFunc) {
-        dispResult = runInfoDict[key].displayFunc(dispResult, this.result)
+        dispResult = runInfoDict[key].displayFunc(dispResult, this._result)
       }
       jsonResult[key] = dispResult
     }
-    return jsonResult
+    return Object.assign(jsonResult, this._resultFormatted)
   }
 
   static getRunInfo (formBody, formFiles) {
     return new this(formBody, formFiles)
+  }
+
+  static fromJSON (jsonString) {
+    return new this(jsonString)
   }
 
   toString (groupKey) {
@@ -459,13 +534,16 @@ class RunInfo {
   }
 
   getDisplayValue (property) {
-    if (this.result.hasOwnProperty(property) &&
+    if (this._resultFormatted.hasOwnProperty(property)) {
+      return this._resultFormatted[property]
+    }
+    if (this._result.hasOwnProperty(property) &&
       runInfoDict.hasOwnProperty(property)
     ) {
-      let dispResult = this.result[property]
+      let dispResult = this._result[property]
       if (runInfoDict[property].displayFunc) {
         dispResult = runInfoDict[property].displayFunc(
-          dispResult, this.result
+          dispResult, this._result
         )
       }
       if (runInfoDict[property].values) {
@@ -482,7 +560,11 @@ class RunInfo {
   }
 
   getPropertyLine (property) {
-    if (this.result.hasOwnProperty(property) &&
+    if (
+      (
+        this._result.hasOwnProperty(property) ||
+        this._resultFormatted.hasOwnProperty(property)
+      ) &&
       runInfoDict.hasOwnProperty(property)
     ) {
       return runInfoDict[property].name + ': ' +
@@ -492,12 +574,17 @@ class RunInfo {
   }
 
   set status (newStatus) {
-    this.result.status = newStatus
-    this.result.completeTime = moment().toISOString()
+    this._result.status = newStatus
+    if (newStatus >= 0 &&
+      !this._resultFormatted.hasOwnProperty('completeTime') &&
+      !this._result.hasOwnProperty('completeTime')
+    ) {
+      this._result.completeTime = moment().toISOString()
+    }
   }
 
   get status () {
-    return this.result.status
+    return this._result.status
   }
 }
 

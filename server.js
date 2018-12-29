@@ -220,6 +220,8 @@ app.post('/form_upload', cpUpload, function (req, res) {
     if (data && data.startsWith && data.startsWith('[EpiAlignment]')) {
       data = data.replace('[EpiAlignment]', '').trim()
       stdErrData += (stdErrData ? '\n' : '') + data
+    } else {
+      console.log(data + '')
     }
   })
 

@@ -537,23 +537,23 @@ class RunInfo {
     if (this._resultFormatted.hasOwnProperty(property)) {
       return this._resultFormatted[property]
     }
-    if (this._result.hasOwnProperty(property) &&
-      runInfoDict.hasOwnProperty(property)
-    ) {
+    if (this._result.hasOwnProperty(property)) {
       let dispResult = this._result[property]
-      if (runInfoDict[property].displayFunc) {
-        dispResult = runInfoDict[property].displayFunc(
-          dispResult, this._result
-        )
-      }
-      if (runInfoDict[property].values) {
-        runInfoDict[property].values.some(valueEntry => {
-          if (valueEntry.key === dispResult) {
-            dispResult = valueEntry.name
-            return true
-          }
-          return false
-        })
+      if (runInfoDict.hasOwnProperty(property)) {
+        if (runInfoDict[property].displayFunc) {
+          dispResult = runInfoDict[property].displayFunc(
+            dispResult, this._result
+          )
+        }
+        if (runInfoDict[property].values) {
+          runInfoDict[property].values.some(valueEntry => {
+            if (valueEntry.key === dispResult) {
+              dispResult = valueEntry.name
+              return true
+            }
+            return false
+          })
+        }
       }
       return dispResult
     }

@@ -246,7 +246,7 @@ const runInfoArray = [
   {
     key: 'piA',
     name: 'pi_A',
-    html: '<em>&#960;<sub>A</sub></em>',
+    html: '<em>&#960;</em><sub>A</sub>',
     parameter: true,
     description: 'EpiAlignment parameter pi_A',
     displayFunc: (value, runInfoResults) =>
@@ -255,7 +255,7 @@ const runInfoArray = [
   {
     key: 'piC',
     name: 'pi_C',
-    html: '<em>&#960;<sub>C</sub></em>',
+    html: '<em>&#960;</em><sub>C</sub>',
     parameter: true,
     description: 'EpiAlignment parameter pi_C',
     displayFunc: (value, runInfoResults) =>
@@ -264,7 +264,7 @@ const runInfoArray = [
   {
     key: 'piG',
     name: 'pi_G',
-    html: '<em>&#960;<sub>G</sub></em>',
+    html: '<em>&#960;</em><sub>G</sub>',
     parameter: true,
     description: 'EpiAlignment parameter pi_G',
     displayFunc: (value, runInfoResults) =>
@@ -273,7 +273,7 @@ const runInfoArray = [
   {
     key: 'piT',
     name: 'pi_T',
-    html: '<em>&#960;<sub>T</sub></em>',
+    html: '<em>&#960;</em><sub>T</sub>',
     parameter: true,
     description: 'EpiAlignment parameter pi_T',
     displayFunc: (value, runInfoResults) =>
@@ -282,7 +282,7 @@ const runInfoArray = [
   {
     key: 'pi1',
     name: 'pi_1',
-    html: '<em>&#960;<sub>1</sub></em>',
+    html: '<em>&#960;</em><sub>1</sub>',
     parameter: true,
     description: 'EpiAlignment parameter pi_1',
     displayFunc: (value, runInfoResults) =>

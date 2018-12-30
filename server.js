@@ -44,11 +44,17 @@ const RunInfo = require('./runInfoParser')
 const resultFolder = 'userResults'
 
 const fallbackHostName = 'epialign.ucsd.edu'
+const mailDomainPrefex = 'mail'
+const mailDomainSuffix = 'givengine.org'
 
 var runIdDict = {}
 
 const RUNNING_CODE = -1
 const PROCESS_TERMINATED_SERVER_REBOOT = 500
+
+function getMailDomain (isBeta) {
+  return mailDomainPrefex + '.' + (isBeta ? 'beta.' : '') + mailDomainSuffix
+}
 
 // Server preparation step: parse the cluster file to build a
 //  gene-name/ensemblID to cluster map
@@ -112,7 +118,9 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
   let runInfoPath = getRunIdInfoPath(runid)
   if (email) {
     message = {
-      from: 'EpiAlignment Notification <messenger@mail.givengine.org>',
+      from: 'EpiAlignment Notification <messenger@' + getMailDomain(
+        hostName.includes('beta')
+      ) + '>',
       to: email,
       replyTo: 'x9cao@eng.ucsd.edu'
     }

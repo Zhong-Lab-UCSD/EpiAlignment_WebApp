@@ -225,7 +225,7 @@
               <td class="dataTableCell">{{ row.item[geneIdentifier1] }}</td>
               <td class="dataTableCell" v-if="row.item.ensID1 !== '.'">{{ row.item.ensID1 }}</td>
               <td class="dataTableCell">
-                {{ row.item.region1 }} <a class="noFlex" target="_blank" title="Open region in UCSC Genome Browser"
+                {{ row.item.region1 }} <a @click.stop class="noFlex" target="_blank" title="Open region in UCSC Genome Browser"
                   :href="getUcscLink(queryGenomeAssembly, row.item.region1)"><i class="material-icons">
                     open_in_new
                   </i></a>
@@ -233,7 +233,7 @@
               <td class="dataTableCell" v-if="row.item[geneIdentifier2] !== '.'">{{ row.item[geneIdentifier2] }}</td>
               <td class="dataTableCell" v-if="row.item.ensID2 !== '.'">{{ row.item.ensID2 }}</td>
               <td class="dataTableCell">
-                {{ row.item.region2 }} <a class="noFlex" target="_blank" title="Open region in UCSC Genome Browser"
+                {{ row.item.region2 }} <a @click.stop class="noFlex" target="_blank" title="Open region in UCSC Genome Browser"
                   :href="getUcscLink(targetGenomeAssembly, row.item.region2)"><i class="material-icons">
                   open_in_new
                 </i>

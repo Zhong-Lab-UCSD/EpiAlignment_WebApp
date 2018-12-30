@@ -9,7 +9,12 @@ const setTimeoutPromise = function (timeout, resolvedValue) {
 const INQUIRY_TARGET_PREFIX = '/backend/results/'
 const INQUIRY_IMAGE_PREFIX = '/backend/result_image/'
 
-const UCSC_TARGET = 'https://genome.ucsc.edu/cgi-bin/hgTracks?'
+const UCSC_TARGET = 'https://genome.ucsc.edu/cgi-bin/hgTracks?hgS_doOtherUser=submit&hgS_otherUserName=xycao&'
+
+const ucscRefToSession = {
+  mm10: 'mm10_epialign',
+  hg38: 'hg38_epialign'
+}
 
 const RUN_INFO_DICT = 'assets/runInfoDict.json'
 
@@ -462,7 +467,9 @@ var app = new Vue({
     },
     getUcscLink: function (assembly, region) {
       region = window.encodeURIComponent(region.replace(/\([+-]\)/, ''))
-      return UCSC_TARGET + 'db=' + assembly + '&position=' + region
+      return UCSC_TARGET + 'hgS_otherUserSessionName=' +
+        ucscRefToSession[assembly] +
+        '&position=' + region
     }
   }
 })

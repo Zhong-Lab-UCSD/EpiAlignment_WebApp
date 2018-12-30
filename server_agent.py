@@ -14,7 +14,6 @@ def ParseJson():
   Parse the json string passed by nodejs from stdin.
   return: a dictionary with three keys: body, files, runid (output folder name).
   '''
-  print "Linked to python..."
   lines = sys.stdin.readlines()
   json_dict = json.loads(lines[0])
   return json_dict
@@ -601,8 +600,7 @@ def Main():
   runid = web_json["runid"]
   allres_path = web_json["path"]
   out_folder = allres_path + "/tmp_" + web_json["runid"] + "/"
-  print runid
-  print out_folder
+
   sys.stdout.flush()
   # Move all uploaded files to the output folder.
   MoveUploadFiles(out_folder, web_json["files"])

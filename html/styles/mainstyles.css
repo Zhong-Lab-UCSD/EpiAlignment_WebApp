@@ -563,6 +563,8 @@ div#encodeDialogContainer {
 div#encodeDialog {
 	background: #EEEEEE;
 	max-width: 70%;
+	min-width: 50rem;
+	min-height: 25rem;
 	max-height: 70%;
 	box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.35);
 	font-size: 14px;
@@ -574,6 +576,7 @@ div#encodeDialog > * {
 }
 
 div#encodeDialogBody {
+	min-height: 1rem;
 	padding-top: 0.75rem;
 	padding-bottom: 0.75rem;
 }
@@ -588,6 +591,16 @@ div#encodeDialog > h2 {
 	margin: 0;
 	background: #666666;
 	color: #FFFFFF;
+}
+
+div#presetPanel {
+	min-height: 1rem;
+}
+
+div#encodeTableHolder {
+	overflow-y: auto;
+	overflow-x: hidden;
+	margin: 0.5em;
 }
 
 table.encodeTable {
@@ -728,12 +741,6 @@ div#dataPanel li a:active {
 
 div#dataPanel li {
 	list-style-type: none;
-}
-
-div#encodeTableHolder {
-	overflow-y: auto;
-	overflow-x: hidden;
-	margin: 0.5em;
 }
 
 /* ***** Result page related CSS rules ***** */

@@ -246,7 +246,7 @@ const runInfoArray = [
   {
     key: 'piA',
     name: 'pi_A',
-    html: '<em>&#960<sub>A</sub></em>',
+    html: '<em>&#960;<sub>A</sub></em>',
     parameter: true,
     description: 'EpiAlignment parameter pi_A',
     displayFunc: (value, runInfoResults) =>
@@ -255,7 +255,7 @@ const runInfoArray = [
   {
     key: 'piC',
     name: 'pi_C',
-    html: '<em>&#960<sub>C</sub></em>',
+    html: '<em>&#960;<sub>C</sub></em>',
     parameter: true,
     description: 'EpiAlignment parameter pi_C',
     displayFunc: (value, runInfoResults) =>
@@ -264,7 +264,7 @@ const runInfoArray = [
   {
     key: 'piG',
     name: 'pi_G',
-    html: '<em>&#960<sub>G</sub></em>',
+    html: '<em>&#960;<sub>G</sub></em>',
     parameter: true,
     description: 'EpiAlignment parameter pi_G',
     displayFunc: (value, runInfoResults) =>
@@ -273,7 +273,7 @@ const runInfoArray = [
   {
     key: 'piT',
     name: 'pi_T',
-    html: '<em>&#960<sub>T</sub></em>',
+    html: '<em>&#960;<sub>T</sub></em>',
     parameter: true,
     description: 'EpiAlignment parameter pi_T',
     displayFunc: (value, runInfoResults) =>
@@ -282,7 +282,7 @@ const runInfoArray = [
   {
     key: 'pi1',
     name: 'pi_1',
-    html: '<em>&#960<sub>1</sub></em>',
+    html: '<em>&#960;<sub>1</sub></em>',
     parameter: true,
     description: 'EpiAlignment parameter pi_1',
     displayFunc: (value, runInfoResults) =>
@@ -305,7 +305,7 @@ const runInfoArray = [
   {
     key: 'paraMu',
     name: 'mu',
-    html: '<em>&#956</em>',
+    html: '<em>&#956;</em>',
     parameter: true,
     description: 'EpiAlignment parameter mu',
     formFields: [
@@ -319,7 +319,7 @@ const runInfoArray = [
   {
     key: 'paraK',
     name: 'kappa',
-    html: '<em>&#954</em>',
+    html: '<em>&#954;</em>',
     parameter: true,
     description: 'EpiAlignment parameter kappa',
     formFields: [

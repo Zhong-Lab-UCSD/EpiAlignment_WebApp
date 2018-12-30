@@ -302,35 +302,35 @@
                   <input type="text" autocomplete="new-password" name="paras" v-model.number="formParams.paras" value="0.3">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel"><em>&#956</em>:</div>
+                  <div class="paramLabel"><em>&#956;</em>:</div>
                   <input type="text" autocomplete="new-password" name="paramu" v-model.number="formParams.paramu" value="0.3">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel"><em>&#954</em>:</div>
+                  <div class="paramLabel"><em>&#954;</em>:</div>
                   <input type="text" autocomplete="new-password" name="parak" v-model.number="formParams.parak" value="0.3">
                 </div>
               </div>
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel"><em>&#960<sub>A</sub></em>:</div>
+                  <div class="paramLabel"><em>&#960;<sub>A</sub></em>:</div>
                   <input type="text" autocomplete="new-password" name="piA" v-model.number="formParams.piA" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel"><em>&#960<sub>C</sub></em>:</div>
+                  <div class="paramLabel"><em>&#960;<sub>C</sub></em>:</div>
                   <input type="text" autocomplete="new-password" name="piC" v-model.number="formParams.piC" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel"><em>&#960<sub>G</sub></em>:</div>
+                  <div class="paramLabel"><em>&#960;<sub>G</sub></em>:</div>
                   <input type="text" autocomplete="new-password" name="piG" v-model.number="formParams.piG" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel"><em>&#960<sub>T</sub></em>:</div>
+                  <div class="paramLabel"><em>&#960;<sub>T</sub></em>:</div>
                   <input type="text" autocomplete="new-password" name="piT" v-model.number="formParams.piT" value="0.25">
                 </div>
               </div>
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
-                  <div class="paramLabel"><em>&#960</em><sub>1</sub>:</div>
+                  <div class="paramLabel"><em>&#960;</em><sub>1</sub>:</div>
                   <input type="text" autocomplete="new-password" name="pi1" v-model.number="formParams.pi1" value="0.1">
                 </div>
               </div>
@@ -390,66 +390,70 @@
             between human and mouse in EpiAlignment.
           </div>
           <div v-show="!presetLoaded">Loading ENCODE data ...</div>
-          <div v-show="presetLoaded" class="flexRow flexStretch flex flexNoGap">
+          <div v-show="presetLoaded" id="presetPanel" class="flexRow flexStretch flex flexNoGap">
             <div class="flex flexColumn" id="encodeTableHolder" @wheel.stop>
-              <table class="encodeTable">
-                <thead>
-                  <tr>
-                    <th>ENCODE Datasets</th>
-                    <th v-for="filter in encodeFilters" :key="filter.id">
-                      {{ filter.label }}
-                    </th>
-                    <th v-for="n in (maxSampleFilterLength - encodeFilters.length)" class="tablePlaceHolder">
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="sampleEntry in encodeSamples" :key="sampleEntry.label">
-                    <th>
-                      {{ sampleEntry.label }}
-                    </th>
-                    <td v-for="(filterEntry, index) in sampleEntry.matchedFilters" @click="tempSelectEntry(filterEntry, sampleEntry.label, encodeFilters[index])">
-                      <template v-if="filterEntry">
-                        <span v-for="species in speciesSupported">
-                          {{ species.shortHand }}:
-                          {{ filterEntry[species.name].length }}
-                        </span>
-                      </template>
-                    </td>
-                    <td v-for="n in (maxSampleFilterLength - encodeFilters.length)" class="tablePlaceHolder">
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <table class="encodeTable">
-                <thead>
-                  <tr>
-                    <th>Public Datasets</th>
-                    <th v-for="filter in publicFilters" :key="filter.id">
-                      {{ filter.label }}
-                    </th>
-                    <th v-for="n in (maxSampleFilterLength - publicFilters.length)" class="tablePlaceHolder">
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="sampleEntry in publicSamples" :key="sampleEntry.label">
-                    <th>
-                      {{ sampleEntry.label }}
-                    </th>
-                    <td v-for="(filterEntry, index) in sampleEntry.matchedFilters" @click="tempSelectEntry(filterEntry, sampleEntry.label, publicFilters[index])">
-                      <template v-if="filterEntry">
-                        <span v-for="species in speciesSupported">
-                          {{ species.shortHand }}:
-                          {{ filterEntry[species.name].length }}
-                        </span>
-                      </template>
-                    </td>
-                    <td v-for="n in (maxSampleFilterLength - publicFilters.length)" class="tablePlaceHolder">
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div>
+                <table class="encodeTable">
+                  <thead>
+                    <tr>
+                      <th>ENCODE Datasets</th>
+                      <th v-for="filter in encodeFilters" :key="filter.id">
+                        {{ filter.label }}
+                      </th>
+                      <th v-for="n in (maxSampleFilterLength - encodeFilters.length)" class="tablePlaceHolder">
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="sampleEntry in encodeSamples" :key="sampleEntry.label">
+                      <th>
+                        {{ sampleEntry.label }}
+                      </th>
+                      <td v-for="(filterEntry, index) in sampleEntry.matchedFilters" @click="tempSelectEntry(filterEntry, sampleEntry.label, encodeFilters[index])">
+                        <template v-if="filterEntry">
+                          <span v-for="species in speciesSupported">
+                            {{ species.shortHand }}:
+                            {{ filterEntry[species.name].length }}
+                          </span>
+                        </template>
+                      </td>
+                      <td v-for="n in (maxSampleFilterLength - encodeFilters.length)" class="tablePlaceHolder">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <table class="encodeTable">
+                  <thead>
+                    <tr>
+                      <th>Public Datasets</th>
+                      <th v-for="filter in publicFilters" :key="filter.id">
+                        {{ filter.label }}
+                      </th>
+                      <th v-for="n in (maxSampleFilterLength - publicFilters.length)" class="tablePlaceHolder">
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="sampleEntry in publicSamples" :key="sampleEntry.label">
+                      <th>
+                        {{ sampleEntry.label }}
+                      </th>
+                      <td v-for="(filterEntry, index) in sampleEntry.matchedFilters" @click="tempSelectEntry(filterEntry, sampleEntry.label, publicFilters[index])">
+                        <template v-if="filterEntry">
+                          <span v-for="species in speciesSupported">
+                            {{ species.shortHand }}:
+                            {{ filterEntry[species.name].length }}
+                          </span>
+                        </template>
+                      </td>
+                      <td v-for="n in (maxSampleFilterLength - publicFilters.length)" class="tablePlaceHolder">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
             <div id="dataPanel">
               <div v-if="tempSelectedEntry" @wheel.stop>

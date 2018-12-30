@@ -138,7 +138,7 @@
               </tr>
             </tbody>
           </table>
-          <div id="heatmapLegend" class="selfAlignStretch">
+          <div id="heatmapLegend" class="selfAlignStretch flexColumn flexStretch flexNoGap flexNoWrap">
             <!-- Scale bar -->
             <div class="flexRow flexStart flexNoWrap">
               <div class="flexRow flexCenter flexNoGap noFlex" id="colorScaleGroup">
@@ -148,14 +148,21 @@
               </div>
               <div class="flex">Alignment score</div>
             </div>
+            <!-- H sign -->
+            <div class="flexRow flexStart flexNoWrap">
+              <div class="legendIcon heatmapObj noFlex plain">
+                <div class="overlay flexRow flexNoWrap flexCenter justifyCenter">H</div>
+              </div>
+              <div class="flex">Target with highest score</div>
+            </div>
             <!-- Seq-best pair -->
             <div class="flexRow flexStart flexNoWrap">
               <div class="legendIcon heatmapObj epiMax noFlex"></div>
-              <div class="flex">Best EpiAlign target</div>
+              <div class="flex">Shifted EpiAlign target</div>
             </div>
             <div class="flexRow flexStart flexNoWrap">
               <div class="legendIcon heatmapObj seqMax noFlex"></div>
-              <div class="flex">Best sequence-only alignment target (if different from best EpiAlign target)</div>
+              <div class="flex">Original sequence-only alignment target</div>
             </div>
           </div>
         </div>

@@ -9,6 +9,8 @@ const setTimeoutPromise = function (timeout, resolvedValue) {
 const INQUIRY_TARGET_PREFIX = '/backend/results/'
 const INQUIRY_IMAGE_PREFIX = '/backend/result_image/'
 
+const UCSC_TARGET = 'https://genome.ucsc.edu/cgi-bin/hgTracks?'
+
 const RUN_INFO_DICT = 'assets/runInfoDict.json'
 
 const STATUS_RUNNING = -1
@@ -71,6 +73,8 @@ var app = new Vue({
     runid: null,
     loading: true,
     showRunDetails: false,
+    queryGenomeAssembly: null,
+    targetGenomeAssembly: null,
     runInfoDictPromise: null,
     email: null,
     downloadLink: '',
@@ -224,6 +228,9 @@ var app = new Vue({
         response.completeTime + ')'
 
       this.alignMode = response.alignMode
+
+      this.queryGenomeAssembly = response.queryGenomeAssembly
+      this.targetGenomeAssembly = response.targetGenomeAssembly
       if (refresh) {
         this.expandedRunInfoList.splice(0)
         this.collapsedRunInfoList.splice(0)
@@ -452,6 +459,10 @@ var app = new Vue({
         class: 'dataTableCell',
         width: 'auto'
       })
+    },
+    getUcscLink: function (assembly, region) {
+      region = window.encodeURIComponent(region.replace(/\([+-]\)/, ''))
+      return UCSC_TARGET + 'db=' + assembly + '&position=' + region
     }
   }
 })

@@ -78,8 +78,9 @@
       </div>
       <div v-show="email">
         You will also receive an email at your email address at
-        {{ email }} once the computation is done. Please check your spam
-        folder regularly, or make sure messenger@mail.beta.givengine.org is on
+        {{ email }} once the computation is done. <strong>Note: </strong>
+        please check your spam folder regularly, or make sure
+        messenger@mail.givengine.org is on
         your approved sender list ("white list") and/or in your address book.
       </div>
     </div>
@@ -219,14 +220,24 @@
           <template slot="no-data">
           </template>
           <template slot="items" slot-scope="row">
-            <tr @click="toggleRow(row)">
+            <tr @click="toggleRow(row)" :class=" { expandable: alignMode === 'enhancer' } ">
               <td class="dataTableCell">{{ row.item.index }}</td>
               <td class="dataTableCell">{{ row.item[geneIdentifier1] }}</td>
               <td class="dataTableCell" v-if="row.item.ensID1 !== '.'">{{ row.item.ensID1 }}</td>
-              <td class="dataTableCell">{{ row.item.region1 }}</td>
+              <td class="dataTableCell">
+                {{ row.item.region1 }} <a class="noFlex" target="_blank" title="Open region in UCSC Genome Browser"
+                  :href="getUcscLink(queryGenomeAssembly, row.item.region1)"><i class="material-icons">
+                    open_in_new
+                  </i></a>
+              </td>
               <td class="dataTableCell" v-if="row.item[geneIdentifier2] !== '.'">{{ row.item[geneIdentifier2] }}</td>
               <td class="dataTableCell" v-if="row.item.ensID2 !== '.'">{{ row.item.ensID2 }}</td>
-              <td class="dataTableCell">{{ row.item.region2 }}</td>
+              <td class="dataTableCell">
+                {{ row.item.region2 }} <a class="noFlex" target="_blank" title="Open region in UCSC Genome Browser"
+                  :href="getUcscLink(targetGenomeAssembly, row.item.region2)"><i class="material-icons">
+                  open_in_new
+                </i>
+              </td>
               <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode ===
                 'promoter' ?
                 Number.parseFloat(row.item.scoreE).toFixed(3) : row.item.targetE }}</td>

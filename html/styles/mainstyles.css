@@ -49,8 +49,8 @@ div#header h1:not(:last-child) {
 
 div#header #headerButtonHolder {
 	padding: 0.5em 0 0 0.5em;
-	min-width: 12em;
-	flex-basis: 12em;
+	min-width: 16em;
+	flex-basis: 16em;
 }
 
 div#header.result #headerButtonHolder {
@@ -69,7 +69,7 @@ div#header a.buttons {
 	border-radius: 5px;
 	padding: 0.25em;
 	text-align: center;
-	width: 11em;
+	width: 15em;
 	box-sizing: border-box;
 }
 

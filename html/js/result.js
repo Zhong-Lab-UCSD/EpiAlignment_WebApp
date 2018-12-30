@@ -201,6 +201,7 @@ var app = new Vue({
     },
     populateInfoList: function (keyList, infoList, response) {
       this.runInfoDictPromise.then(runInfoDict => {
+        infoList.splice(0)
         keyList.forEach(keyRow => {
           let infoRow = []
           keyRow.forEach(key => {
@@ -236,11 +237,7 @@ var app = new Vue({
 
       this.queryGenomeAssembly = response.queryGenomeAssembly
       this.targetGenomeAssembly = response.targetGenomeAssembly
-      if (refresh) {
-        this.expandedRunInfoList.splice(0)
-        this.collapsedRunInfoList.splice(0)
-      }
-      if (!this.expandedRunInfoList.length) {
+      if (refresh || !this.expandedRunInfoList.length) {
         // Add run info to expandedRunInfoList and collapsedRunInfoList
         this.populateInfoList(
           expandedRunInfoKeyList, this.expandedRunInfoList, response

@@ -856,7 +856,6 @@ span.keyboard {
 
 .resultHolder {
 	padding: 0.5rem 1rem;
-	min-width: 80rem;
 	flex-basis: 80rem;
 }
 
@@ -906,7 +905,7 @@ tr.expandable {
 div#heatmap {
 	overflow: auto;
 	margin: 0.5rem;
-	padding: 1rem;
+	padding: 0.5rem 1rem 1rem 1rem;
 	max-width: 35em;
 	box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.35);
 	font-size: 12px;
@@ -969,7 +968,7 @@ div.heatmapObj.epiMax {
 	border: 4px solid #007e00;
 }
 
-div.heatmapObj > div {
+.heatmapCell > div.heatmapObj > div {
 	background: #c82500;
 	width: 100%;
 	height: 100%;
@@ -990,7 +989,7 @@ div.heatmapObj > div {
 }
 
 #heatmapLegend > :not(:last-child) {
-	margin-bottom: 0.5em;
+	margin-bottom: 0.2em;
 }
 
 #heatmapLegend #colorScaleGroup {
@@ -1013,6 +1012,10 @@ div.legendIcon.heatmapObj {
 	height: 1.5em;
 	margin-top: 0.25em;
 	vertical-align: top;
+}
+
+div.legendIcon.heatmapObj.plain {
+	border: 1px #666666 solid;
 }
 
 #heatmapDesc {

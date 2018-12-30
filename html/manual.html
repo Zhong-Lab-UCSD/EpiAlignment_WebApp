@@ -91,8 +91,9 @@
       result page shows two heatmaps and a table. The heatmaps illustrate alignment scores between every pair of
       promoters and the best hits found for each query promoter.</p>
     <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
-    <p>The table shows details of the alignments between each pair of promoters. You can sort the table by each column
-      by clicking the arrow beside column name. Click the arrow beside "index" to reset the order. The table can be
+    <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>) beside each genome coordinates to view the location in UCSC genome browser. In the genome browser, you may select any preset ENCODE/public epigenomic data tracks to view them at the same location.</p> 
+    <p>You can sort the table by each column
+      by clicking the arrow beside column name. Click the arrow beside "#" to reset the order. The table can be
       downloaded by clicking "Download results".</p>
     <img alt="Data table for promoter mode" src="assets/images/PromoterTable_comments.png">
 
@@ -338,6 +339,9 @@
       refer to individual pairs, so it is recommended to keep the names same between query regions and the target
       regions. A sample input file is shown below, paired with the sample query region file shown above:</p>
     <img alt="Enhancer mode sample target regions" src="assets/images/Enhancer_s2.png">
+    
+    <h3>Parameters</h3>
+    <p>Add here</p>
 
     <h2>Output</h2>
     <p>You will be redirect to the result page after successfully submitting your data. The result page will refresh
@@ -353,7 +357,7 @@
     <h3>Promoter mode</h3>
     <p>For the promoter mode, the result page shows two heatmaps and a table. EpiAlignment scores are plotted in the
       first heatmap to show scores of any query region (row) against all target region(s) (column). A sequence-only
-      alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap.</p>
+      alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap. In each row, the cell with the highest score of the row is marked with a capital "H".</p>
     <p>For each query region (row), EpiAlignment detects if its best hit switches from one target region to another
       with EpiAlign and Sequence-only alignment. The best hit is considered as "changed" if it meets the following
       criteria:</p>
@@ -409,10 +413,9 @@
     </div>
 
     <p>For query regions with switched target, the best hit found by EpiAlign is highlighted by a green box, and the
-      best hit found by Sequence-only alignment is highlighted by a gray box.</p>
-    <p>The table shows details of the alignments between each pair of promoters. You can sort the table by each column
-      by clicking the arrow beside column name. Click the arrow beside "index" to reset the order. The table can be
-      downloaded by clicking "Download results".</p>
+      best hit found by Sequence-only alignment is highlighted by a gray box. </p>
+    <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>) beside each genome coordinates to view the location in UCSC genome browser. The bigWig files of all preset ENCODE and public datasets were available in this browser page. You may select any ENCODE/public epigenomic data tracks in "Custom Tracks", change the display mode from "hide" to "dense" to view them at the same location. </p>
+    <p>You can also sort the table by each column by clicking the arrow beside column name. Click the arrow beside "#" to reset the order. The table can be downloaded by clicking "Download results".</p>
     <p>Note: if you set epigenomic weight to zero during input, the EpiAlignment score will be the degenerated
       sequence-only alignment score, and no sequence-only result will be reported.</p>
     <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
@@ -422,8 +425,17 @@
       sorted by each column by clicking the arrow beside column name. You can also click on each row to expand it and
       view the highest alignment scores and the alignment score distributions along the target region. The table can be
       downloaded by clicking "Download results".</p>
+    <p>Similar to the result page of the promoter mode, you may click the icon (<i class="material-icons">open_in_new</i>) beside each genome coordinates in this table to view the location and any preset epigenomic data tracks in UCSC genome browser.</p>
 
   </div>
+  
+  <!--<div class="section">
+    <h1>Computational methods</h1>
+    <p>EpiAlignment uses a dynamic programming algorithm for the comparison of sequences and epigenomic modifications. The input data is a pair of genomic regions: the query region <i>A</i> and the target region <i>B</i>, each of which consists of the DNA sequence and the epigenomic modifications on it. We assume that the state for each epigenomic modification on each genomic location is binary as shown in the figure below. On each base, a binary indicator (1,0) is used to represent the epigenomic state of an epigenomic mark, with the epigenomic state equal to 1 within regions marked by the epigenomic mark, and 0 outside such regions. </p>
+
+    <p>EpiAlignment starts from scoring a pair of nucleoside bases from two sequences, rewarding for matches and penalizing for mismatches, gap openings or gap extensions. On top of each pair of bases, EpiAlignment adds a score from the epigenomic states to the alignment score, rewarding for matches and penalizing for mismatches of each epigenomic mark. Through dynamic programming, EpiAlignment computes alignment scores of any pairs of sub-sequences, and reports the path with the highest alignment score. </p>
+    
+  </div> -->
 
   <div class="section">
     <!-- References -->

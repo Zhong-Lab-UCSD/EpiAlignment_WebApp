@@ -28,8 +28,9 @@
     </div>
     <div id="headerButtonHolder" class="flex flexRow flexWrap flexCenter justifyEnd">
       <a class="buttons flexRow flexCenter justifyCenter" target="_blank" href="manual.html"><i class="material-icons">help_outline</i>Manual</a>
-      <a class="buttons flexRow flexCenter justifyCenter" target="_blank" href="https://github.com/Zhong-Lab-UCSD/EpiAlignment_WebApp">
-        <img src="assets/images/GitHub-Mark-Light-32px.png">View on Github</a>
+      <a class="buttons flexRow flexCenter justifyCenter" title="A template python program that can be used to access EpiAlignment"
+        target="_blank" href="assets/PythonAPI.zip"><i class="material-icons">save_alt</i>Python
+        client template</a>
     </div>
   </div>
   <!--alignment steps-->
@@ -64,13 +65,18 @@
           </div>
           <div v-show="!formParams.alignMode || showModeHelp" class="tooltipPanel flexColumn flexNoWrap flexStretch"
             :class="{ highlightBlink: !formParams.alignMode && showModeHelp }">
-            <div>The promoter mode attempts to align every input query region to all target regions to find the best hit
-            (all-against-all alignment). Therefore, it would be useful if you have query and target regions of similar lengths, and
-            would like to find one best match for the query region among a set of target regions. The promoter mode could also be
-            handy if you'd like to define promoter regions with gene names.</div>
-            <div>The enhancer mode, on the other hand, is more useful if you have target regions much longer than the query regions, and
-            you are trying to match the query regions to a sub-region of the target region (one-against-one alignment). This mode
-            allows defining target regions using homologous information.</div>
+            <div>The promoter mode attempts to align every input query region to all target regions to find the best
+              hit
+              (all-against-all alignment). Therefore, it would be useful if you have query and target regions of
+              similar lengths, and
+              would like to find one best match for the query region among a set of target regions. The promoter mode
+              could also be
+              handy if you'd like to define promoter regions with gene names.</div>
+            <div>The enhancer mode, on the other hand, is more useful if you have target regions much longer than the
+              query regions, and
+              you are trying to match the query regions to a sub-region of the target region (one-against-one
+              alignment). This mode
+              allows defining target regions using homologous information.</div>
             <div>
               Sample data is available in both modes.
             </div>
@@ -117,7 +123,8 @@
             <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Input regions:</div>
               <div class="flexColumn flexStretch flex">
-                <textarea autocomplete="new-password" name="speciesText[]" v-model="formParams.speciesText[0]" :placeholder="genomePlaceholder"></textarea>
+                <textarea autocomplete="new-password" name="speciesText[]" v-model="formParams.speciesText[0]"
+                  :placeholder="genomePlaceholder"></textarea>
                 <div class="flexRow flexStart flexWrap">
                   <div class="subElemLabel">or upload a file:</div>
                   <input ref="speciesInputFile1" class="flex" type="file" name="speciesInput1">
@@ -179,8 +186,8 @@
                   <label for="geneClusterSearch">Search a gene cluster.</label>
                 </div>
                 <div id="clusterPanel" :class="{ inactive: !geneClusterSelected }" @click.stop>
-                  <input id="clusterInput" autocomplete="new-password" type="text" :disabled="!geneClusterSelected" placeholder="Find a cluster by gene name or Ensembl ID"
-                    v-model="clusterText" @input="clusterInputChanged">
+                  <input id="clusterInput" autocomplete="new-password" type="text" :disabled="!geneClusterSelected"
+                    placeholder="Find a cluster by gene name or Ensembl ID" v-model="clusterText" @input="clusterInputChanged">
                   <div v-if="showClusterCandidate" id="clusterCandidateHolder" class="flexRow flexNoGap">
                     <div id="clusterList">
                       <div class="clusterListHeader">Result for "{{postedClusterText}}"</div>
@@ -235,9 +242,11 @@
                 </div>
                 <div :class="{ inactive: !homologRegionSelected }">
                   <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" autocomplete="new-password" type="text" name="enhancerUp" v-model.number="formParams.enhancerUp">
+                    <input :disabled="!homologRegionSelected" autocomplete="new-password" type="text" name="enhancerUp"
+                      v-model.number="formParams.enhancerUp">
                     bps upstream,</span> <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" autocomplete="new-password" type="text" name="enhancerDown" v-model.number="formParams.enhancerDown">
+                    <input :disabled="!homologRegionSelected" autocomplete="new-password" type="text" name="enhancerDown"
+                      v-model.number="formParams.enhancerDown">
                     bps downstream. </span></div>
               </div>
               <!-- both -->
@@ -272,11 +281,13 @@
           <div class="flexRow flexCenter flexWrap">
             <div class="flexRow flexNoWrap shortInputContainer">
               <div class="subElemLabel">Sequence weight:</div>
-              <input type="text" autocomplete="new-password" name="seqweight" v-model.number="formParams.seqweight" value="0.9">
+              <input type="text" autocomplete="new-password" name="seqweight" v-model.number="formParams.seqweight"
+                value="0.9">
             </div>
             <div class="flexRow flexNoWrap shortInputContainer">
               <div class="subElemLabel">Epigenome weight:</div>
-              <input type="text" autocomplete="new-password" name="epiweight" v-model.number="formParams.epiweight" value="0.1">
+              <input type="text" autocomplete="new-password" name="epiweight" v-model.number="formParams.epiweight"
+                value="0.1">
             </div>
           </div>
           <button type="button" class="selfAlignStart" @click="toggleShowParam">
@@ -349,11 +360,11 @@
           </div>
           <div v-show="formParams.alignMode === 'enhancer' && !formParams.emailNote" class="tooltipPanel">
             <div>Due to the many processing steps and larger search regions
-            involved, enhancer mode runs longer than promoter mode and may
-            take minutes.</div>
+              involved, enhancer mode runs longer than promoter mode and may
+              take minutes.</div>
             <div> It is highly recommended to provide an email here
-            to get notified when results become available. You may also
-            bookmark the result page after submitting your data.</div>
+              to get notified when results become available. You may also
+              bookmark the result page after submitting your data.</div>
           </div>
           <div class="flexRow flexCenter">
             <input type="submit" value="Submit">

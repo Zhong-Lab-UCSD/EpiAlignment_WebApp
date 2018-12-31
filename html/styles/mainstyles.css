@@ -317,6 +317,10 @@ i.material-icons {
 	vertical-align: text-bottom;
 }
 
+i.material-icons.button {
+	cursor: pointer;
+}
+
 i.material-icons.iconAtLeft {
 	margin-right: 0.4rem;
 }
@@ -1045,9 +1049,16 @@ div.legendIcon.heatmapObj.plain {
 
 div.enhancerHint {
 	font-size: 14px;
-	font-style: italic;
 	margin-top: -0.6em;
 	margin-bottom: 0.4em;
+}
+
+div.enhancerHint > div.closeHint > *:not(:last-child) {
+	margin-right: 0.5em;
+}
+
+div.enhancerHint > div.closeHint > i {
+	margin-left: 0.5em;
 }
 
 tr.clickableTableRow {

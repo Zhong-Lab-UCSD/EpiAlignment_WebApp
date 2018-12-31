@@ -94,6 +94,9 @@ var app = new Vue({
     geneIdentifier1: null, // ['transID1', 'region_name1']
     geneIdentifier2: null, // ['transID2', 'region_name2']
     showHeatmap: false,
+
+    showResultHint: true,
+    doNotShowHintAgain: false,
     rowsPerPageItems: [
       10,
       20,
@@ -164,7 +167,19 @@ var app = new Vue({
     })
     this.runInfoDictPromise = postAjax(RUN_INFO_DICT, null, 'json', 'GET')
   },
+
+  mounted () {
+    if (localStorage.getItem('doNotShowResultHint')) {
+      this.showResultHint = false
+    }
+  },
   methods: {
+    closeHint: function () {
+      if (this.doNotShowHintAgain) {
+        localStorage.setItem('doNotShowResultHint', 'true')
+      }
+      this.showResultHint = false
+    },
     foldRunInfoDetails: function () {
       this.showRunDetails = false
     },

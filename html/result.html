@@ -220,8 +220,19 @@
             </i>
             Download results</a>
         </div>
-        <div class="enhancerHint" v-if="alignMode === 'enhancer'">
-          Please click on individual table rows to see detailed results.
+        <div class="enhancerHint tooltipPanel flexRow flexNoGap flexWrap justifyEnd" v-if="showResultHint">
+          <div class="hintContent flex">You may click on the
+            <i class="material-icons">open_in_new</i> icon in the table to
+            open the region in UCSC Genome Browser.
+            <span v-if="alignMode === 'enhancer'">
+              You may also click on individual table rows to see detailed results.
+            </span>
+          </div>
+          <div class="closeHint nobr noFlex flexRow flexCenter flexNoGap">
+            <input type="checkbox" v-model="doNotShowHintAgain" id="doNotShow">
+            <label for="doNotShow">Do not show this again</label>
+            <i class="material-icons button" @click="closeHint()">close</i>
+          </div>
         </div>
         <v-data-table :headers="headers" :items="dataEntries" item-key="index" class="elevation-1" :pagination.sync="paginationObj"
           :rows-per-page-items="rowsPerPageItems" sort-icon="keyboard_arrow_down">

@@ -910,19 +910,23 @@ tr.expandable {
 
 #heatmapPanel {
 	min-width: 15rem;
-	flex-basis: 35rem;
+	flex-basis: auto;
 }
 
 div#heatmap {
 	overflow: auto;
 	margin: 0.5rem;
-	padding: 0.5rem 1rem 1rem 1rem;
-	max-width: 35em;
 	box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.35);
 	font-size: 12px;
+	max-width: 100%;
 }
 
-#heatmap > .resultHeader {
+div#heatmap > div {
+	display: inline-flex;
+	margin: 0.5rem 1rem 1rem 1rem;
+}
+
+#heatmap .resultHeader {
 	margin-bottom: 0.1rem;
 }
 
@@ -1236,6 +1240,11 @@ div.section table.verticalBorder * tr > *:not(:last-child) {
 
 div.section img {
 	max-width: 800px;
+	margin: 0.5rem 1rem 0.5rem 1.5rem;
+}
+
+div.section img.small {
+	max-width: 400px;
 	margin: 0.5rem 1rem 0.5rem 1.5rem;
 }
 

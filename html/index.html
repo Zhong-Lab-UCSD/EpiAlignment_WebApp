@@ -123,7 +123,7 @@
             <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Input regions:</div>
               <div class="flexColumn flexStretch flex">
-                <textarea autocomplete="new-password" name="speciesText[]" v-model="formParams.speciesText[0]"
+                <textarea spellcheck="false" autocomplete="new-password" name="speciesText[]" v-model="formParams.speciesText[0]"
                   :placeholder="genomePlaceholder"></textarea>
                 <div class="flexRow flexStart flexWrap">
                   <div class="subElemLabel">or upload a file:</div>
@@ -136,11 +136,11 @@
               <div class="textWithInput">Please specify promoter region ranges if you use gene names
                 for input:
                 <span class="shortInputContainer nobr">
-                  <input type="text" autocomplete="new-password" name="promoterUp" v-model.number="formParams.promoterUp">
+                  <input type="text" spellcheck="false" autocomplete="new-password" name="promoterUp" v-model.number="formParams.promoterUp">
                   bps upstream from TSSs,
                 </span>
                 <span class="shortInputContainer nobr">
-                  <input type="text" autocomplete="new-password" name="promoterDown" v-model.number="formParams.promoterDown">
+                  <input type="text" spellcheck="false" autocomplete="new-password" name="promoterDown" v-model.number="formParams.promoterDown">
                   bps downstream from TSSs.
                 </span>
               </div>
@@ -186,7 +186,7 @@
                   <label for="geneClusterSearch">Search a gene cluster.</label>
                 </div>
                 <div id="clusterPanel" :class="{ inactive: !geneClusterSelected }" @click.stop>
-                  <input id="clusterInput" autocomplete="new-password" type="text" :disabled="!geneClusterSelected"
+                  <input id="clusterInput" spellcheck="false" autocomplete="new-password" type="text" :disabled="!geneClusterSelected"
                     placeholder="Find a cluster by gene name or Ensembl ID" v-model="clusterText" @input="clusterInputChanged">
                   <div v-if="showClusterCandidate" id="clusterCandidateHolder" class="flexRow flexNoGap">
                     <div id="clusterList">
@@ -242,10 +242,10 @@
                 </div>
                 <div :class="{ inactive: !homologRegionSelected }">
                   <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" autocomplete="new-password" type="text" name="enhancerUp"
+                    <input :disabled="!homologRegionSelected" spellcheck="false" autocomplete="new-password" type="text" name="enhancerUp"
                       v-model.number="formParams.enhancerUp">
                     bps upstream,</span> <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" autocomplete="new-password" type="text" name="enhancerDown"
+                    <input :disabled="!homologRegionSelected" spellcheck="false" autocomplete="new-password" type="text" name="enhancerDown"
                       v-model.number="formParams.enhancerDown">
                     bps downstream. </span></div>
               </div>
@@ -257,7 +257,7 @@
                   <label for="bedPromSearch"> {{ genomeRegionLabel }} </label>
                 </div>
                 <div class="flexColumn flexStretch flex" :class="{ inactive: !genomeRegionSelected }">
-                  <textarea autocomplete="new-password" :disabled="!genomeRegionSelected" name="speciesText[]" v-model="formParams.speciesText[1]"
+                  <textarea spellcheck="false" autocomplete="new-password" :disabled="!genomeRegionSelected" name="speciesText[]" v-model="formParams.speciesText[1]"
                     :placeholder="genomePlaceholder"></textarea>
                   <div class="flexRow flexStart flexWrap">
                     <div class="subElemLabel">or upload a file:</div>
@@ -353,7 +353,7 @@
               <label for="emailCheckbox">Notify me by email when the job is done.</label>
             </div>
             <div :class="{ inactive: !formParams.emailNote }" class="nobr">Email:
-              <input id="emailField" autocomplete="email" type="text" name="mail" v-model="formParams.mail" :disabled="!formParams.emailNote"
+              <input id="emailField" spellcheck="false" autocomplete="email" type="text" name="mail" v-model="formParams.mail" :disabled="!formParams.emailNote"
                 placeholder="Enter your email here.">
             </div>
             <br>

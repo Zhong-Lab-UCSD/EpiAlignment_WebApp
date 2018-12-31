@@ -1248,6 +1248,11 @@ div.section img.small {
 	margin: 0.5rem 1rem 0.5rem 1.5rem;
 }
 
+div.section img.medium {
+	max-width: 600px;
+	margin: 0.5rem 1rem 0.5rem 1.5rem;
+}
+
 span.equation {
 	white-space: nowrap;
 	font-family: 'Times New Roman', Times, serif;

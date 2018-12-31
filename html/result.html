@@ -88,82 +88,84 @@
     <div id="errorContainer" v-show="error">
       Error: {{ errorMessage }}
     </div>
-    <div id="pageContainer" class="flexRow flexWrap flexNoGap" v-if="!loading && !error">
+    <div id="pageContainer" class="flexRow flexStart flexWrap flexNoGap" v-if="!loading && !error">
       <div id="heatmapPanel" class="flexRow flexStart flex flexWrap" v-if="alignMode === 'promoter'">
-        <div id="heatmap" class="flexColumn flexStart">
-          <div class="selfAlignStretch resultHeader">EpiAlign Score</div>
-          <table>
-            <thead>
-              <tr>
-                <th class="placeholder"></th>
-                <th class="heatmapColLabels" v-for="entry in promoterColumnList">
-                  <div>
-                    {{ entry }}
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="rowEntry in epiHeatmapList">
-                <th>{{ rowEntry.geneId }}</th>
-                <td class="heatmapCell" v-for="value in rowEntry.values">
-                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
-                    <div :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
+        <div id="heatmap">
+          <div class="flexColumn flexStart">
+            <div class="selfAlignStretch resultHeader">EpiAlign Score</div>
+            <table>
+              <thead>
+                <tr>
+                  <th class="placeholder"></th>
+                  <th class="heatmapColLabels" v-for="entry in promoterColumnList">
+                    <div>
+                      {{ entry }}
                     </div>
-                    <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.epiMax">H</div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="selfAlignStretch resultHeader">Sequence-only Score</div>
-          <table v-if="hasSequence">
-            <thead>
-              <tr>
-                <th class="placeholder"></th>
-                <th class="heatmapColLabels" v-for="entry in promoterColumnList">
-                  <div>{{ entry }}</div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="rowEntry in epiHeatmapList">
-                <th>{{ rowEntry.geneId }}</th>
-                <td class="heatmapCell" v-for="value in rowEntry.values">
-                  <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
-                    <div :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="rowEntry in epiHeatmapList">
+                  <th>{{ rowEntry.geneId }}</th>
+                  <td class="heatmapCell" v-for="value in rowEntry.values">
+                    <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
+                      <div :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
+                      </div>
+                      <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.epiMax">H</div>
                     </div>
-                    <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.seqMax">H</div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div id="heatmapLegend" class="selfAlignStretch flexColumn flexStretch flexNoGap flexNoWrap">
-            <!-- Scale bar -->
-            <div class="flexRow flexStart flexNoWrap">
-              <div class="flexRow flexCenter flexNoGap noFlex" id="colorScaleGroup">
-                Low
-                <div id="colorScale"></div>
-                High
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="selfAlignStretch resultHeader">Sequence-only Score</div>
+            <table v-if="hasSequence">
+              <thead>
+                <tr>
+                  <th class="placeholder"></th>
+                  <th class="heatmapColLabels" v-for="entry in promoterColumnList">
+                    <div>{{ entry }}</div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="rowEntry in epiHeatmapList">
+                  <th>{{ rowEntry.geneId }}</th>
+                  <td class="heatmapCell" v-for="value in rowEntry.values">
+                    <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
+                      <div :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
+                      </div>
+                      <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.seqMax">H</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="heatmapLegend" class="selfAlignStretch flexColumn flexStretch flexNoGap flexNoWrap">
+              <!-- Scale bar -->
+              <div class="flexRow flexStart flexNoWrap">
+                <div class="flexRow flexCenter flexNoGap noFlex" id="colorScaleGroup">
+                  Low
+                  <div id="colorScale"></div>
+                  High
+                </div>
+                <div class="flex">Alignment score</div>
               </div>
-              <div class="flex">Alignment score</div>
-            </div>
-            <!-- H sign -->
-            <div class="flexRow flexStart flexNoWrap">
-              <div class="legendIcon heatmapObj noFlex plain">
-                <div class="overlay flexRow flexNoWrap flexCenter justifyCenter">H</div>
+              <!-- H sign -->
+              <div class="flexRow flexStart flexNoWrap">
+                <div class="legendIcon heatmapObj noFlex plain">
+                  <div class="overlay flexRow flexNoWrap flexCenter justifyCenter">H</div>
+                </div>
+                <div class="flex">Target with highest score</div>
               </div>
-              <div class="flex">Target with highest score</div>
-            </div>
-            <!-- Seq-best pair -->
-            <div class="flexRow flexStart flexNoWrap">
-              <div class="legendIcon heatmapObj epiMax noFlex"></div>
-              <div class="flex">Shifted EpiAlign target</div>
-            </div>
-            <div class="flexRow flexStart flexNoWrap">
-              <div class="legendIcon heatmapObj seqMax noFlex"></div>
-              <div class="flex">Original sequence-only alignment target</div>
+              <!-- Seq-best pair -->
+              <div class="flexRow flexStart flexNoWrap">
+                <div class="legendIcon heatmapObj epiMax noFlex"></div>
+                <div class="flex">Shifted EpiAlign target</div>
+              </div>
+              <div class="flexRow flexStart flexNoWrap">
+                <div class="legendIcon heatmapObj seqMax noFlex"></div>
+                <div class="flex">Original sequence-only alignment target</div>
+              </div>
             </div>
           </div>
         </div>
@@ -254,8 +256,8 @@
               <td class="dataTableCell">
                 {{ row.item.region2 }} <a @click.stop class="noFlex" target="_blank" title="Open region in UCSC Genome Browser"
                   :href="getUcscLink(targetGenomeAssembly, row.item.region2)"><i class="material-icons">
-                  open_in_new
-                </i>
+                    open_in_new
+                  </i>
               </td>
               <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode ===
                 'promoter' ?

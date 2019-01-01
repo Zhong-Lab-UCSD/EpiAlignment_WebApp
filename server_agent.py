@@ -35,7 +35,7 @@ def CheckFileLength(file1, file2):
     if len(fin1.readlines()) == len(fin2.readlines()):
       return True
     else:
-      print >> sys.stderr, "The two input files have different numbers of regions."
+      print >> sys.stderr, "[EpiAlignment]The two input files have different numbers of regions."
       sys.exit(202)
 
 
@@ -47,7 +47,7 @@ def CheckFileType(file1):
     elif len(line) == 1:
       return "name"
     else:
-      print >> sys.stderr, "Input files have to be bed6 files or genelists."
+      print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files or genelists."
       sys.exit(201)
 
 def StripDigits(qstr):
@@ -74,7 +74,7 @@ def ParsePeaks(of_name, json_dict, runid):
   else:
     # upload peak files
     if "speciesPeak1[]" not in json_files or "speciesPeak2[]" not in json_files :
-      print >> sys.stderr, "No peak files found!"
+      print >> sys.stderr, "[EpiAlignment]No peak files found!"
       sys.exit(207)
     peak1 = of_name + json_files["speciesPeak1[]"][0]["filename"]
     peak2 = of_name + json_files["speciesPeak2[]"][0]["filename"]
@@ -135,6 +135,8 @@ def Cons_transList(input1, intype1, promoterUp, promoterDown, sp, of_name):
           i += 1
         if line in transDict1:
           trans_list1 += [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[line]]
+        else:
+          print >> sys.stderr, "The gene " + line + " was not found in " + sp
   return trans_list1
 
 
@@ -151,8 +153,8 @@ def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, 
         print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
         i += 1
   if i > 10000:
-    print >> sys.stderr, "Too many regions..."
-    sys.exit(2)
+    print >> sys.stderr, "[EpiAlignment]Too many regions..."
+    sys.exit(210)
 
   return input1 + ".bed", input2 + ".bed"
 
@@ -252,7 +254,7 @@ def LiftOver(input_bed, genAssem):
   exit_code = p.returncode
 
   if exit_code != 0:
-    print >> sys.stderr, "Failed to generate the input file. Exit code: " + str(exit_code)
+    print >> sys.stderr, "[EpiAlignment]Failed to generate the input file. Exit code: " + str(exit_code)
     sys.exit(exit_code)
   return input_bed + ".lift"
 
@@ -267,7 +269,7 @@ def RemoveNonlift(input_bed, lift_bed):
       if line2 == "":
         if i == 0:
           # lift_bed is empty
-          print >> sys.stderr, "None of the input regions were remappable."
+          print >> sys.stderr, "[EpiAlignment]None of the input regions were remappable."
           sys.exit(209)
         break
       i += 1
@@ -310,7 +312,7 @@ def CreateInputBeds(of_name, json_dict, runid):
   # Is input1 a file or a pasted text?
   input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", of_name, runid)
   if input1 == "" and (not json_dict["body"]["searchRegionMode"] == "genecluster"):
-    print >> sys.stderr, "No input regions provided."
+    print >> sys.stderr, "[EpiAlignment]No input regions provided."
     sys.exit(200)
 
   if searchMode == "genomeregion":
@@ -339,7 +341,7 @@ def CreateInputBeds(of_name, json_dict, runid):
       # Mode 4 (enhancer mode 2): use homologous regions. 
       # species must be different!
       if StripDigits(genAssem[0]) == StripDigits(genAssem[1]):
-        print >> sys.stderr, "The two species must be different to use this mode."
+        print >> sys.stderr, "[EpiAlignment]The two species must be different to use this mode."
         sys.exit(208)
       # Extend the input bed file1. extbed: extended bed file name.
       extbed = ExtendBed(input1, enhancerUp, enhancerDown)
@@ -371,8 +373,13 @@ def BedToFa(bed1, bed2, out_folder, sp_list, runid):
   exit_code = p.returncode
 
   if exit_code != 0:
-    print >> sys.stderr, std_err + " Exit code: " + str(exit_code)
+    print >> sys.stderr, "[EpiAlignment]" + std_err + " Exit code: " + str(exit_code)
     sys.exit(exit_code)
+  # Check if the input file is empty.
+  Input_fa_name = out_folder + "Input_" + runid
+  if os.stat(Input_fa_name).st_size == 0:
+    print >> sys.stderr, "[EpiAlignment]Fail to generate the input file for EpiAlignment. Please check whether your genomic regions/gene names match the genome assemblies."
+    sys.exit(214)
 
 
 def InputParas(of_name, json_body, runid):
@@ -382,7 +389,7 @@ def InputParas(of_name, json_body, runid):
   # Check if parameters are not positive.
   parak_list = [float(x) for x in json_body["parak"].split(",")]
   if float(json_body["paras"]) <= 0 or float(json_body["paramu"]) <= 0 or min(parak_list) <= 0:
-    print >> sys.stderr, "Parameters should be positive values."
+    print >> sys.stderr, "[EpiAlignment]Parameters should be positive values."
     sys.exit(206)
 
   seq_pi_list = [float(json_body["piA"]), float(json_body["piC"]), float(json_body["piG"]), float(json_body["piT"])]
@@ -390,7 +397,7 @@ def InputParas(of_name, json_body, runid):
   weight_list = [float(w) for w in json_body["epiweight"].split(",")]
   para_list = seq_pi_list + pi_list1 + weight_list
   if min(para_list) <= 0 or max(para_list) >= 1:
-    print >> sys.stderr, "Equilibrium probabilities (pi) must be values between 0 and 1."
+    print >> sys.stderr, "[EpiAlignment]Equilibrium probabilities (pi) must be values between 0 and 1."
     sys.exit(206)
 
   # Create parameter file.
@@ -442,14 +449,14 @@ def ExeEpiAlignment(alignMode, searchRegionMode, of_name, runid):
     (std_out_epi, std_err_epi) = p_epi.communicate()
     exit_code_epi = p_epi.returncode
     if exit_code_epi != 0:
-      print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code_epi)
+      print >> sys.stderr, "[EpiAlignment]Failed to align regions. Exit code: " + str(exit_code_epi)
       sys.exit(exit_code_epi)
 
     if seq_stat:
       (std_out_seq, std_err_seq) = p_seq.communicate()
       exit_code_seq = p_seq.returncode
       if exit_code_seq != 0:
-        print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code_seq)
+        print >> sys.stderr, "[EpiAlignment]Failed to align regions. Exit code: " + str(exit_code_seq)
         sys.exit(exit_code_seq)
 
   elif alignMode == "enhancer":
@@ -462,14 +469,14 @@ def ExeEpiAlignment(alignMode, searchRegionMode, of_name, runid):
     (std_out_epi, std_err_epi) = p_epi.communicate()
     exit_code_epi = p_epi.returncode
     if exit_code_epi != 0:
-      print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code_epi)
+      print >> sys.stderr, "[EpiAlignment]Failed to align regions. Exit code: " + str(exit_code_epi)
       sys.exit(exit_code_epi)
 
     if seq_stat:
       (std_out_seq, std_err_seq) = p_seq.communicate()
       exit_code_seq = p_seq.returncode
       if exit_code_seq != 0:
-        print >> sys.stderr, "Failed to align regions. Exit code: " + str(exit_code_seq)
+        print >> sys.stderr, "[EpiAlignment]Failed to align regions. Exit code: " + str(exit_code_seq)
         sys.exit(exit_code_seq)
 
 ###################

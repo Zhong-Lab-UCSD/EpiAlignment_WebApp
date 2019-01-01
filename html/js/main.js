@@ -39,7 +39,6 @@
  *    pi1: Float,
  *
  *    // Notification related
- *    emailNote: Boolean,
  *    mail: String
  * }
  */
@@ -73,8 +72,15 @@ var app = new Vue({
     hasError: false,
     submitted: false,
     formError: {
-      modeNotSelected: false
-
+      modeNotSelected: false,
+      peakError: [ false, false ],
+      inputError: [ false, false ],
+      promoterLengthError: false,
+      referenceError: false,
+      clusterError: false,
+      enhancerLengthError: false,
+      weightError: false,
+      paramError: false
     },
     showMoreParamText: 'Show more parameters...',
     submitStatus: null,
@@ -110,6 +116,7 @@ var app = new Vue({
     publicSamples: [],
 
     peakFiles: [ [], [] ],
+    inputFiles: [ [], [] ],
 
     // Cluster related
     clusterText: null,
@@ -150,7 +157,6 @@ var app = new Vue({
       piT: PARA_PI_T_DEFAULT,
       pi1: PARA_PI_1_DEFAULT,
 
-      emailNote: false,
       mail: null
     }
   },
@@ -336,17 +342,86 @@ var app = new Vue({
     },
 
     validateForm: function () {
-      let hasError = false
+      let hasError = !this.$refs.mainForm.checkValidity()
+
       for (let key in this.formError) {
         if (this.formError.hasOwnProperty(key)) {
-          this.formError[key] = false
+          if (Array.isArray(this.formError[key])) {
+            this.formError[key].fill(false)
+          } else {
+            this.formError[key] = false
+          }
         }
       }
       if (!this.formParams.alignMode) {
         this.formError.modeNotSelected = true
-        hasError = true
       }
 
+      // peakError
+      if (!this.selectedExperimentIds) {
+        this.peakFiles.forEach((peakFile, index) => {
+          if (peakFile.length) {
+            this.formError.peakError[index] = true
+          }
+        })
+      }
+
+      // inputError
+      this.formParams.speciesText.forEach((text, index) => {
+        if (!text.trim().length && !this.inputFiles[index].length &&
+          !(index === 1 && !this.genomeRegionSelected)
+        ) {
+          this.formError.inputError[index] = true
+        }
+      })
+
+      // promoterLengthError
+      if (this.$refs['promoter'].some(elem => !elem.checkValidity())) {
+        this.formError.promoterLengthError = true
+      }
+
+      // referenceError
+      if (this.homologRegionSelected &&
+        this.formParams.genomeAssembly[0] ===
+          this.formParams.genomeAssembly[1]
+      ) {
+        this.formError.referenceError = true
+      }
+
+      // clusterError
+      if (this.geneClusterSelected && !this.selectedCluster &&
+        !this.clusterText.match(/Cluster_[1-9][0-9]*/)
+      ) {
+        this.formError.clusterError = true
+      }
+
+      // enhancerLengthError
+      if (this.homologRegionSelected && (this.$refs['enhancer'].some(
+        elem => !elem.checkValidity()
+      ))) {
+        this.formError.enhancerLengthError = true
+      }
+
+      // weightError
+      if (this.$refs['weight'].some(elem => !elem.checkValidity())) {
+        this.formError.weightError = true
+      }
+
+      // paramError
+      if (this.$refs['param'].some(elem => !elem.checkValidity())) {
+        this.formError.paramError = true
+      }
+
+      for (let key in this.formError) {
+        if (this.formError.hasOwnProperty(key) && (
+          Array.isArray(this.formError[key])
+            ? this.formError[key].some(value => value)
+            : this.formError[key]
+        )) {
+          hasError = true
+          break
+        }
+      }
       this.hasError = hasError
       return !this.hasError
     },
@@ -452,6 +527,11 @@ var app = new Vue({
       if (event.target.files.length) {
         this.clearEncodeData()
       }
+    },
+
+    inputFileChanged: function (event, index) {
+      this.inputFiles[index].splice(0, this.inputFiles[index].length,
+        ...event.target.files)
     },
 
     clusterInputChanged: function () {

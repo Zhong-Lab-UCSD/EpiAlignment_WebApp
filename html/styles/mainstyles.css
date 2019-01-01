@@ -97,8 +97,13 @@ div#footer {
 	background: linear-gradient(150deg, #01775e -30%, #002308 100%);
 	color: white;
 	font-size: 14px;
-	padding: 0.75em 2em;
 	line-height: 1.3em;
+}
+
+div#footer > div {
+	padding: 0.75em 2em;
+	flex-basis: 480px;
+	box-sizing: border-box;
 }
 
 div#footer .flexRow > *:not(:last-child) {
@@ -126,7 +131,7 @@ div#footer a:hover {
 
 img#ucsdLogo {
 	width: 150px;
-	margin: 0 10px 0 25px;
+	margin: 15px 25px;
 }
 
 body > div:not(.noFlex) {
@@ -183,11 +188,49 @@ div.tooltipPanel {
 	font-size: 14px;
 }
 
+div.tooltipPanel.flexColumn {
+	padding: 0.5em 0;
+}
+
+div.tooltipPanel .twoColumnContent {
+	flex-basis: 650px;
+}
+
+div.tooltipPanel.flexColumn .flexRow > div:not(.flexRow) {
+	padding: 0.5em 1em;
+}
+
+div.tooltipPanel .twoColumnContent .imgHolder {
+	max-width: 500px;
+	min-width: 250px;
+	flex-basis: 320px;
+}
+
+div.tooltipPanel .twoColumnContent img {
+	max-width: 100%;
+}
+
+div.tooltipPanel .twoColumnContent .imgHolder + div {
+	flex-basis: 250px;
+	min-width: 250px;
+}
+
+.errorMessage {
+	display: none;
+	flex-basis: 100%;
+	box-sizing: border-box;
+}
+
 form {
 	display: flex;
 	flex-direction: column;
 	flex: auto;
 	padding: 0 1em;
+}
+
+form.hasError :invalid + .errorMessage,
+form.hasError .errorParaContainer ~ .errorMessage {
+	display: block;
 }
 
 .flexRow > input[type="radio"] {
@@ -336,11 +379,11 @@ div.speciesData {
 }
 
 div.stepbox {
-	padding: 0.5em 0;
+	padding: 1.5em 0;
 }
 
 div.stepbox > div {
-	padding: 1em;
+	padding: 0 1em;
 }
 
 div.stepbox:not(:last-of-type) {
@@ -359,6 +402,7 @@ div.stepbox h2 {
 
 div.stepright {
 	flex: auto;
+	flex-basis: 440px;
 }
 
 div.stepright h3 {
@@ -412,7 +456,7 @@ div.elemLabel {
 }
 
 div.elemLabel + * {
-	flex: 1 0 25rem;
+	flex: 1 1 25rem;
 	box-sizing: border-box;
 }
 
@@ -423,7 +467,6 @@ div.subElemLabel {
 textarea {
 	flex: auto;
 	min-height: 7em;
-	min-width: 20em;
 }
 
 input#clusterInput {
@@ -1088,7 +1131,7 @@ div.enhancerScoreContainer > div > div:first-child {
 	font-weight: bold;
 }
 
-div.imgHolder {
+div.resultImgHolder {
 	width: 38rem;
 	min-height: 15rem;
 	background-image: url('../assets/images/loading.svg');

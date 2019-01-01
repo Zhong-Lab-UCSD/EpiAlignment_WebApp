@@ -69,7 +69,8 @@
         <li>Select the "Promoter" alignment mode in STEP 1.</li>
         <li>In STEP 2, "Query region" box:</li>
         <ul class="sampleStepsSub">
-          <li>Press "Click here to select a paired public dataset", find "Public Datasets" and select "Round spermatids ChIP-Seq (H3K4me3)" by clicking on the blue cell.
+          <li>Press "Click here to select a paired public dataset", find "Public Datasets" and select "Round spermatids
+            ChIP-Seq (H3K4me3)" by clicking on the blue cell.
             Press the confirm button. </li>
           <li>Paste or type the following gene names into the "Input regions"
             textarea, <em>one name per line</em>:</li>
@@ -92,7 +93,9 @@
       result page shows two heatmaps and a table. The heatmaps illustrate alignment scores between every pair of
       promoters and the best hits found for each query promoter.</p>
     <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
-    <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>) beside each genome coordinates to view the location in UCSC genome browser. In the genome browser, you may select any preset ENCODE/public epigenomic data tracks to view them at the same location.</p> 
+    <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>)
+      beside each genome coordinates to view the location in UCSC genome browser. In the genome browser, you may select
+      any preset ENCODE/public epigenomic data tracks to view them at the same location.</p>
     <p>You can sort the table by each column
       by clicking the arrow beside column name. Click the arrow beside "#" to reset the order. The table can be
       downloaded by clicking "Download results".</p>
@@ -118,7 +121,8 @@
         <li>In STEP 2, "Query region" box:</li>
         <ul class="sampleStepsSub">
           <li>Set "Genome assembly" to mm10.</li>
-          <li>Press "Click here to select a paired public dataset", find "Public Datasets" and select "Round spermatids ChIP-Seq (H3K4me3)" by clicking on the blue cell.
+          <li>Press "Click here to select a paired public dataset", find "Public Datasets" and select "Round spermatids
+            ChIP-Seq (H3K4me3)" by clicking on the blue cell.
             Press the confirm button. </li>
           <li>Paste the following mouse genomic region into the "Input regions" textarea:</li>
           <div>
@@ -340,19 +344,34 @@
       refer to individual pairs, so it is recommended to keep the names same between query regions and the target
       regions. A sample input file is shown below, paired with the sample query region file shown above:</p>
     <img alt="Enhancer mode sample target regions" src="assets/images/Enhancer_s2.png">
-    
+
     <h3>Parameters</h3>
-    <p>The alignment algorithm of EpiAlignment is developed on an evolutionary basis [<a href="#ref_1">1</a>]. Therefore, the parameters describe evolutionary events. The user may change the parameters to adjust the rewards and penalties assigned to sequences and epigenomic modifications.</p>
+    <p>The alignment algorithm of EpiAlignment is developed on an evolutionary basis [<a href="#ref_1">1</a>].
+      Therefore, the parameters describe evolutionary events. The user may change the parameters to adjust the rewards
+      and penalties assigned to sequences and epigenomic modifications.</p>
     <h4>Sequence weight and epigenome weight</h4>
-    <p> The weights will be multiplied to the sequence and the epigenome parts of the alignment scores. With a larger epigenomic weight, the chromosomal similarity search will rely more on epigenomic similarity than sequence similarity. Consequently, regions with larger sequence differences (i.e., more mismatches and indels) but similar epigenomic states may beat regions with similar sequences but different epigenomic states. Additionally, in this case, a region pair in which the ...is more likely to gain a higher alignment score. If you would like to increase the default epigenomic weight, please carefully check the sequence similarities and the epigenomic occupancies in the best hits.</p>
-    
+    <p> The weights will be multiplied to the sequence and the epigenome parts of the alignment scores. With a larger
+      epigenomic weight, the chromosomal similarity search will rely more on epigenomic similarity than sequence
+      similarity. Consequently, regions with larger sequence differences (i.e., more mismatches and indels) but similar
+      epigenomic states may beat regions with similar sequences but different epigenomic states. Additionally, in this
+      case, a region pair with a larger overlap between epigenomic peaks is more likely to gain a higher
+      alignment score. If you would like to increase the default epigenomic weight, please carefully check the sequence
+      similarities and the epigenomic occupancies in the best hits.</p>
+
     <h4>Alignment parameters</h4>
     <ul id="paralist">
-      <li><strong><em>s</em></strong>: sequence substitution rate. With a smaller <em>s</em>, a larger reward score will be assigned to a pair of matched bases, and a larger penalty score will be assigned to a pair of mismatched bases.</li>
-      <li><strong><em>&#956;</em></strong>: sequence deletion rate. A larger gap penalty will be assigned to insertions and deletions with a smaller <em>&#956;</em>.</li>
-      <li><strong><em>&#954;</em></strong>: rate of switching between the two epigenomic states 0 and 1. With a smaller <em>&#954;</em>, a larger reward score will be assigned to a pair of matched epigenomic states, and a larger penalty score will be assigned to a pair of mismatched epigenomic states.</li>
-      <li><strong><em>&#960;<sub>A</sub>, &#960;<sub>C</sub>, &#960;<sub>G</sub> and &#960;<sub>T</sub>:</em></strong>equilibrium probabilities of the four nucleotide bases.</li>
-      <li><strong><em>&#960;<sub>1</sub></em></strong>: equilibrium probability of the epigenomic state 1, that is, the probability of having the epigenomic modification on genomic locations.</li>
+      <li><strong><em>s</em></strong>: sequence substitution rate. With a smaller <em>s</em>, a larger reward score
+        will be assigned to a pair of matched bases, and a larger penalty score will be assigned to a pair of
+        mismatched bases.</li>
+      <li><strong><em>&#956;</em></strong>: sequence deletion rate. A larger gap penalty will be assigned to insertions
+        and deletions with a smaller <em>&#956;</em>.</li>
+      <li><strong><em>&#954;</em></strong>: rate of switching between the two epigenomic states 0 and 1. With a smaller
+        <em>&#954;</em>, a larger reward score will be assigned to a pair of matched epigenomic states, and a larger
+        penalty score will be assigned to a pair of mismatched epigenomic states.</li>
+      <li><strong><em>&#960;<sub>A</sub>, &#960;<sub>C</sub>, &#960;<sub>G</sub> and &#960;<sub>T</sub>:</em></strong>equilibrium
+        probabilities of the four nucleotide bases.</li>
+      <li><strong><em>&#960;<sub>1</sub></em></strong>: equilibrium probability of the epigenomic state 1, that is, the
+        probability of having the epigenomic modification on genomic locations.</li>
     </ul>
 
     <h2>Output</h2>
@@ -369,7 +388,8 @@
     <h3>Promoter mode</h3>
     <p>For the promoter mode, the result page shows two heatmaps and a table. EpiAlignment scores are plotted in the
       first heatmap to show scores of any query region (row) against all target region(s) (column). A sequence-only
-      alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap. In each row, the cell with the highest score of the row is marked with a capital "H".</p>
+      alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap. In
+      each row, the cell with the highest score of the row is marked with a capital "H".</p>
     <p>For each query region (row), EpiAlignment detects if its best hit switches from one target region to another
       with EpiAlign and Sequence-only alignment. The best hit is considered as "changed" if it meets the following
       criteria:</p>
@@ -426,8 +446,12 @@
 
     <p>For query regions with switched target, the best hit found by EpiAlign is highlighted by a green box, and the
       best hit found by Sequence-only alignment is highlighted by a gray box. </p>
-    <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>) beside each genome coordinates to view the location in UCSC genome browser. The bigWig files of all preset ENCODE and public datasets were available in this browser page. You may select any ENCODE/public epigenomic data tracks in "Custom Tracks", change the display mode from "hide" to "dense" to view them at the same location. </p>
-    <p>You can also sort the table by each column by clicking the arrow beside column name. Click the arrow beside "#" to reset the order. The table can be downloaded by clicking "Download results".</p>
+    <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>)
+      beside each genome coordinates to view the location in UCSC genome browser. The bigWig files of all preset ENCODE
+      and public datasets were available in this browser page. You may select any ENCODE/public epigenomic data tracks
+      in "Custom Tracks", change the display mode from "hide" to "dense" to view them at the same location. </p>
+    <p>You can also sort the table by each column by clicking the arrow beside column name. Click the arrow beside "#"
+      to reset the order. The table can be downloaded by clicking "Download results".</p>
     <p>Note: if you set epigenomic weight to zero during input, the EpiAlignment score will be the degenerated
       sequence-only alignment score, and no sequence-only result will be reported.</p>
     <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
@@ -437,17 +461,24 @@
       sorted by each column by clicking the arrow beside column name. You can also click on each row to expand it and
       view the highest alignment scores and the alignment score distributions along the target region. The table can be
       downloaded by clicking "Download results".</p>
-    <p>Similar to the result page of the promoter mode, you may click the icon (<i class="material-icons">open_in_new</i>) beside each genome coordinates in this table to view the location and any preset epigenomic data tracks in UCSC genome browser.</p>
+    <p>Similar to the result page of the promoter mode, you may click the icon (<i class="material-icons">open_in_new</i>)
+      beside each genome coordinates in this table to view the location and any preset epigenomic data tracks in UCSC
+      genome browser.</p>
 
   </div>
-  
+
   <div class=section>
     <h1>Python client template</h1>
-    <p>We provided EpiAlignment_PyClient.py, a python template program for users to access EpiAlignment from their own server, submit multiple jobs and parse the output. The user may also modify the code and incorporate it into their own programs. The basic usage of the template program is:</p>
+    <p>We provided EpiAlignment_PyClient.py, a python template program for users to access EpiAlignment from their own
+      server, submit multiple jobs and parse the output. The user may also modify the code and incorporate it into
+      their own programs. The basic usage of the template program is:</p>
     <div>python EpiAlignment_PyClient.py sampleSheet.txt</div>
-    <p>where sampleSheet.txt is a tab-delimited text file with details of the jobs you would like to submit to EpiAlignment.</p>
-    <p>The python client template can be downloaded from the homepage of EpiAlignment. Sample input files are also available in the same zip file. Please follow the README.md file in the zip file to prepare your sample sheet and submit jobs to EpiAlignment.</p>
-    
+    <p>where sampleSheet.txt is a tab-delimited text file with details of the jobs you would like to submit to
+      EpiAlignment.</p>
+    <p>The python client template can be downloaded from the homepage of EpiAlignment. Sample input files are also
+      available in the same zip file. Please follow the README.md file in the zip file to prepare your sample sheet and
+      submit jobs to EpiAlignment.</p>
+
   </div>
   <!--<div class="section">
     <h1>Computational methods</h1>

@@ -385,9 +385,7 @@ const runInfoDict = runInfoArray.reduce((currObj, infoEntry) => {
   return currObj
 }, {})
 
-if (!fs.existsSync(runInfoDictPath)) {
-  writeFilePromise(runInfoDictPath, JSON.stringify(runInfoDict, null, 2))
-}
+writeFilePromise(runInfoDictPath, JSON.stringify(runInfoDict, null, 2))
 
 const propertyListMap = {
   'email': [

@@ -133,6 +133,7 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
 
   console.log('[' + runid + '] Process quit with code : ' + code)
   if (code) {
+    console.log(errorMsg)
     runInfo.addProperty('errMessage', errorMsg)
   }
   (writePromise || Promise.resolve()).then(() =>
@@ -227,17 +228,19 @@ app.post('/form_upload', cpUpload, function (req, res) {
   let stdErrData = ''
   // Handle normal output
   scriptExecution.stdout.on('data', (data) => {
-    console.log(data + '')
+    console.log('[stdout] ' + data + '')
   })
 
   // Handle error output
   scriptExecution.stderr.on('data', data => {
-    if (data && data.startsWith && data.startsWith('[EpiAlignment]')) {
-      data = data.replace('[EpiAlignment]', '').trim()
-      stdErrData += (stdErrData ? '\n' : '') + data
-    } else {
-      console.log(data + '')
-    }
+    data.toString().split('\n').forEach(errLine => {
+      if (errLine && errLine.trim().startsWith('[EpiAlignment]')) {
+        errLine = errLine.replace('[EpiAlignment]', '').trim()
+        stdErrData += (stdErrData ? '\n' : '') + errLine
+      } else {
+        console.log('[stderr] ' + data + '')
+      }
+    })
   })
 
   scriptExecution.on('exit',

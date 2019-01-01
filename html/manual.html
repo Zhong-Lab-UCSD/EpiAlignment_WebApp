@@ -101,7 +101,7 @@
     <h3>An example for using the enhancer mode</h3>
     <!--Example 2-->
     <p>In this example, we will search a mouse genomic region against the large neighboring region around its
-      homologous region in human.</p>
+      homologous region in human. This example will take about two minutes to run on EpiAlignment.</p>
     <h4>Import sample data with one click:</h4>
     <div class="exampleSteps">
       <ul>
@@ -341,8 +341,19 @@
       regions. A sample input file is shown below, paired with the sample query region file shown above:</p>
     <img alt="Enhancer mode sample target regions" src="assets/images/Enhancer_s2.png">
     
-    <!--<h3>Parameters</h3>
-    <p>Add here</p>-->
+    <h3>Parameters</h3>
+    <p>The alignment algorithm of EpiAlignment is developed on an evolutionary basis [<a href="#ref_1">1</a>]. Therefore, the parameters describe evolutionary events. The user may change the parameters to adjust the rewards and penalties assigned to sequences and epigenomic modifications.</p>
+    <h4>Sequence weight and epigenome weight</h4>
+    <p> The weights will be multiplied to the sequence and the epigenome parts of the alignment scores. With a larger epigenomic weight, the chromosomal similarity search will rely more on epigenomic similarity than sequence similarity. Consequently, regions with larger sequence differences (i.e., more mismatches and indels) but similar epigenomic states may beat regions with similar sequences but different epigenomic states. Additionally, in this case, a region pair in which the ...is more likely to gain a higher alignment score. If you would like to increase the default epigenomic weight, please carefully check the sequence similarities and the epigenomic occupancies in the best hits.</p>
+    
+    <h4>Alignment parameters</h4>
+    <ul id="paralist">
+      <li><strong><em>s</em></strong>: sequence substitution rate. With a smaller <em>s</em>, a larger reward score will be assigned to a pair of matched bases, and a larger penalty score will be assigned to a pair of mismatched bases.</li>
+      <li><strong><em>&#956;</em></strong>: sequence deletion rate. A larger gap penalty will be assigned to insertions and deletions with a smaller <em>&#956;</em>.</li>
+      <li><strong><em>&#954;</em></strong>: rate of switching between the two epigenomic states 0 and 1. With a smaller <em>&#954;</em>, a larger reward score will be assigned to a pair of matched epigenomic states, and a larger penalty score will be assigned to a pair of mismatched epigenomic states.</li>
+      <li><strong><em>&#960;<sub>A</sub>, &#960;<sub>C</sub>, &#960;<sub>G</sub> and &#960;<sub>T</sub>:</em></strong>equilibrium probabilities of the four nucleotide bases.</li>
+      <li><strong><em>&#960;<sub>1</sub></em></strong>: equilibrium probability of the epigenomic state 1, that is, the probability of having the epigenomic modification on genomic locations.</li>
+    </ul>
 
     <h2>Output</h2>
     <p>You will be redirect to the result page after successfully submitting your data. The result page will refresh
@@ -430,6 +441,14 @@
 
   </div>
   
+  <div class=section>
+    <h1>Python client template</h1>
+    <p>We provided EpiAlignment_PyClient.py, a python template program for users to access EpiAlignment from their own server, submit multiple jobs and parse the output. The user may also modify the code and incorporate it into their own programs. The basic usage of the template program is:</p>
+    <div>python EpiAlignment_PyClient.py sampleSheet.txt</div>
+    <p>where sampleSheet.txt is a tab-delimited text file with details of the jobs you would like to submit to EpiAlignment.</p>
+    <p>The python client template can be downloaded from the homepage of EpiAlignment. Sample input files are also available in the same zip file. Please follow the README.md file in the zip file to prepare your sample sheet and submit jobs to EpiAlignment.</p>
+    
+  </div>
   <!--<div class="section">
     <h1>Computational methods</h1>
     <p>EpiAlignment uses a dynamic programming algorithm for the comparison of sequences and epigenomic modifications. The input data is a pair of genomic regions: the query region <i>A</i> and the target region <i>B</i>, each of which consists of the DNA sequence and the epigenomic modifications on it. We assume that the state for each epigenomic modification on each genomic location is binary as shown in the figure below. On each base, a binary indicator (1,0) is used to represent the epigenomic state of an epigenomic mark, with the epigenomic state equal to 1 within regions marked by the epigenomic mark, and 0 outside such regions. </p>

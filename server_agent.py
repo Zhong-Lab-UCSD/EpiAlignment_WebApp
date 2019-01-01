@@ -136,7 +136,7 @@ def Cons_transList(input1, intype1, promoterUp, promoterDown, sp, of_name):
         if line in transDict1:
           trans_list1 += [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[line]]
         else:
-          print >> sys.stderr, "The gene " + line + " was not found in " + sp
+          print >> sys.stderr, "[EpiAlignment]The gene " + line + " was not found in " + sp
   return trans_list1
 
 
@@ -378,7 +378,7 @@ def BedToFa(bed1, bed2, out_folder, sp_list, runid):
   # Check if the input file is empty.
   Input_fa_name = out_folder + "Input_" + runid
   if os.stat(Input_fa_name).st_size == 0:
-    print >> sys.stderr, "[EpiAlignment]Fail to generate the input file for EpiAlignment. Please check whether your genomic regions/gene names match the genome assemblies."
+    print >> sys.stderr, "[EpiAlignment]Failed to generate the input file for EpiAlignment. Please check whether your genomic regions/gene names match the genome assemblies."
     sys.exit(214)
 
 

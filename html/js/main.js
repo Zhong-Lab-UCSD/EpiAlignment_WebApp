@@ -65,6 +65,10 @@ const CLUSTER_QUERY_TAGET = '/backend/get_cluster'
 const CLUSTER_QUERY_DEBOUNCE = 300
 const CLUSTER_QUERY_DEBOUNCE_WHEN_OPEN = 50
 
+const NUM_UP_DOWN_STREAN = 2
+const NUM_WEIGHTS = 2
+const NUM_PARAMS = 8
+
 var app = new Vue({
   el: '#epialign_app',
   data: {
@@ -73,8 +77,8 @@ var app = new Vue({
     submitted: false,
     formError: {
       modeNotSelected: false,
-      peakError: [ false, false ],
-      inputError: [ false, false ],
+      peakError: [false, false],
+      inputError: [false, false],
       promoterLengthError: false,
       referenceError: false,
       clusterError: false,
@@ -115,8 +119,8 @@ var app = new Vue({
     publicFilters: [],
     publicSamples: [],
 
-    peakFiles: [ [], [] ],
-    inputFiles: [ [], [] ],
+    peakFiles: [[], []],
+    inputFiles: [[], []],
 
     // Cluster related
     clusterText: null,
@@ -360,8 +364,8 @@ var app = new Vue({
       // peakError
       if (!this.selectedExperimentIds) {
         this.peakFiles.forEach((peakFile, index) => {
-          if (peakFile.length) {
-            this.formError.peakError[index] = true
+          if (!peakFile.length) {
+            this.formError.peakError.splice(index, 1, true)
           }
         })
       }
@@ -371,19 +375,22 @@ var app = new Vue({
         if (!text.trim().length && !this.inputFiles[index].length &&
           !(index === 1 && !this.genomeRegionSelected)
         ) {
-          this.formError.inputError[index] = true
+          this.formError.inputError.splice(index, 1, true)
         }
       })
 
       // promoterLengthError
-      if (this.$refs['promoter'].some(elem => !elem.checkValidity())) {
-        this.formError.promoterLengthError = true
+      for (let i = 0; i < NUM_UP_DOWN_STREAN; i++) {
+        if (!this.$refs['promoter[' + i + ']'].checkValidity()) {
+          this.formError.promoterLengthError = true
+          break
+        }
       }
 
       // referenceError
       if (this.homologRegionSelected &&
         this.formParams.genomeAssembly[0] ===
-          this.formParams.genomeAssembly[1]
+        this.formParams.genomeAssembly[1]
       ) {
         this.formError.referenceError = true
       }
@@ -396,20 +403,29 @@ var app = new Vue({
       }
 
       // enhancerLengthError
-      if (this.homologRegionSelected && (this.$refs['enhancer'].some(
-        elem => !elem.checkValidity()
-      ))) {
-        this.formError.enhancerLengthError = true
+      if (this.homologRegionSelected) {
+        for (let i = 0; i < NUM_UP_DOWN_STREAN; i++) {
+          if (!this.$refs['enhancer[' + i + ']'].checkValidity()) {
+            this.formError.enhancerLengthError = true
+            break
+          }
+        }
       }
 
       // weightError
-      if (this.$refs['weight'].some(elem => !elem.checkValidity())) {
-        this.formError.weightError = true
+      for (let i = 0; i < NUM_WEIGHTS; i++) {
+        if (!this.$refs['weight[' + i + ']'].checkValidity()) {
+          this.formError.weightError = true
+          break
+        }
       }
 
       // paramError
-      if (this.$refs['param'].some(elem => !elem.checkValidity())) {
-        this.formError.paramError = true
+      for (let i = 0; i < NUM_PARAMS; i++) {
+        if (!this.$refs['param[' + i + ']'].checkValidity()) {
+          this.formError.paramError = true
+          break
+        }
       }
 
       for (let key in this.formError) {
@@ -571,7 +587,7 @@ var app = new Vue({
             )
             this.clusterMessage = response.maxExceeded
               ? 'Continue typing to get ' +
-                (response.fullMatchList.length ? 'more ' : '') + 'candidates.'
+              (response.fullMatchList.length ? 'more ' : '') + 'candidates.'
               : 'No paralogues matched in selected species.'
             this.showClusterCandidate = true
           }).catch(err => {

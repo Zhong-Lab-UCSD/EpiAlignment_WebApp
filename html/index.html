@@ -35,10 +35,8 @@
   </div>
   <!--alignment steps-->
   <div id="epialign_app" v-cloak>
-    <form ref="mainForm" method="post" enctype="multipart/form-data"
-      action="/backend/form_upload" @submit.prevent="submitForm"
-      :class=" { hasError: hasError } "
-      novalidate="true">
+    <form ref="mainForm" method="post" enctype="multipart/form-data" action="/backend/form_upload" @submit.prevent="submitForm"
+      :class=" { hasError: hasError } " novalidate="true">
       <!--step1-->
       <div id="step1" class="stepbox flexRow flexStart flex flexWrap">
         <div class="stepleft">
@@ -62,7 +60,7 @@
               <div>Which mode should I choose?</div>
             </div>
           </div>
-          <div v-show="formError.modeNotSelected" class="error flexRow flexNoWrap flexCenter">
+          <div v-show="formError.modeNotSelected" class="errorMessage">
             <i class="material-icons iconAtLeft">warning</i>
             <div>Please select an alignment mode.</div>
           </div>
@@ -143,8 +141,9 @@
                   <input ref="peakFile1" class="flex" type="file" name="speciesPeak1[]" @change="peakFileChanged($event, 0)">
                 </div>
                 <div class="errorMessage" v-show="formError.peakError[0]">
-                  Please either select a provided paired public dataset,
-                  or upload your own peak file (BED6 format).
+                  <i class="material-icons iconAtLeft">warning</i>
+                  <span>Please either select a provided paired public dataset,
+                    or upload your own peak file (BED6 format).</span>
                 </div>
               </div>
             </div>
@@ -158,10 +157,11 @@
                   <input ref="speciesInputFile1" class="flex" type="file" name="speciesInput1" @change="inputFileChanged($event, 0)">
                 </div>
                 <div class="errorMessage" v-show="formError.inputError[0]">
-                  Please either provide the input regions
-                  (BED6{{ enhancerSelected ? ' or gene names' : ''}})
-                  in the text box, or upload a text file
-                  (BED6{{ enhancerSelected ? ' or gene names' : ''}}).
+                  <i class="material-icons iconAtLeft">warning</i>
+                  <span>Please either provide the input regions
+                    (BED6{{ enhancerSelected ? ' or gene names' : ''}})
+                    in the text box, or upload a text file
+                    (BED6{{ enhancerSelected ? ' or gene names' : ''}}).</span>
                 </div>
               </div>
             </div>
@@ -172,16 +172,19 @@
                   Please specify promoter region ranges if you use gene names
                   for input:
                   <span class="shortInputContainer nobr">
-                    <input ref="promoter[0]" type="number" min="0" step="1" autocomplete="new-password" name="promoterUp" v-model.number="formParams.promoterUp">
+                    <input ref="promoter[0]" type="number" min="0" step="1" autocomplete="new-password" name="promoterUp"
+                      v-model.number="formParams.promoterUp">
                     bps upstream from TSSs,
                   </span>
                   <span class="shortInputContainer nobr">
-                    <input ref="promoter[1]" type="number" min="0" step="1" autocomplete="new-password" name="promoterDown" v-model.number="formParams.promoterDown">
+                    <input ref="promoter[1]" type="number" min="0" step="1" autocomplete="new-password" name="promoterDown"
+                      v-model.number="formParams.promoterDown">
                     bps downstream from TSSs.
                   </span>
                 </div>
                 <div class="errorMessage" v-show="formError.promoterLengthError">
-                  Please use a non-negative integer.
+                  <i class="material-icons iconAtLeft">warning</i>
+                  <span>Please use a non-negative integer.</span>
                 </div>
               </div>
             </div>
@@ -189,7 +192,7 @@
           <!--searching region-->
           <div class="speciesData flexColumn flexStretch">
             <h3>Target regions</h3>
-            <div class="flexColumn flexStart flexNoGap">
+            <div class="flexRow flexStart flexWrap">
               <div class="elemLabel">Genome assembly:</div>
               <div class="flexColumn flexStart flexNoGap">
                 <select name="genomeAssembly[]" v-model="formParams.genomeAssembly[1]">
@@ -197,8 +200,9 @@
                   <option value="mm10" selected>(Mus musculus) mm10</option>
                 </select>
                 <div class="errorMessage" v-show="formError.referenceError">
-                  Please do not use the same reference when using homologous
-                  regions to specify your target in enhancer mode.
+                  <i class="material-icons iconAtLeft">warning</i>
+                  <span>Please do not use the same reference when using homologous
+                    regions to specify your target in enhancer mode.</span>
                 </div>
               </div>
             </div>
@@ -213,8 +217,9 @@
                   <input ref="peakFile2" class="flex" type="file" name="speciesPeak2[]" @change="peakFileChanged($event, 1)">
                 </div>
                 <div class="errorMessage" v-show="formError.peakError[1]">
-                  Please either select a provided paired public dataset,
-                  or upload your own peak file (BED6 format).
+                  <i class="material-icons iconAtLeft">warning</i>
+                  <span>Please either select a provided paired public dataset,
+                    or upload your own peak file (BED6 format).</span>
                 </div>
               </div>
             </div>
@@ -233,44 +238,47 @@
                     id="geneClusterSearch">
                   <label for="geneClusterSearch">Search a gene cluster.</label>
                 </div>
-                <div id="clusterPanel" :class="{ inactive: !geneClusterSelected }" @click.stop>
-                  <input id="clusterInput" spellcheck="false" autocomplete="new-password" type="text" :disabled="!geneClusterSelected"
-                    placeholder="Find a cluster by gene name or Ensembl ID" v-model="clusterText" @input="clusterInputChanged">
-                  <div v-if="showClusterCandidate" id="clusterCandidateHolder" class="flexRow flexNoGap">
-                    <div id="clusterList">
-                      <div class="clusterListHeader">Result for "{{postedClusterText}}"</div>
-                      <ul v-show="clusterCandidates.length">
-                        <li v-for="cluster in clusterCandidates" @click="selectCluster(cluster)" :class="{ selected: cluster === selectedCluster }"
-                          class="flexRow flexCenter">
-                          <span class="flex">{{ cluster.id }}</span>
-                          <i class="material-icons" @click.stop="applyCluster(cluster.id)" title="Select this cluster">
-                            open_in_browser
-                          </i>
-                        </li>
-                      </ul>
-                      <div v-show="showClusterMessage" id="clusterMessageHolder">({{ clusterMessage }})</div>
-                    </div>
-                    <div v-if="selectedCluster" id="selectedClusterHolder">
-                      <ul>
-                        <li v-for="(genes, species) in selectedCluster.genesBySpecies">
-                          <div class="speciesGeneHeader">{{ species }} genes</div>
-                          <ul>
-                            <li v-for="gene in genes" class="flexRow flexStart flexWrap flexNoGap">
-                              <div class="geneName" v-html="getGeneSymbolAlias(gene, postedClusterText)"></div>
-                              <div class="geneDescription flex">{{ gene.description }}</div>
-                            </li>
-                          </ul>
-                        </li>
-                      </ul>
+                <div class="flexColumn flexStart flexNoGap">
+                  <div id="clusterPanel" :class="{ inactive: !geneClusterSelected }" @click.stop>
+                    <input id="clusterInput" spellcheck="false" autocomplete="new-password" type="text" :disabled="!geneClusterSelected"
+                      placeholder="Find a cluster by gene name or Ensembl ID" v-model="clusterText" @input="clusterInputChanged">
+                    <div v-if="showClusterCandidate" id="clusterCandidateHolder" class="flexRow flexNoGap">
+                      <div id="clusterList">
+                        <div class="clusterListHeader">Result for "{{postedClusterText}}"</div>
+                        <ul v-show="clusterCandidates.length">
+                          <li v-for="cluster in clusterCandidates" @click="selectCluster(cluster)" :class="{ selected: cluster === selectedCluster }"
+                            class="flexRow flexCenter">
+                            <span class="flex">{{ cluster.id }}</span>
+                            <i class="material-icons" @click.stop="applyCluster(cluster.id)" title="Select this cluster">
+                              open_in_browser
+                            </i>
+                          </li>
+                        </ul>
+                        <div v-show="showClusterMessage" id="clusterMessageHolder">({{ clusterMessage }})</div>
+                      </div>
+                      <div v-if="selectedCluster" id="selectedClusterHolder">
+                        <ul>
+                          <li v-for="(genes, species) in selectedCluster.genesBySpecies">
+                            <div class="speciesGeneHeader">{{ species }} genes</div>
+                            <ul>
+                              <li v-for="gene in genes" class="flexRow flexStart flexWrap flexNoGap">
+                                <div class="geneName" v-html="getGeneSymbolAlias(gene, postedClusterText)"></div>
+                                <div class="geneDescription flex">{{ gene.description }}</div>
+                              </li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="errorMessage" v-show="formError.clusterError">
-                  Please provide a cluster name. You may use the text box
-                  to search for a cluster including the gene of interest.
-                  Please use the <i class="material-icons">
-                    open_in_browser
-                  </i> button to select the cluster you want.
+                  <div class="errorMessage" v-show="formError.clusterError">
+                    <i class="material-icons iconAtLeft">warning</i>
+                    <span>Please provide a cluster name. You may use the text box
+                      to search for a cluster including the gene of interest.
+                      Please use the <i class="material-icons">
+                        open_in_browser
+                      </i> button to select the cluster you want.</span>
+                  </div>
                 </div>
               </div>
               <!--
@@ -297,14 +305,15 @@
                 </div>
                 <div :class="{ inactive: !homologRegionSelected }">
                   <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" ref="enhancer[0]" type="number" min="0" step="1" autocomplete="new-password"
-                      name="enhancerUp" v-model.number="formParams.enhancerUp">
+                    <input :disabled="!homologRegionSelected" ref="enhancer[0]" type="number" min="0" step="1"
+                      autocomplete="new-password" name="enhancerUp" v-model.number="formParams.enhancerUp">
                     bps upstream,</span> <span class="shortInputContainer nobr">
-                    <input :disabled="!homologRegionSelected" ref="enhancer[0]" type="number" min="0" step="1" autocomplete="new-password"
-                      name="enhancerDown" v-model.number="formParams.enhancerDown">
+                    <input :disabled="!homologRegionSelected" ref="enhancer[1]" type="number" min="0" step="1"
+                      autocomplete="new-password" name="enhancerDown" v-model.number="formParams.enhancerDown">
                     bps downstream. </span></div>
                 <div class="errorMessage" v-show="formError.enhancerLengthError">
-                  Please use a non-negative integer.
+                  <i class="material-icons iconAtLeft">warning</i>
+                  <span>Please use non-negative integers.</span>
                 </div>
               </div>
               <!-- both -->
@@ -319,14 +328,16 @@
                     v-model="formParams.speciesText[1]" :placeholder="genomePlaceholder"></textarea>
                   <div class="flexRow flexStart flexWrap">
                     <div class="subElemLabel">or upload a file:</div>
-                    <input ref="speciesInputFile2" :disabled="!genomeRegionSelected" class="flex" type="file" name="speciesInput2" @change="inputFileChanged($event, 0)">
+                    <input ref="speciesInputFile2" :disabled="!genomeRegionSelected" class="flex" type="file" name="speciesInput2"
+                      @change="inputFileChanged($event, 0)">
                   </div>
-                </div>
-                <div class="errorMessage" v-show="formError.inputError[1]">
-                  Please either provide the search regions
-                  (BED6{{ enhancerSelected ? ' or gene names' : ''}})
-                  in the text box, or upload a text file
-                  (BED6{{ enhancerSelected ? ' or gene names' : ''}}).
+                  <div class="errorMessage" v-show="formError.inputError[1]">
+                    <i class="material-icons iconAtLeft">warning</i>
+                    <span>Please either provide the search regions
+                      (BED6{{ enhancerSelected ? ' or gene names' : ''}})
+                      in the text box, or upload a text file
+                      (BED6{{ enhancerSelected ? ' or gene names' : ''}}).</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -345,17 +356,18 @@
           <div class="flexRow flexCenter flexWrap">
             <div class="flexRow flexNoWrap shortInputContainer">
               <div class="subElemLabel">Sequence weight:</div>
-              <input ref="weight[0]" type="number" min="0" step="any" autocomplete="new-password" name="seqweight" v-model.number="formParams.seqweight"
-                value="0.9">
+              <input ref="weight[0]" type="number" min="0" step="any" autocomplete="new-password" name="seqweight"
+                v-model.number="formParams.seqweight" value="0.9">
             </div>
             <div class="flexRow flexNoWrap shortInputContainer">
               <div class="subElemLabel">Epigenome weight:</div>
-              <input ref="weight[1]" type="number" min="0" step="any" autocomplete="new-password" name="epiweight" v-model.number="formParams.epiweight"
-                value="0.1">
+              <input ref="weight[1]" type="number" min="0" step="any" autocomplete="new-password" name="epiweight"
+                v-model.number="formParams.epiweight" value="0.1">
             </div>
           </div>
           <div class="errorMessage" v-show="formError.weightError">
-            Please use non-negative numbers for both weights (preferably between 0 and 1).
+            <i class="material-icons iconAtLeft">warning</i>
+            <span>Please use non-negative numbers for both weights (preferably between 0 and 1).</span>
           </div>
           <button type="button" class="selfAlignStart" @click="toggleShowParam">
             {{ showMoreParamText }}
@@ -366,43 +378,52 @@
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>s</em>:</div>
-                  <input ref="param[0]" type="number" min="0.0001" step="any" autocomplete="new-password" name="paras" v-model.number="formParams.paras" value="0.3">
+                  <input ref="param[0]" type="number" min="0.0001" step="any" autocomplete="new-password" name="paras"
+                    v-model.number="formParams.paras" value="0.3">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#956;</em>:</div>
-                  <input ref="param[1]" type="number" min="0.0001" step="any" autocomplete="new-password" name="paramu" v-model.number="formParams.paramu" value="0.3">
+                  <input ref="param[1]" type="number" min="0.0001" step="any" autocomplete="new-password" name="paramu"
+                    v-model.number="formParams.paramu" value="0.3">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#954;</em>:</div>
-                  <input ref="param[2]" type="number" min="0.0001" step="any" autocomplete="new-password" name="parak" v-model.number="formParams.parak" value="0.3">
+                  <input ref="param[2]" type="number" min="0.0001" step="any" autocomplete="new-password" name="parak"
+                    v-model.number="formParams.parak" value="0.3">
                 </div>
               </div>
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960;</em><sub>A</sub>:</div>
-                  <input ref="param[3]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="piA" v-model.number="formParams.piA" value="0.25">
+                  <input ref="param[3]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="piA"
+                    v-model.number="formParams.piA" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960;</em><sub>C</sub>:</div>
-                  <input ref="param[4]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="piC" v-model.number="formParams.piC" value="0.25">
+                  <input ref="param[4]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="piC"
+                    v-model.number="formParams.piC" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960;</em><sub>G</sub>:</div>
-                  <input ref="param[5]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="piG" v-model.number="formParams.piG" value="0.25">
+                  <input ref="param[5]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="piG"
+                    v-model.number="formParams.piG" value="0.25">
                 </div>
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960;</em><sub>T</sub>:</div>
-                  <input ref="param[6]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="piT" v-model.number="formParams.piT" value="0.25">
+                  <input ref="param[6]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="piT"
+                    v-model.number="formParams.piT" value="0.25">
                 </div>
               </div>
               <div class="flexRow flexStart flexWrap">
                 <div class="nobr shortInputContainer">
                   <div class="paramLabel"><em>&#960;</em><sub>1</sub>:</div>
-                  <input ref="param[7]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="pi1" v-model.number="formParams.pi1" value="0.1">
+                  <input ref="param[7]" type="number" min="0" max="1" step="any" autocomplete="new-password" name="pi1"
+                    v-model.number="formParams.pi1" value="0.1">
                 </div>
               </div>
               <div class="errorMessage" v-show="formError.paramError">
-                Please use positive numbers for all parameters.
+                <i class="material-icons iconAtLeft">warning</i>
+                <span>Please use positive numbers for all parameters.</span>
               </div>
             </div>
           </div>
@@ -418,11 +439,14 @@
             <h2>Submit data</h2>
           </div>
           <div class="flexRow flexStart flexWrap">
-            <label for="emailField">If you would like to receive an email when your job is done, please provide it here:</label>
+            <label for="emailField">If you would like to receive an email when your job is done, please provide it
+              here:</label>
             <input id="emailField" spellcheck="false" autocomplete="email" type="email" name="mail" v-model="formParams.mail"
               placeholder="Enter your email here.">
-            <div class="errorMessage">
-              Please provide a valid email address or leave this field blank if you don't want to receive any notifications.
+            <div class="errorMessage auto">
+              <i class="material-icons iconAtLeft">warning</i>
+              <span>Please provide a valid email address or leave this field blank if you don't want to receive any
+                notifications.</span>
             </div>
           </div>
           <div v-show="formParams.alignMode === 'enhancer' && !formParams.mail" class="tooltipPanel">

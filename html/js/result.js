@@ -20,7 +20,7 @@ const RUN_INFO_DICT = 'assets/runInfoDict.json'
 
 const STATUS_RUNNING = -1
 const POLLING_INTERVAL_ENHANCER = 20000 // 20 seconds
-const POLLING_INTERVAL_PROMOTER = 3000 // 5 seconds
+const POLLING_INTERVAL_PROMOTER = 3000 // 3 seconds
 
 const MINIMUM_HEATMAP_GAP = 10
 
@@ -77,6 +77,8 @@ var app = new Vue({
     collapsedRunInfoList: [],
     runid: null,
     loading: true,
+    lastRefreshedTime: '',
+    highlightLoading: false,
     showRunDetails: false,
     queryGenomeAssembly: null,
     targetGenomeAssembly: null,
@@ -202,6 +204,9 @@ var app = new Vue({
               this.pollingTime = response.alignMode === 'promoter'
                 ? POLLING_INTERVAL_PROMOTER : POLLING_INTERVAL_ENHANCER
             }
+            this.lastRefreshedTime = moment().format('MMM D, Y, HH:mm:ss')
+            this.highlightLoading = true
+            window.setTimeout(() => (this.highlightLoading = false), 1500)
             return setTimeoutPromise(this.pollingTime, runid)
               .then(runid => this.pollResult(runid))
           } else if (response.status > 0) {

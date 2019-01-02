@@ -586,11 +586,13 @@ div#selectedClusterHolder li > ul > li {
 }
 
 div#selectedClusterHolder li > ul > li > .geneName {
-	margin-right: 1em;
+	margin-right: 0;
 }
 
 div#selectedClusterHolder li > ul > li > .geneDescription {
 	flex-basis: 10em;
+	margin-left: 2em;
+	opacity: 0.6;
 }
 
 div#inputRegionContainer > * {

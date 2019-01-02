@@ -238,7 +238,7 @@
                     id="geneClusterSearch">
                   <label for="geneClusterSearch">Search a gene cluster.</label>
                 </div>
-                <div class="flexColumn flexStart flexNoGap">
+                <div class="flexColumn flexStretch flexNoGap">
                   <div id="clusterPanel" :class="{ inactive: !geneClusterSelected }" @click.stop>
                     <input id="clusterInput" spellcheck="false" autocomplete="new-password" type="text" :disabled="!geneClusterSelected"
                       placeholder="Find a cluster by gene name or Ensembl ID" v-model="clusterText" @input="clusterInputChanged">

@@ -15,92 +15,94 @@
 </head>
 
 <body class="manual">
-  <div id="manual_app" class="flex flexRow flexNoGap flexWrap">
-    <div v-show="showNav" id="manualNav" class="noFlex">
-      <div id="navHeader" class="flexRow flexWrap flexNoGap flexCenter">
-        <div class="flex">Table of contents</div>
-        <div id="collapseNavButton" @click="showNav = false">Collapse</div>
+  <div id="manual_app" class="flex flexRow flexNoGap flexNoWrap" v-cloak>
+    <transition name="nav-slide-right">
+      <div v-show="showNav" id="manualNav" class="noFlex flexColumn flexNoGap flexEnd">
+        <div id="navHeader" class="flexRow flexWrap flexNoGap flexCenter">
+          <div class="flex">Table of contents</div>
+          <div id="collapseNavButton" @click="showNav = false">Collapse</div>
+        </div>
+        <div id="navContent" class="flex">
+          <ul>
+            <li>
+              <a href="#introduction" @click="clickOnNav">Introduction</a>
+            </li>
+            <li>
+              <a href="#quickStart" @click="clickOnNav">Quick start</a>
+              <ul>
+                <li>
+                  <a href="#promoterExample" @click="clickOnNav">Promoter mode example</a>
+                </li>
+                <li>
+                  <a href="#enhancerExample" @click="clickOnNav">Enhancer mode example</a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="#usage" @click="clickOnNav">Usage</a>
+              <ul>
+                <li>
+                  <a href="#usageOverview" @click="clickOnNav">Overview</a>
+                </li>
+                <li>
+                  <a href="#promoterMode" @click="clickOnNav">Promoter mode</a>
+                </li>
+                <li>
+                  <a href="#enhancerMode" @click="clickOnNav">Enhancer mode</a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="#input" @click="clickOnNav">Input</a>
+              <ul>
+                <li>
+                  <a href="#peakFileAndDatasets" @click="clickOnNav">Peak files and public datasets</a>
+                </li>
+                <li>
+                  <a href="#queryAndTargetRegions" @click="clickOnNav">Query and target regions</a>
+                  <ul>
+                    <li>
+                      <a href="#promoterModeQueryAndTarget" @click="clickOnNav">Promoter mode</a>
+                    </li>
+                    <li>
+                      <a href="#enhancerModeQueryAndTarget" @click="clickOnNav">Enhancer mode</a>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <a href="#parameters" @click="clickOnNav">Parameters</a>
+                  <ul>
+                    <li>
+                      <a href="#weights" @click="clickOnNav">Sequence weight and epigenome weight</a>
+                    </li>
+                    <li>
+                      <a href="#alignmentParameters" @click="clickOnNav">Alignment parameters</a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="#output" @click="clickOnNav">Output</a>
+              <ul>
+                <li>
+                  <a href="#promoterOutput" @click="clickOnNav">Promoter mode</a>
+                </li>
+                <li>
+                  <a href="#enhancerOutput" @click="clickOnNav">Enhancer mode</a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="#pythonClientTemplate" @click="clickOnNav">Python client template</a>
+            </li>
+            <li>
+              <a href="#references" @click="clickOnNav">References</a>
+            </li>
+          </ul>
+        </div>
       </div>
-      <div id="navContent">
-        <ul>
-          <li>
-            <a href="#introduction">Introduction</a>
-          </li>
-          <li>
-            <a href="#quickStart">Quick start</a>
-            <ul>
-              <li>
-                <a href="#promoterExample">Promoter mode example</a>
-              </li>
-              <li>
-                <a href="#enhancerExample">Enhancer mode example</a>
-              </li>
-            </ul>
-          </li>
-          <li>
-            <a href="#usage">Usage</a>
-            <ul>
-              <li>
-                <a href="#usageOverview">Overview</a>
-              </li>
-              <li>
-                <a href="#promoterMode">Promoter mode</a>
-              </li>
-              <li>
-                <a href="#enhancerMode">Enhancer mode</a>
-              </li>
-            </ul>
-          </li>
-          <li>
-            <a href="#input">Input</a>
-            <ul>
-              <li>
-                <a href="#peakFileAndDatasets">Peak files and public datasets</a>
-              </li>
-              <li>
-                <a href="#queryAndTargetRegions">Query and target regions</a>
-                <ul>
-                  <li>
-                    <a href="#promoterModeQueryAndTarget">Promoter mode</a>
-                  </li>
-                  <li>
-                    <a href="#enhancerModeQueryAndTarget">Enhancer mode</a>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <a href="#parameters">Parameters</a>
-                <ul>
-                  <li>
-                    <a href="#weights">Sequence weight and epigenome weight</a>
-                  </li>
-                  <li>
-                    <a href="#alignmentParameters">Alignment parameters</a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li>
-            <a href="#output">Output</a>
-            <ul>
-              <li>
-                <a href="#promoterOutput">Promoter mode</a>
-              </li>
-              <li>
-                <a href="#enhancerOutput">Enhancer mode</a>
-              </li>
-            </ul>
-          </li>
-          <li>
-            <a href="#pythonClientTemplate">Python client template</a>
-          </li>
-          <li>
-            <a href="#references">References</a>
-          </li>
-        </ul>
-      </div>
-    </div>
+    </transition>
     <div id="manualContent" class="flex flexColumn flexNoWrap">
       <div v-show="!showNav" id="callOutNav" @click="showNav = true">
         Table of contents
@@ -195,7 +197,9 @@
         <p>After successfully submitting the data, you will be redirect to the result page. For the promoter mode, the
           result page shows two heatmaps and a table. The heatmaps illustrate alignment scores between every pair of
           promoters and the best hits found for each query promoter.</p>
-        <img class="large" alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
+        <div class="manualImg" class="large">
+          <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
+        </div>
         <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>)
           beside each genome coordinates to view the location in UCSC genome browser. In the genome browser, you may
           select
@@ -203,7 +207,9 @@
         <p>You can sort the table by each column
           by clicking the arrow beside column name. Click the arrow beside "#" to reset the order. The table can be
           downloaded by clicking "Download results".</p>
-        <img class="large" alt="Data table for promoter mode" src="assets/images/PromoterTable_comments.png">
+        <div class="manualImg" class="large">
+          <img alt="Data table for promoter mode" src="assets/images/PromoterTable_comments.png">
+        </div>
 
         <a name="enhancerExample"></a>
         <h3>An example for using the enhancer mode</h3>
@@ -249,7 +255,9 @@
           an interactive table with region information. You can click on each row to expand it and view the alignment
           score
           distribution along the target region.</p>
-        <img class="large" alt="Expandable data table for enhancer mode" src="assets/images/Enhancer_result_comment.png">
+        <div class="manualImg" class="large">
+          <img alt="Expandable data table for enhancer mode" src="assets/images/Enhancer_result_comment.png">
+        </div>
         <p>The table can be downloaded by clicking "Download results".</p>
         <p>&nbsp;</p>
         <p>EpiAlignment also provides many other ways of defining query and target regions. Please check out the Usage
@@ -404,7 +412,9 @@
         <p>EpiAlignment provides users with paired epigenomic peak files of matching tissues, curated from epigenome
           consortia including the RoadMap Project, ENCODE and mouse ENCODE, and public comparative epigenomic studies.</p>
         <p>To select public peak files, in the Query regions box, click "Click here to select a paired public dataset."</p>
-        <img alt="Public dataset selection button" src="assets/images/presetDataButton.png">
+        <div class="manualImg">
+          <img alt="Public dataset selection button" src="assets/images/presetDataButton.png">
+        </div>
         <p>In the pop-up window, click the cell representing the tissue type and histone mark that you want to select.
           There are two numbers on each cell in the format of "H:x M:y". The two numbers represents number of peak
           files
@@ -420,13 +430,17 @@
           your
           peak file selection.
         </p>
-        <img alt="Public dataset selection window" src="assets/images/presetWindow.png">
+        <div class="manualImg">
+          <img alt="Public dataset selection window" src="assets/images/presetWindow.png">
+        </div>
         <p>The user can also upload their own peak files. To do this, choose and upload your peak file (BED6 format)
           for
           the first species in the Query regions box, and the peak file for the second species in the Target regions
           box.
           <em>Uploading your own peak file will clear any previously selected public data in all references.</em></p>
-        <img alt="Upload your own peak file" src="assets/images/UploadPeak_comment.png">
+        <div class="manualImg">
+          <img alt="Upload your own peak file" src="assets/images/UploadPeak_comment.png">
+        </div>
 
         <h3>
           <a name="queryAndTargetRegions"></a>
@@ -441,14 +455,18 @@
           file
           should have 6 columns, and each region should have its unique id. For the gene name list, both Ensembl ID and
           gene symbols are accepted. Sample query regions are shown below: </p>
-        <img alt="Sample files for promoter query regions" src="assets/images/sampleGeneName.png">
+        <div class="manualImg">
+          <img alt="Sample files for promoter query regions" src="assets/images/sampleGeneName.png">
+        </div>
         <p>Please note that gene symbols are case-sensitive. For human gene symbols, all letters should be uppercase,
           whereas for mouse gene symbols, only the first letter should be uppercase.</p>
         <p>Input query regions can either be pasted in the textarea of the Query region box, or uploaded as a file. If
           you
           are using gene names, you may specify which range around TSSs should be used as promoters. By default, it is
           defined as 500kb upstream and 1000kb downstream the TSS.</p>
-        <img alt="Select TSS flanking ranges for promoters" src="assets/images/TSSrange_comments.png">
+        <div class="manualImg">
+          <img alt="Select TSS flanking ranges for promoters" src="assets/images/TSSrange_comments.png">
+        </div>
         <a name="promoterModeTarget"></a>
         <h5>Target regions</h5>
         <h6>Submode: search a gene cluster</h6>
@@ -462,7 +480,9 @@
           cluster. Click the box with arrow (<i class="material-icons">open_in_browser</i>) on the rightside of the
           cluster name to select the cluster you would like to
           use. You may click anywhere outside the pop-up panel at anytime to close it.</p>
-        <img class="large" alt="Gene cluster search and selection panel" src="assets/images/GeneClusters_comment.png">
+        <div class="manualImg" class="large">
+          <img alt="Gene cluster search and selection panel" src="assets/images/GeneClusters_comment.png">
+        </div>
 
         <div id="EntireCluster">Align the entire gene cluster</div>
         <p>EpiAlignment provides a special mode for functional comparison among genes in the same cluster. It can fetch
@@ -485,7 +505,9 @@
         <p>For the enhancer mode, the input query regions need to be defined with a BED6 file, in which each line
           should
           have a unique name. A sample data is shown below:</p>
-        <img alt="Enhancer mode sample query regions" src="assets/images/Enhancer_s1.png">
+        <div class="manualImg">
+          <img alt="Enhancer mode sample query regions" src="assets/images/Enhancer_s1.png">
+        </div>
         <a name="enhancerModeTarget"></a>
         <h5>Target regions</h5>
         <h6>Submode: use homologous regions in this species</h6>
@@ -495,7 +517,9 @@
           from
           the two ends,
           respectively.</p>
-        <img alt="Use homologous regions for enhancer targets" src="assets/images/OrthoMode_comments.png">
+        <div class="manualImg">
+          <img alt="Use homologous regions for enhancer targets" src="assets/images/OrthoMode_comments.png">
+        </div>
 
         <h6>Submode: define target regions with a BED file</h6>
         <p>In this mode, you may define target regions by yourself with a BED6 file. This BED6 file should have the
@@ -505,11 +529,13 @@
           number, and align each pair separately. EpiAlignment will only use region names from the query region file to
           refer to individual pairs, so it is recommended to keep the names same between query regions and the target
           regions. A sample input file is shown below, paired with the sample query region file shown above:</p>
-        <img alt="Enhancer mode sample target regions" src="assets/images/Enhancer_s2.png">
+        <div class="manualImg">
+          <img alt="Enhancer mode sample target regions" src="assets/images/Enhancer_s2.png">
+        </div>
 
         <a name="parameters"></a>
         <h3>Parameters</h3>
-        <p>The alignment algorithm of EpiAlignment is developed on an evolutionary basis [<a href="#ref_1">1</a>].
+        <p>The alignment algorithm of EpiAlignment is developed on an evolutionary basis [<a href="#ref_1" @click="clickOnNav">1</a>].
           Therefore, the parameters describe evolutionary events. The user may change the parameters to adjust the
           rewards
           and penalties assigned to sequences and epigenomic modifications.</p>
@@ -640,7 +666,9 @@
           to reset the order. The table can be downloaded by clicking "Download results".</p>
         <p>Note: if you set epigenomic weight to zero during input, the EpiAlignment score will be the degenerated
           sequence-only alignment score, and no sequence-only result will be reported.</p>
-        <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
+        <div class="manualImg">
+          <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
+        </div>
 
         <a name="enhancerOutput"></a>
         <h3>Enhancer mode</h3>
@@ -698,7 +726,7 @@
         </ol>
       </div>
 
-      <div id="footer" class="flexRow flexNoWrap flexCenter noFlex">
+      <div id="footer" class="flexRow flexWrap flexCenter noFlex justifyEnd">
         <div class="flex flexColumn flexStretch flexNoGap">
           <!-- footer text -->
           <div>Copyright © 2018 The Regents of the University of California. All Rights

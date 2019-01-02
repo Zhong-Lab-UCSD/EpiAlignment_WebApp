@@ -1174,25 +1174,30 @@ div#manual_app {
 }
 
 div#manualNav {
-	width: 300px;
 	box-sizing: border-box;
 	box-shadow: 1px 1px 10px 1px rgba(0, 0, 0, 0.5);
 	font-size: 14px;
-	overflow-y: auto;
 	z-index: 10;
+	background: #FFFFFF;
+	overflow: hidden;
 }
 
 div#navHeader {
+	width: 300px;
 	font-size: 16px;
 	background: rgb(38, 68, 132);
 	color: #FFFFFF;
 	padding: 1em;
 	font-weight: bold;
+	box-sizing: border-box;
 }
 
 div#navContent {
+	width: 300px;
 	padding: 1em 1.5em;
 	line-height: 2em;
+	overflow-y: auto;
+	box-sizing: border-box;
 }
 
 div#collapseNavButton {
@@ -1241,7 +1246,7 @@ div#manualContent {
 
 div#callOutNav {
 	position: fixed;
-	left: 0.5em;
+	left: 0;
 	top: 7em;
 	cursor: pointer;
 	background: #EEEEEE;
@@ -1256,12 +1261,13 @@ div#callOutNav {
 }
 
 div#callOutNav:hover {
-	left: 1em;
+	left: 0.5em;
 }
 
 div.manualHeader > h1 {
 	font-size: 28px;
 	margin: 2rem 2.5rem 1rem 2.5rem;
+	line-height: 1.4em;
 }
 
 div.section {
@@ -1399,17 +1405,21 @@ div.section table.verticalBorder * tr > *:not(:last-child) {
 	border-right: 1px solid #999999;
 }
 
-div.section img {
+div.section div.manualImg {
 	max-width: 600px;
 	margin: 0.5rem 1rem 0.5rem 1.5rem;
 }
 
-div.section img.small {
+div.section div.manualImg.large {
+	max-width: 800px;
+}
+
+div.section div.manualImg.small {
 	max-width: 450px;
 }
 
-div.section img.large {
-	max-width: 800px;
+div.section img {
+	max-width: 100%;
 }
 
 span.equation {
@@ -1417,3 +1427,68 @@ span.equation {
 	font-family: 'Times New Roman', Times, serif;
 }
 
+.nav-slide-right-enter-active, .nav-slide-right-leave-active {
+  transition: width 0.3s ease;
+}
+
+.nav-slide-right-enter, .nav-slide-right-leave-to {
+	width: 0;
+}
+
+.nav-slide-right-enter-to, .nav-slide-right-leave {
+  width: 300px;
+}
+
+@media screen and (max-width: 800px) {
+	div.manualHeader > h1 {
+		margin: 2rem 0.75rem 1rem 0.75rem;
+	}
+	
+	div.manualContent {
+		font-size: 14px;
+	}
+	
+	div.section {
+		margin: 0.5rem 1rem;
+	}
+
+	div.section p {
+		margin: 0.25rem;
+	}
+
+	div.section > h1 {
+		margin: 0.5rem -0.15rem 1rem -0.15rem;
+	}
+
+	div#callOutNav {
+		left: -0.15em;
+		padding: 0 1em 0.75em 1em;
+		font-size: 14px;
+	}
+
+	div#callOutNav:hover {
+		left: 0.5em;
+	}
+
+	div.section div.manualImg {
+		margin: 0.5rem 0.25rem;
+	}
+
+	div#manualNav {
+		position: fixed;
+		left: 0px;
+		top: 0px;
+		bottom: 0px;
+	}
+
+	div.section table {
+		margin: 1rem 0.5rem;
+		font-size: 12px;
+	}
+}
+
+@media screen and (hover: none) {
+	div#callOutNav {
+		display: none;
+	}
+}

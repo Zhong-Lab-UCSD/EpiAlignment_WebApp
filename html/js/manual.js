@@ -20,7 +20,6 @@ function detectSwipe (el, func) {
     swipeDetector.sY = t.screenY
   }, false)
   elem.addEventListener('touchmove', function (e) {
-    e.preventDefault()
     var t = e.touches[0]
     swipeDetector.eX = t.screenX
     swipeDetector.eY = t.screenY

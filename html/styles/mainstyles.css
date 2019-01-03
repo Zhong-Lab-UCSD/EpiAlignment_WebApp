@@ -48,9 +48,9 @@ div#header h1:not(:last-child) {
 }
 
 div#header #headerButtonHolder {
-	padding: 0.5em 0 0 0.5em;
-	min-width: 16em;
-	flex-basis: 16em;
+	padding: 0;
+	min-width: 15em;
+	flex-basis: 15em;
 }
 
 div#header.result #headerButtonHolder {
@@ -58,8 +58,7 @@ div#header.result #headerButtonHolder {
 }
 
 div#header #headerButtonHolder > * {
-	margin-bottom: 0.5em;
-	margin-right: 1em;
+	margin: 0.25em 0.5em;
 }
 
 div#header a.buttons {
@@ -69,7 +68,7 @@ div#header a.buttons {
 	border-radius: 5px;
 	padding: 0.25em;
 	text-align: center;
-	width: 15em;
+	width: 14em;
 	box-sizing: border-box;
 }
 
@@ -932,6 +931,11 @@ span.keyboard {
 	font-weight: bold;
 }
 
+.resultHeader > * {
+	margin-right: 2rem;
+	margin-bottom: 0.5rem;
+}
+
 .resultHeader:first-child {
 	margin-top: 0.5rem;
 }
@@ -943,8 +947,6 @@ span.keyboard {
 
 a.buttonLink {
 	font-size: 14px;
-	margin-left: 3em;
-	margin-right: 3em;
 	display: inline-block;
 	padding: 0.3em 1em 0.3em 0.6em;
 	font-weight: normal;
@@ -1160,11 +1162,21 @@ div.enhancerScoreContainer > div > div:first-child {
 }
 
 div.resultImgHolder {
-	width: 38rem;
+	min-width: 30rem;
+	flex: 0 1 38rem;
 	min-height: 15rem;
 	background-image: url('../assets/images/loading.gif');
 	background-repeat: no-repeat;
 	background-position: center center;
+}
+
+div.resultImgHolder > img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+div.resultDesc {
+	flex-basis: 45rem;
 }
 
 /* ***** Manual related styles ***** */

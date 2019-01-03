@@ -1487,7 +1487,7 @@ span.equation {
 	}
 }
 
-@media screen and (hover: none) {
+@media (pointer: coarse) {
 	div#callOutNav {
 		display: none;
 	}

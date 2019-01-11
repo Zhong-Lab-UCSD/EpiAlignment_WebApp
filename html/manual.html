@@ -194,7 +194,7 @@
         <h4>Output</h4>
         <p>After successfully submitting the data, you will be redirect to the result page. For the promoter mode, the
           result page shows two heatmaps and a table. The heatmaps illustrate alignment scores between every pair of
-          promoters and the best hits found for each query promoter.</p>
+          promoters and the best hits found for each query promoter. The three digits behind each gene name is the id of the promoter region. </p>
         <div class="manualImg" class="large">
           <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
         </div>
@@ -465,6 +465,7 @@
         <div class="manualImg">
           <img alt="Select TSS flanking ranges for promoters" src="assets/images/TSSrange_comments.png">
         </div>
+        <p>Given that a gene may have transcripts with overlapping promoter regions, EpiAlignment will merge promoters of the same gene if their overlapping region is longer than 80% of the promoter length. For example, if promoter regions are defined as 500kb upstream and 1000kb downstream the TSS, two promoters will be merged if their overlapping region is longer than <span class="equation">1500 &#215; 0.8 = 1200</span>. The last three digits of the promoter's genomic coordinate will be used as promoter id.</p>
         <a name="promoterModeTarget"></a>
         <h5>Target regions</h5>
         <h6>Submode: search a gene cluster</h6>
@@ -591,7 +592,7 @@
         <p>For the promoter mode, the result page shows two heatmaps and a table. EpiAlignment scores are plotted in
           the
           first heatmap to show scores of any query region (row) against all target region(s) (column). A sequence-only
-          alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap. In
+          alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap. The row and column names are promoter ids, which consist of gene names and the last three digits of promoters' genomic coordinates. In
           each row, the cell with the highest score of the row is marked with a capital "H".</p>
         <p>For each query region (row), EpiAlignment detects if its best hit switches from one target region to another
           with EpiAlign and Sequence-only alignment. The best hit is considered as "changed" if it meets the following

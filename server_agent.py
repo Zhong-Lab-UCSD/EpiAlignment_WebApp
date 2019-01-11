@@ -390,7 +390,7 @@ def InputParas(of_name, json_body, runid):
   if "seqweight" in json_body:
     seqweight = json_body["seqweight"]
   else:
-    seqweight = 1.0
+    seqweight = "1"
   parak_list = [float(x) for x in json_body["parak"].split(",")]
   if float(json_body["paras"]) <= 0 or float(json_body["paramu"]) <= 0 or min(parak_list) <= 0:
     print >> sys.stderr, "[EpiAlignment]Parameters should be positive values."

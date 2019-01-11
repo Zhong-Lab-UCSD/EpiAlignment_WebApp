@@ -99,10 +99,12 @@ var app = new Vue({
     geneIdentifier2: null, // ['transID2', 'region_name2']
     showHeatmap: false,
 
-    heatMapDesc: {
+    heatmapDesc: {
       min: ALIGN_SCORE_95 - MINIMUM_HEATMAP_GAP,
       max: ALIGN_SCORE_95,
-      span: MINIMUM_HEATMAP_GAP
+      span: MINIMUM_HEATMAP_GAP,
+      showPercentile: false,
+      percentileValue: ALIGN_SCORE_95
     },
 
     showResultHint: true,
@@ -370,9 +372,7 @@ var app = new Vue({
       data.forEach(entry =>
         this.parseSinglePromoterEntry(entry, columnMap, rowMap))
       this.processHeatmap()
-      if (this.hasSequence) {
-        this.markRowMaxFlags()
-      }
+      this.markRowMaxFlags()
     },
     parseSinglePromoterEntry: function (entry, columnMap, rowMap) {
       this.initPromoterEntryIfNotExists(entry, columnMap, rowMap)
@@ -409,28 +409,32 @@ var app = new Vue({
       this.findMinMaxTableValue(this.epiHeatmapList, propertyList)
       this.epiHeatmapList.forEach(entry => entry.values.forEach(value => (
         value.epiScoreNorm =
-          (value.epiScore - this.heatMapDesc.min) / this.heatMapDesc.span
+          (value.epiScore - this.heatmapDesc.min) / this.heatmapDesc.span
       )))
       if (this.hasSequence) {
-        this.epiHeatmapList.forEach(entry => entry.values.forEach(value => (
+        this.epiHeatmapList.forEach(entry => entry.values.forEach(value => {
           value.seqScoreNorm =
-            (value.seqScore - this.heatMapDesc.min) / this.heatMapDesc.span
-        )))
+            (value.seqScore - this.heatmapDesc.min) / this.heatmapDesc.span
+          value.insignificant =
+            (this.heatmapDesc.percentileValue > value.seqScore)
+        }))
       }
     },
     markRowMaxFlags: function () {
       this.epiHeatmapList.forEach(entry => {
         let epiMaxIndex =
           this.markSingleRowMaxFlag(entry, 'epiScore', 'epiMax')
-        let seqMaxIndex =
-          this.markSingleRowMaxFlag(entry, 'seqScore', 'seqMax')
-        entry.labelMax = (epiMaxIndex !== seqMaxIndex) && (
-          entry.values[epiMaxIndex].epiScore >
+        if (this.hasSequence) {
+          let seqMaxIndex =
+            this.markSingleRowMaxFlag(entry, 'seqScore', 'seqMax')
+          entry.labelMax = (epiMaxIndex !== seqMaxIndex) && (
+            entry.values[epiMaxIndex].epiScore >
             entry.values[epiMaxIndex].seqScore
-        ) && (
-          entry.values[seqMaxIndex].seqScore >
-            entry.values[seqMaxIndex].epiScore
-        )
+          ) && (
+            entry.values[seqMaxIndex].seqScore >
+              entry.values[seqMaxIndex].epiScore
+          )
+        }
       })
     },
     markSingleRowMaxFlag: function (row, property, propertyToMark) {
@@ -449,19 +453,20 @@ var app = new Vue({
     findMinMaxTableValue: function (table, entryPropertyList) {
       table.forEach(entry => entry.values.forEach(
         value => entryPropertyList.forEach(prop => {
-          if (this.heatMapDesc.min > value[prop]) {
-            this.heatMapDesc.min = value[prop]
+          if (this.heatmapDesc.min > value[prop]) {
+            this.heatmapDesc.min = value[prop]
           }
-          if (this.heatMapDesc.max < value[prop]) {
-            this.heatMapDesc.max = value[prop]
+          if (this.heatmapDesc.max < value[prop]) {
+            this.heatmapDesc.max = value[prop]
+            this.heatmapDesc.showPercentile = true
           }
         })
       ))
-      if (this.heatMapDesc.max - this.heatMapDesc.min < MINIMUM_HEATMAP_GAP) {
-        this.heatMapDesc.span = MINIMUM_HEATMAP_GAP
-        this.heatMapDesc.min = this.heatMapDesc.max - MINIMUM_HEATMAP_GAP
+      if (this.heatmapDesc.max - this.heatmapDesc.min < MINIMUM_HEATMAP_GAP) {
+        this.heatmapDesc.span = MINIMUM_HEATMAP_GAP
+        this.heatmapDesc.min = this.heatmapDesc.max - MINIMUM_HEATMAP_GAP
       } else {
-        this.heatMapDesc.span = this.heatMapDesc.max - this.heatMapDesc.min
+        this.heatmapDesc.span = this.heatmapDesc.max - this.heatmapDesc.min
       }
     },
     processEnhancerData: function (data) {

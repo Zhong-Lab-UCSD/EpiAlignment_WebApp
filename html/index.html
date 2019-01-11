@@ -355,14 +355,9 @@
           </div>
           <div class="flexRow flexCenter flexWrap">
             <div class="flexRow flexNoWrap shortInputContainer">
-              <div class="subElemLabel">Sequence weight:</div>
-              <input ref="weight[0]" type="number" min="0" step="any" autocomplete="new-password" name="seqweight"
-                v-model.number="formParams.seqweight" value="0.9">
-            </div>
-            <div class="flexRow flexNoWrap shortInputContainer">
-              <div class="subElemLabel">Epigenome weight:</div>
-              <input ref="weight[1]" type="number" min="0" step="any" autocomplete="new-password" name="epiweight"
-                v-model.number="formParams.epiweight" value="0.1">
+              <div class="subElemLabel">Epigenome weight (relative to sequence):</div>
+              <input ref="weight" type="number" min="0" step="any" autocomplete="new-password" name="epiweight"
+                v-model.number="formParams.epiweight" value="0.05">
             </div>
           </div>
           <div class="errorMessage" v-show="formError.weightError">

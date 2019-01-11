@@ -115,7 +115,7 @@
                   <th>{{ rowEntry.geneId }}</th>
                   <td class="heatmapCell" v-for="value in rowEntry.values">
                     <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
-                      <div :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
+                      <div class="heatmapValueCell" :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
                       </div>
                       <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.epiMax">H</div>
                     </div>
@@ -138,7 +138,7 @@
                   <th>{{ rowEntry.geneId }}</th>
                   <td class="heatmapCell" v-for="value in rowEntry.values">
                     <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
-                      <div :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
+                      <div class="heatmapValueCell" :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
                       </div>
                       <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.seqMax">H</div>
                     </div>
@@ -150,9 +150,9 @@
               <!-- Scale bar -->
               <div class="flexRow flexStart flexNoWrap">
                 <div class="flexRow flexCenter flexNoGap noFlex" id="colorScaleGroup">
-                  Low
+                  {{ Number.parseFloat(heatMapDesc.min).toFixed(2) }}
                   <div id="colorScale"></div>
-                  High
+                  {{ Number.parseFloat(heatMapDesc.max).toFixed(2) }}
                 </div>
                 <div class="flex">Alignment score</div>
               </div>
@@ -243,7 +243,7 @@
           </div>
         </div>
         <v-data-table :headers="headers" :items="dataEntries" item-key="index" class="elevation-1" :pagination.sync="paginationObj"
-          :rows-per-page-items="rowsPerPageItems" sort-icon="keyboard_arrow_down">
+          :rows-per-page-items="rowsPerPageItems" sort-icon="keyboard_arrow_up">
           <template slot="no-data">
           </template>
           <template slot="items" slot-scope="row">

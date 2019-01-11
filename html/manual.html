@@ -155,10 +155,8 @@
         <a name="promoterExample"></a>
         <h3>An example for using the promoter mode</h3>
         <!--Example 1-->
-        <p>In this example, we attempt to search the promoters of two human melanoma antigen family genes, MAGEB6 and
-          MAGEB6B, against a mouse gene cluster to find mouse promoters with the highest chromosomal similarities
-          within
-          it. The mouse gene cluster contains promoters of five mouse genes: Mageb1, Mageb2, Mageb3, Gm5072 and Gm8914.</p>
+        <p>In this example, we attempt to search the promoter of a human protocadherin beta gene, PCDHB5, and the promoter of a randomly selected gene, HTR1D, against a mouse gene cluster to find mouse promoters with the highest chromosomal similarities
+          within it. The mouse gene cluster contains promoters of six mouse protocadherin beta genes: Pcdhb4, Pcdhb6, Pcdhb8, Pcdhb10, Pcdhb11 and Pcdhb12.</p>
         <h4>Import sample data with one click:</h4>
         <div class="exampleSteps">
           <ul>
@@ -180,15 +178,15 @@
               <li>Paste or type the following gene names into the "Input regions"
                 textarea, <em>one name per line</em>:</li>
               <div>
-                MAGEB6<br>
-                MAGEB6B
+                PCDHB5<br>
+                HTR1D
               </div>
             </ul>
             <li>In the "Target region" box, make sure that "Search a gene cluster"
-              is selected, and type "MAGEB6" in the search bar. In the pop-up panel,
+              is selected, and type "PCDHB5" in the search bar. In the pop-up panel,
               click the box with arrow
               (<i class="material-icons">open_in_browser</i>) to the right of
-              the listed gene cluster "Cluster_13680" to select it.</li>
+              the listed gene cluster "Cluster_1491" to select it.</li>
             <li>Click "Submit" in STEP 4.</li>
           </ul>
         </div>
@@ -540,8 +538,8 @@
           rewards
           and penalties assigned to sequences and epigenomic modifications.</p>
         <a name="weights"></a>
-        <h4>Sequence weight and epigenome weight</h4>
-        <p> The weights will be multiplied to the sequence and the epigenome parts of the alignment scores. With a
+        <h4>The epigenome weight</h4>
+        <p> This parameter represents the relative weight of the epigenome to the sequence. The weight will be multiplied to the epigenome parts of the alignment scores. With a
           larger
           epigenomic weight, the chromosomal similarity search will rely more on epigenomic similarity than sequence
           similarity. Consequently, regions with larger sequence differences (i.e., more mismatches and indels) but

@@ -399,7 +399,7 @@ def InputParas(of_name, json_body, runid):
   seq_pi_list = [float(json_body["piA"]), float(json_body["piC"]), float(json_body["piG"]), float(json_body["piT"])]
   pi_list1 = [float(k) for k in json_body["pi1"].split(",")]
   weight_list = [float(w) for w in json_body["epiweight"].split(",")]
-  para_list = seq_pi_list + pi_list1 + weight_list
+  para_list = seq_pi_list + pi_list1
   if min(para_list) <= 0 or max(para_list) >= 1:
     print >> sys.stderr, "[EpiAlignment]Equilibrium probabilities (pi) must be values between 0 and 1."
     sys.exit(206)

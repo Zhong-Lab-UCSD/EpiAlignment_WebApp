@@ -1,2 +1,2 @@
-#alignMode	searchRegionMode	genomeAssembly_query	genomeAssembly_target	encodeData_query	encodeData_target	speciesPeak_query	speciesPeak_target	speciesInput_1	speciesInput_2	clusters	promoterUp	promoterDown	enhancerUp	enhancerDown	seqweight	epiweight	paras	paramu	parak	piA	piC	piG	piT	pi1
-enhancer	homoregion	mm10	hg38	GSM1674003	GSM1673960			mouse_sigRegion.bed			1000	500	20000	20000	0.95	0.05	0.3	0.3	0.8	0.25	0.25	0.25	0.25	0.1
+#alignMode	searchRegionMode	genomeAssembly_query	genomeAssembly_target	encodeData_query	encodeData_target	speciesPeak_query	speciesPeak_target	speciesInput_1	speciesInput_2	clusters	promoterUp	promoterDown	enhancerUp	enhancerDown	epiweight	paras	paramu	parak	piA	piC	piG	piT	pi1
+enhancer	homoregion	mm10	hg38	GSM1674016	GSM1673960			mouse_sigRegion.bed			1000	500	20000	20000	0.1	0.3	0.3	0.5	0.25	0.25	0.25	0.25	0.1

@@ -16,16 +16,16 @@ where sampleSheet.txt is a tab-delimited text file with input information.
 A sample input file named sampleSheet.txt can be found in the zip file. This sample uses the enhancer mode and will take 1 to 2 minutes to finish.
 
 #### Input
-The template program parses a sample sheet to get input data of each job. The sample sheet starts with a header, specifying the cotent that should be put in each column. There are 25 fields in the sample sheet. Typically, the user only need to fill in part of the first 11 fields, whereas the others are parameters with default values.
+The template program parses a sample sheet to get input data of each job. The sample sheet starts with a header, specifying the cotent that should be put in each column. There are 24 fields in the sample sheet. Typically, the user only need to fill in part of the first 11 fields, whereas the others are parameters with default values.
 
 A file named sampleSheet_headerOnly.txt with the header and default parameter values is provided in the same zip file with EpiAlignment\_PyClient.py.
 
-The 25 fields are:
+The 24 fields are:
 >alignMode, searchRegionMode, genomeAssembly\_query, genomeAssembly\_target,
 >encodeData\_query, encodeData\_target, speciesPeak\_query, speciesPeak\_target,
 >speciesInput\_1, speciesInput\_2,clusters
 >promoterUp, promoterDown, enhancerUp, enhancerDown,
->seqweight, epiweight, paras, paramu,parak,
+>epiweight, paras, paramu,parak,
 >piA,piC,piG,piT,pi1
 
 The program will parse the information following the same order.
@@ -60,7 +60,7 @@ Please note that if you are using the "promoter-genecluster" or "enhancer-homore
 ##### clusters
 This field only needs to be filled when alignMode is "promoter" and searchRegionMode is "genecluster". A valid gene cluster name in the format of "Cluster_XXX" needs to be entered.
 
-##### fields 16 to 25: parameters
+##### fields 16 to 24: parameters
 These fields specify the parameters to be used for the alignments. Default values are available in the downloaded sample sheet. You may keep them as they are unless you'd like to adjust them.  
 
 #### Output

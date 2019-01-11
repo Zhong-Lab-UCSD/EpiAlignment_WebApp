@@ -82,7 +82,7 @@ def PromoterMerge(gene, trans_dict, cutUp = 0, cutDown = 0):
   for p in promoter_list_sort:
     if len(res_list) == 0:
       res_list.append(deepcopy(p))
-    if overlap(p, res_list[-1], N):
+    if Dist_overlap(p, res_list[-1], N):
       # Update start
       res_list[-1][1] = min(p[1], res_list[-1][1])
       # Update stop

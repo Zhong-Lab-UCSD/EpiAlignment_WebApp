@@ -15,6 +15,31 @@ where sampleSheet.txt is a tab-delimited text file with input information.
 
 A sample input file named sampleSheet.txt can be found in the zip file. This sample uses the enhancer mode and will take 1 to 2 minutes to finish.
 
+The template program also provides two auxiliary functions that allow users to view preset data in EpiAlignment:
+
+(1) View all paired ENCODE / public epigenomic datasets in EpiAlignment
+
+```
+python EpiAlignment_PyClient.py --public_data
+```
+A tab-delimited file named "EpiAlign_publicData.txt" will be generated. The file contains details of preset epigenomic datasets in EpiAlignment. 
+
+(2) Search for gene clusters
+
+```
+python EpiAlignment_PyClient.py --find_gene_cluster geneid
+```
+where gene id can be either a gene symbol/partial gene symbol, or an Ensembl id. The command will write gene clusters with fully-matched and partially-matched names to the standard output (stdout). You may try the following commands to see the results:
+
+```python
+# find gene clusters with partially-matched names.
+python EpiAlignment_PyClient.py --find_gene_cluster GNG
+# find gene clusters with fully-matched names.
+python EpiAlignment_PyClient.py --find_gene_cluster GNG7
+``` 
+
+### Submitting jobs to EpiAlignment
+
 #### Input
 The template program parses a sample sheet to get input data of each job. The sample sheet starts with a header, specifying the cotent that should be put in each column. There are 24 fields in the sample sheet. Typically, the user only need to fill in part of the first 11 fields, whereas the others are parameters with default values.
 

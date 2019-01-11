@@ -48,8 +48,7 @@ import postAjax from './promisedAjax.js'
 const PROMOTER_UP_DEFAULT = 1000
 const PROMOTER_DOWN_DEFAULT = 500
 const ENHANCER_FLANK_DEFAULT = 20000
-const SEQ_WEIGHT_DEFAULT = 0.95
-const EPI_WEIGHT_DEFAULT = 0.05
+const EPI_WEIGHT_DEFAULT = 0.1
 const PARA_S_DEFAULT = 0.3
 const PARA_MU_DEFAULT = 0.3
 const PARA_K_DEFAULT = 0.8
@@ -66,7 +65,6 @@ const CLUSTER_QUERY_DEBOUNCE = 300
 const CLUSTER_QUERY_DEBOUNCE_WHEN_OPEN = 50
 
 const NUM_UP_DOWN_STREAN = 2
-const NUM_WEIGHTS = 2
 const NUM_PARAMS = 8
 
 var app = new Vue({
@@ -148,7 +146,6 @@ var app = new Vue({
       enhancerUp: ENHANCER_FLANK_DEFAULT,
       enhancerDown: ENHANCER_FLANK_DEFAULT,
 
-      seqweight: SEQ_WEIGHT_DEFAULT,
       epiweight: EPI_WEIGHT_DEFAULT,
 
       paras: PARA_S_DEFAULT,
@@ -372,8 +369,14 @@ var app = new Vue({
 
       // inputError
       this.formParams.speciesText.forEach((text, index) => {
-        if (!text.trim().length && !this.inputFiles[index].length &&
-          !(index === 1 && !this.genomeRegionSelected)
+        if (!text.trim().length && // no input text
+          !this.inputFiles[index].length && // no input file
+          (
+            // first input cannot be empty in non-gene-cluster sub-mode
+            (index === 0 && !this.geneClusterSelected) ||
+            // second input cannot be empty in genome-region sub-mode
+            (index === 1 && this.genomeRegionSelected)
+          )
         ) {
           this.formError.inputError.splice(index, 1, true)
         }
@@ -413,11 +416,8 @@ var app = new Vue({
       }
 
       // weightError
-      for (let i = 0; i < NUM_WEIGHTS; i++) {
-        if (!this.$refs['weight[' + i + ']'].checkValidity()) {
-          this.formError.weightError = true
-          break
-        }
+      if (!this.$refs['weight'].checkValidity()) {
+        this.formError.weightError = true
       }
 
       // paramError

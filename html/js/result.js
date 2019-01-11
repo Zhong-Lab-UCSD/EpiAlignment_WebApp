@@ -24,6 +24,8 @@ const POLLING_INTERVAL_PROMOTER = 3000 // 3 seconds
 
 const MINIMUM_HEATMAP_GAP = 10
 
+const ALIGN_SCORE_95 = 166.63 // 95% alignment score of random sequence
+
 const expandedRunInfoKeyList = [
   [
     'runid',
@@ -97,6 +99,12 @@ var app = new Vue({
     geneIdentifier2: null, // ['transID2', 'region_name2']
     showHeatmap: false,
 
+    heatMapDesc: {
+      min: ALIGN_SCORE_95 - MINIMUM_HEATMAP_GAP,
+      max: ALIGN_SCORE_95,
+      span: MINIMUM_HEATMAP_GAP
+    },
+
     showResultHint: true,
     doNotShowHintAgain: false,
     rowsPerPageItems: [
@@ -111,7 +119,7 @@ var app = new Vue({
     headers: [
       {
         text: '#',
-        value: 'id',
+        value: 'index',
         align: 'left',
         sortable: true,
         class: 'dataTableCell',
@@ -398,16 +406,15 @@ var app = new Vue({
       if (this.hasSequence) {
         propertyList.push('seqScore')
       }
-      let normFactors =
-        this.findMinMaxTableValue(this.epiHeatmapList, propertyList)
+      this.findMinMaxTableValue(this.epiHeatmapList, propertyList)
       this.epiHeatmapList.forEach(entry => entry.values.forEach(value => (
         value.epiScoreNorm =
-          (value.epiScore - normFactors.min) / normFactors.span
+          (value.epiScore - this.heatMapDesc.min) / this.heatMapDesc.span
       )))
       if (this.hasSequence) {
         this.epiHeatmapList.forEach(entry => entry.values.forEach(value => (
           value.seqScoreNorm =
-            (value.seqScore - normFactors.min) / normFactors.span
+            (value.seqScore - this.heatMapDesc.min) / this.heatMapDesc.span
         )))
       }
     },
@@ -440,27 +447,22 @@ var app = new Vue({
       return maxIndex
     },
     findMinMaxTableValue: function (table, entryPropertyList) {
-      let result = {
-        min: Number.MAX_VALUE,
-        max: Number.MIN_VALUE
-      }
       table.forEach(entry => entry.values.forEach(
         value => entryPropertyList.forEach(prop => {
-          if (result.min > value[prop]) {
-            result.min = value[prop]
+          if (this.heatMapDesc.min > value[prop]) {
+            this.heatMapDesc.min = value[prop]
           }
-          if (result.max < value[prop]) {
-            result.max = value[prop]
+          if (this.heatMapDesc.max < value[prop]) {
+            this.heatMapDesc.max = value[prop]
           }
         })
       ))
-      if (result.max - result.min < MINIMUM_HEATMAP_GAP) {
-        result.span = MINIMUM_HEATMAP_GAP
+      if (this.heatMapDesc.max - this.heatMapDesc.min < MINIMUM_HEATMAP_GAP) {
+        this.heatMapDesc.span = MINIMUM_HEATMAP_GAP
+        this.heatMapDesc.min = this.heatMapDesc.max - MINIMUM_HEATMAP_GAP
       } else {
-        result.span = result.max - result.min
+        this.heatMapDesc.span = this.heatMapDesc.max - this.heatMapDesc.min
       }
-      delete result.max
-      return result
     },
     processEnhancerData: function (data) {
       // reformat table header

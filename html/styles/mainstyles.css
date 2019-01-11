@@ -1056,7 +1056,7 @@ div.heatmapObj.epiMax {
 	border: 4px solid #007e00;
 }
 
-.heatmapCell > div.heatmapObj > div {
+.heatmapCell > div.heatmapObj > div.heatmapValueCell {
 	background: #c82500;
 	width: 100%;
 	height: 100%;

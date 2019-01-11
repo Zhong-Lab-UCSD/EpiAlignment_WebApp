@@ -1067,7 +1067,7 @@ div.heatmapBorder.seqMax {
 }
 
 div.heatmapBorder.seqMax.insignificant {
-	border: 2px dashed #666666;
+	border: 3px dashed #666666;
 }
 
 div.heatmapBorder.epiMax {
@@ -1075,7 +1075,7 @@ div.heatmapBorder.epiMax {
 }
 
 div.heatmapBorder.epiMax.insignificant {
-	border: 2px dashed #007e00;
+	border: 3px dashed #007e00;
 }
 
 .heatmapCell > div.heatmapObj > div.heatmapValueCell {
@@ -1132,6 +1132,10 @@ div.heatmapBorder.epiMax.insignificant {
 #heatmapLegend #colorScaleContainer #percentile95 > span {
 	margin: 0 0.1em;
 	padding: 0.1em 0.1em;
+}
+
+#heatmapLegend div.legendIcon.heatmapBorder:not(:last-child) {
+	margin-right: 0.4em;
 }
 
 div.legendIcon {

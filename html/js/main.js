@@ -51,7 +51,7 @@ const ENHANCER_FLANK_DEFAULT = 20000
 const EPI_WEIGHT_DEFAULT = 0.1
 const PARA_S_DEFAULT = 0.3
 const PARA_MU_DEFAULT = 0.3
-const PARA_K_DEFAULT = 0.8
+const PARA_K_DEFAULT = 0.5
 const PARA_PI_A_DEFAULT = 0.25
 const PARA_PI_C_DEFAULT = 0.25
 const PARA_PI_G_DEFAULT = 0.25
@@ -665,21 +665,25 @@ var app = new Vue({
       if (!this.formParams.alignMode) {
         console.log('Please select an align mode first!')
       }
-      this.selectedExperimentIds = {
-        human: 'GSM1673960',
-        mouse: 'GSM1674003'
-      }
       this.selectedEntryDescHtml = '<strong>ChIP-Seq (H3K4me3)</strong>' +
         ' on <strong>round spermatids</strong>'
       this.selectedEntryDesc = 'ChIP-Seq (H3K4me3) on round spermatids'
       if (this.formParams.alignMode === 'promoter') {
+        this.selectedExperimentIds = {
+          human: 'GSM1673960',
+          mouse: 'GSM1674016'
+        }
         this.formParams.genomeAssembly.splice(
           0, this.formParams.genomeAssembly.length, 'hg38', 'mm10')
-        this.formParams.speciesText.splice(0, 1, 'MAGEB6\nMAGEB6B')
-        this.clusterText = 'Cluster_13680'
+        this.formParams.speciesText.splice(0, 1, 'PCDHB5\nHTR1D')
+        this.clusterText = 'Cluster_1491'
         this.formParams.searchRegionMode = 'genecluster'
       } else {
         // enhancer mode
+        this.selectedExperimentIds = {
+          human: 'GSM1673960',
+          mouse: 'GSM1674003'
+        }
         this.formParams.genomeAssembly.splice(
           0, this.formParams.genomeAssembly.length, 'mm10', 'hg38')
         this.formParams.speciesText.splice(

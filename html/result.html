@@ -20,7 +20,6 @@
 
 <body>
   <div id="header" class="result noFlex flexRow flexCenter flexWrap">
-    <!--Introduction-->
     <div id="headerContainer" class="flex flexColumn flexStretch flexNoWrap flexNoGap">
       <h1 class="flex"><a href="index.html">EpiAlignment</a></h1>
     </div>
@@ -31,7 +30,6 @@
         client template</a>
     </div>
   </div>
-  <!--alignment steps-->
   <div data-app id="result_app" class="flex flexColumn flexStretch" v-cloak>
     <div id="runInfo" class="noFlex">
       <div v-show="!showRunDetails" class="collapsedRunInfo noFlex flexRow flexCenter flexWrap flexNoGap justifyStart">
@@ -114,7 +112,9 @@
                 <tr v-for="rowEntry in epiHeatmapList">
                   <th>{{ rowEntry.geneId }}</th>
                   <td class="heatmapCell" v-for="value in rowEntry.values">
-                    <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
+                    <div class="heatmapObj">
+                      <div class="heatmapBorder" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax, insignificant: value.insignificant }">
+                      </div>
                       <div class="heatmapValueCell" :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
                       </div>
                       <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.epiMax">H</div>
@@ -123,7 +123,7 @@
                 </tr>
               </tbody>
             </table>
-            <div class="selfAlignStretch resultHeader">Sequence-only Score</div>
+            <div v-if="hasSequence" class="selfAlignStretch resultHeader">Sequence-only Score</div>
             <table v-if="hasSequence">
               <thead>
                 <tr>
@@ -137,7 +137,9 @@
                 <tr v-for="rowEntry in epiHeatmapList">
                   <th>{{ rowEntry.geneId }}</th>
                   <td class="heatmapCell" v-for="value in rowEntry.values">
-                    <div class="heatmapObj" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax }">
+                    <div class="heatmapObj">
+                      <div class="heatmapBorder" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax, insignificant: value.insignificant }">
+                      </div>
                       <div class="heatmapValueCell" :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
                       </div>
                       <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.seqMax">H</div>
@@ -148,11 +150,17 @@
             </table>
             <div id="heatmapLegend" class="selfAlignStretch flexColumn flexStretch flexNoGap flexNoWrap">
               <!-- Scale bar -->
-              <div class="flexRow flexStart flexNoWrap">
-                <div class="flexRow flexCenter flexNoGap noFlex" id="colorScaleGroup">
-                  {{ Number.parseFloat(heatMapDesc.min).toFixed(2) }}
-                  <div id="colorScale"></div>
-                  {{ Number.parseFloat(heatMapDesc.max).toFixed(2) }}
+              <div class="flexRow flexCenter flexNoWrap">
+                <div class="flexRow flexEnd flexNoGap noFlex" id="colorScaleGroup">
+                  {{ Number.parseFloat(heatmapDesc.min).toFixed(2) }}
+                  <div id="colorScaleContainer">
+                    <!-- 95th percentile indicator -->
+                    <div id="percentile95" v-if="heatmapDesc.showPercentile" :style="{ 'margin-left': (heatmapDesc.percentileValue - heatmapDesc.min) / heatmapDesc.span * 100 + '%' }">
+                      <span>{{ Number.parseFloat(heatmapDesc.percentileValue).toFixed(2) }}</span>
+                    </div>
+                    <div id="colorScale"></div>
+                  </div>
+                  {{ Number.parseFloat(heatmapDesc.max).toFixed(2) }}
                 </div>
                 <div class="flex">Alignment score</div>
               </div>
@@ -164,12 +172,14 @@
                 <div class="flex">Target with highest score</div>
               </div>
               <!-- Seq-best pair -->
-              <div class="flexRow flexStart flexNoWrap">
-                <div class="legendIcon heatmapObj epiMax noFlex"></div>
+              <div v-if="hasSequence" class="flexRow flexStart flexNoWrap">
+                <div class="legendIcon heatmapBorder epiMax noFlex"></div>
+                <div class="legendIcon heatmapBorder epiMax noFlex insignificant"></div>
                 <div class="flex">Shifted EpiAlign target</div>
               </div>
-              <div class="flexRow flexStart flexNoWrap">
-                <div class="legendIcon heatmapObj seqMax noFlex"></div>
+              <div v-if="hasSequence" class="flexRow flexStart flexNoWrap">
+                <div class="legendIcon heatmapBorder seqMax noFlex"></div>
+                <div class="legendIcon heatmapBorder seqMax noFlex insignificant"></div>
                 <div class="flex">Original sequence-only alignment target</div>
               </div>
             </div>
@@ -206,9 +216,16 @@
               </li>
             </ul>
             <em>the new hit</em> will be marked on the heatmap with a green
-            square ( <div class="legendIcon heatmapObj epiMax"></div> ), and
+            square ( <div class="legendIcon heatmapBorder epiMax"></div> ), and
             <em>the old hit</em> will be marked with a gray square (
-            <div class="legendIcon heatmapObj seqMax"></div>
+            <div class="legendIcon heatmapBorder seqMax"></div>
+            ).
+            If <em>the new hit</em> has a lower Sequence-only score than the
+            95th percentile of random sequences (marked on the color scale bar
+            if it's not the maximum), the border of the square for both
+            <em>the new hit</em> and <em>the old hit</em> will be dashed (
+              <div class="legendIcon heatmapBorder epiMax insignificant"></div>
+            and <div class="legendIcon heatmapBorder seqMax insignificant"></div>
             ).
           </p>
           <p>
@@ -268,9 +285,10 @@
               <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode ===
                 'promoter' ?
                 Number.parseFloat(row.item.scoreE).toFixed(3) : row.item.targetE }}</td>
-              <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode ===
-                'promoter' ?
-                Number.parseFloat(row.item.scoreS).toFixed(3) : row.item.targetS }}</td>
+              <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">
+                {{ alignMode === 'promoter' ? (row.item.scoreS !== '.'
+                  ? Number.parseFloat(row.item.scoreS).toFixed(3) : '---')
+                : row.item.targetS !== '.' ? row.item.targetS : '---' }}</td>
             </tr>
           </template>
           <template slot="expand" slot-scope="entry">

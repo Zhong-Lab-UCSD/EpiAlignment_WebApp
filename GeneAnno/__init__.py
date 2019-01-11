@@ -78,7 +78,7 @@ def PromoterMerge(gene, trans_dict, cutUp = 0, cutDown = 0):
     return res_list
   promoter_list = [PromoterBed(trans_obj, cutUp, cutDown) for trans_obj in trans_dict[gene]]
   # sort tmp_list by chromosome names and starts.
-  promoter_list_sort = sorted(promoter_list, key=lambda x: x[1]))
+  promoter_list_sort = sorted(promoter_list, key=lambda x: x[1])
   for p in promoter_list_sort:
     if len(res_list) == 0:
       res_list.append(deepcopy(p))

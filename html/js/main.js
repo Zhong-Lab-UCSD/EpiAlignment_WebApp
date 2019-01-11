@@ -682,7 +682,7 @@ var app = new Vue({
         // enhancer mode
         this.selectedExperimentIds = {
           human: 'GSM1673960',
-          mouse: 'GSM1674003'
+          mouse: 'GSM1674016'
         }
         this.formParams.genomeAssembly.splice(
           0, this.formParams.genomeAssembly.length, 'mm10', 'hg38')

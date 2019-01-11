@@ -173,13 +173,17 @@
               </div>
               <!-- Seq-best pair -->
               <div v-if="hasSequence" class="flexRow flexStart flexNoWrap">
-                <div class="legendIcon heatmapBorder epiMax noFlex"></div>
-                <div class="legendIcon heatmapBorder epiMax noFlex insignificant"></div>
+                <div class="flexRow flexCenter noFlex flexNoGap flexNoWrap">
+                  <div class="legendIcon heatmapBorder epiMax noFlex"></div>
+                  <div class="legendIcon heatmapBorder epiMax noFlex insignificant"></div>
+                </div>
                 <div class="flex">Shifted EpiAlign target</div>
               </div>
               <div v-if="hasSequence" class="flexRow flexStart flexNoWrap">
-                <div class="legendIcon heatmapBorder seqMax noFlex"></div>
-                <div class="legendIcon heatmapBorder seqMax noFlex insignificant"></div>
+                <div class="flexRow flexCenter noFlex flexNoGap flexNoWrap">
+                  <div class="legendIcon heatmapBorder seqMax noFlex"></div>
+                  <div class="legendIcon heatmapBorder seqMax noFlex insignificant"></div>
+                </div>
                 <div class="flex">Original sequence-only alignment target</div>
               </div>
             </div>

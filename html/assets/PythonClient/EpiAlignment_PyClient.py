@@ -8,7 +8,7 @@ import datetime
 if sys.version_info[0] > 2:
   raise Exception("Please use Python 2 or convert the code to Python 3.")
 
-EpiAligment_URL = "https://epialign.ucsd.edu"
+EpiAligment_URL = "https://beta.epialign.ucsd.edu"
 
 RUNNING_CODE = -1
 # run info will be printed into the output file follow this order:
@@ -51,8 +51,8 @@ class SFObject:
     
     # Parse shared elements.
     # Parse all parameters and add them to the data dictionary.   
-    para_list = line[15:25]
-    para_name_list = ["seqweight", "epiweight", "paras", "paramu", "parak", "piA", "piC", "piG", "piT", "pi1"]
+    para_list = line[15:24]
+    para_name_list = ["epiweight", "paras", "paramu", "parak", "piA", "piC", "piG", "piT", "pi1"]
     if "" in para_list or len(para_name_list) != len(para_list):
       print >> sys.stderr, "Please check the parameters."
       sys.exit(1)

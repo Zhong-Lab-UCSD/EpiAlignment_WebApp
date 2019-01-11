@@ -91,12 +91,12 @@ def PromoterMerge(gene, trans_dict, cutUp = 0, cutDown = 0):
       # change region name
       res_list[-1][1] = str(res_list[-1][1])
       res_list[-1][2] = str(res_list[-1][2])
-      res_list[-1][3] += res_list[-1][1][-4:]
+      res_list[-1][3] += ("." + res_list[-1][1][-3:])
       res_list.append(deepcopy(p))
   # The last one
   res_list[-1][1] = str(res_list[-1][1])
   res_list[-1][2] = str(res_list[-1][2])
-  res_list[-1][3] += res_list[-1][1][-4:]
+  res_list[-1][3] += ("." + res_list[-1][1][-3:])
   return res_list
 
 

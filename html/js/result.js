@@ -24,6 +24,8 @@ const POLLING_INTERVAL_PROMOTER = 3000 // 3 seconds
 
 const MINIMUM_HEATMAP_GAP = 10
 
+const ALIGN_SCORE_95 = 166.63 // 95% alignment score of random sequence
+
 const expandedRunInfoKeyList = [
   [
     'runid',
@@ -97,6 +99,15 @@ var app = new Vue({
     geneIdentifier2: null, // ['transID2', 'region_name2']
     showHeatmap: false,
 
+    heatmapDesc: {
+      min: Number.MAX_VALUE,
+      max: Number.MIN_VALUE,
+      span: MINIMUM_HEATMAP_GAP,
+      showPercentile: false,
+      percentileValue: ALIGN_SCORE_95
+    },
+    percentileEnabled: false,
+
     showResultHint: true,
     doNotShowHintAgain: false,
     rowsPerPageItems: [
@@ -111,7 +122,7 @@ var app = new Vue({
     headers: [
       {
         text: '#',
-        value: 'id',
+        value: 'index',
         align: 'left',
         sortable: true,
         class: 'dataTableCell',
@@ -362,9 +373,7 @@ var app = new Vue({
       data.forEach(entry =>
         this.parseSinglePromoterEntry(entry, columnMap, rowMap))
       this.processHeatmap()
-      if (this.hasSequence) {
-        this.markRowMaxFlags()
-      }
+      this.markRowMaxFlags()
     },
     parseSinglePromoterEntry: function (entry, columnMap, rowMap) {
       this.initPromoterEntryIfNotExists(entry, columnMap, rowMap)
@@ -398,32 +407,37 @@ var app = new Vue({
       if (this.hasSequence) {
         propertyList.push('seqScore')
       }
-      let normFactors =
-        this.findMinMaxTableValue(this.epiHeatmapList, propertyList)
+      this.findMinMaxTableValue(this.epiHeatmapList, propertyList)
       this.epiHeatmapList.forEach(entry => entry.values.forEach(value => (
         value.epiScoreNorm =
-          (value.epiScore - normFactors.min) / normFactors.span
+          (value.epiScore - this.heatmapDesc.min) / this.heatmapDesc.span
       )))
       if (this.hasSequence) {
-        this.epiHeatmapList.forEach(entry => entry.values.forEach(value => (
+        this.epiHeatmapList.forEach(entry => entry.values.forEach(value => {
           value.seqScoreNorm =
-            (value.seqScore - normFactors.min) / normFactors.span
-        )))
+            (value.seqScore - this.heatmapDesc.min) / this.heatmapDesc.span
+          if (this.percentileEnabled) {
+            value.insignificant =
+              (this.heatmapDesc.percentileValue > value.seqScore)
+          }
+        }))
       }
     },
     markRowMaxFlags: function () {
       this.epiHeatmapList.forEach(entry => {
         let epiMaxIndex =
           this.markSingleRowMaxFlag(entry, 'epiScore', 'epiMax')
-        let seqMaxIndex =
-          this.markSingleRowMaxFlag(entry, 'seqScore', 'seqMax')
-        entry.labelMax = (epiMaxIndex !== seqMaxIndex) && (
-          entry.values[epiMaxIndex].epiScore >
+        if (this.hasSequence) {
+          let seqMaxIndex =
+            this.markSingleRowMaxFlag(entry, 'seqScore', 'seqMax')
+          entry.labelMax = (epiMaxIndex !== seqMaxIndex) && (
+            entry.values[epiMaxIndex].epiScore >
             entry.values[epiMaxIndex].seqScore
-        ) && (
-          entry.values[seqMaxIndex].seqScore >
-            entry.values[seqMaxIndex].epiScore
-        )
+          ) && (
+            entry.values[seqMaxIndex].seqScore >
+              entry.values[seqMaxIndex].epiScore
+          )
+        }
       })
     },
     markSingleRowMaxFlag: function (row, property, propertyToMark) {
@@ -440,27 +454,29 @@ var app = new Vue({
       return maxIndex
     },
     findMinMaxTableValue: function (table, entryPropertyList) {
-      let result = {
-        min: Number.MAX_VALUE,
-        max: Number.MIN_VALUE
+      if (this.percentileEnabled) {
+        this.heatmapDesc.min = ALIGN_SCORE_95 - MINIMUM_HEATMAP_GAP
+        this.heatmapDesc.max = ALIGN_SCORE_95
       }
       table.forEach(entry => entry.values.forEach(
         value => entryPropertyList.forEach(prop => {
-          if (result.min > value[prop]) {
-            result.min = value[prop]
+          if (this.heatmapDesc.min > value[prop]) {
+            this.heatmapDesc.min = value[prop]
           }
-          if (result.max < value[prop]) {
-            result.max = value[prop]
+          if (this.heatmapDesc.max < value[prop]) {
+            this.heatmapDesc.max = value[prop]
+            if (this.percentileEnabled) {
+              this.heatmapDesc.showPercentile = true
+            }
           }
         })
       ))
-      if (result.max - result.min < MINIMUM_HEATMAP_GAP) {
-        result.span = MINIMUM_HEATMAP_GAP
+      if (this.heatmapDesc.max - this.heatmapDesc.min < MINIMUM_HEATMAP_GAP) {
+        this.heatmapDesc.span = MINIMUM_HEATMAP_GAP
+        this.heatmapDesc.min = this.heatmapDesc.max - MINIMUM_HEATMAP_GAP
       } else {
-        result.span = result.max - result.min
+        this.heatmapDesc.span = this.heatmapDesc.max - this.heatmapDesc.min
       }
-      delete result.max
-      return result
     },
     processEnhancerData: function (data) {
       // reformat table header

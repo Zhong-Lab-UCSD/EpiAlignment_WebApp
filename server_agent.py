@@ -134,7 +134,7 @@ def Cons_transList(input1, intype1, promoterUp, promoterDown, sp, of_name):
           transDict1 = Cons_transDict(line, sp, of_name)
           i += 1
         if line in transDict1:
-          trans_list1 += [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[line]]
+          trans_list1 += PromoterMerge(line, transDict1, promoterUp, promoterDown)
         else:
           print >> sys.stderr, "[EpiAlignment]The gene " + line + " was not found in " + sp
   return trans_list1
@@ -187,7 +187,7 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
   trans_list2 = []
   for gene in cluster_genes2:
     if gene in transDict2:
-      trans_list2 += [PromoterBed(x, promoterUp, promoterDown) for x in transDict2[gene]]
+      trans_list2 += PromoterMerge(gene, transDict2, promoterUp, promoterDown)
   
   fname2 = of_name + cluster_id + runid + "_2.bed"
   if input1 != "":
@@ -209,7 +209,7 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
     trans_list1 = []
     for gene in cluster_genes1:
       if gene in transDict1:
-        trans_list1 += [PromoterBed(x, promoterUp, promoterDown) for x in transDict1[gene]]
+        trans_list1 += PromoterMerge(gene, transDic1, promoterUp, promoterDown)
 
     with open(fname1, "w") as fout1, open(fname2, "w") as fout2:
       for region1 in trans_list1:
@@ -387,6 +387,10 @@ def InputParas(of_name, json_body, runid):
   Create input parameter file for EpiAlignment.
   '''
   # Check if parameters are not positive.
+  if "seqweight" in json_body:
+    seqweight = json_body["seqweight"]
+  else:
+    seqweight = "1"
   parak_list = [float(x) for x in json_body["parak"].split(",")]
   if float(json_body["paras"]) <= 0 or float(json_body["paramu"]) <= 0 or min(parak_list) <= 0:
     print >> sys.stderr, "[EpiAlignment]Parameters should be positive values."
@@ -395,7 +399,7 @@ def InputParas(of_name, json_body, runid):
   seq_pi_list = [float(json_body["piA"]), float(json_body["piC"]), float(json_body["piG"]), float(json_body["piT"])]
   pi_list1 = [float(k) for k in json_body["pi1"].split(",")]
   weight_list = [float(w) for w in json_body["epiweight"].split(",")]
-  para_list = seq_pi_list + pi_list1 + weight_list
+  para_list = seq_pi_list + pi_list1
   if min(para_list) <= 0 or max(para_list) >= 1:
     print >> sys.stderr, "[EpiAlignment]Equilibrium probabilities (pi) must be values between 0 and 1."
     sys.exit(206)
@@ -411,10 +415,10 @@ def InputParas(of_name, json_body, runid):
     for p0, p1 in zip(pi_list0, pi_list1):
       print >> fpara, "0:" + str(p0) + "\t" + "1:" + str(p1)
     weights = "\t".join(json_body["epiweight"].split(","))
-    print >> fpara, json_body["seqweight"] + "\t" + weights
+    print >> fpara, seqweight + "\t" + weights
 
   # If epi weight is not 0, create another parameter file for sequence-only alignment.
-  if float(json_body["seqweight"]) != 1:
+  if json_body["epiweight"] != "0":
     with open(of_name + "parameters_seq_" + runid, "w") as fseq_para:
       print >> fseq_para, json_body["paras"]
       print >> fseq_para, json_body["paramu"]

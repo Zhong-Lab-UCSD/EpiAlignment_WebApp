@@ -1,3 +1,5 @@
+const SLIDE_TRANSITION_DURATION = 300
+
 /**
  * Swipe detection
  * Adapted from https://stackoverflow.com/a/27115070
@@ -62,16 +64,77 @@ var app = new Vue({
   mounted () {
     detectSwipe('manual_app', (el, direction) => {
       if (direction === 'r') {
-        this.showNav = true
+        this.toggleNav(true)
       } else if (direction === 'l') {
-        this.showNav = false
+        this.toggleNav(false)
       }
     })
+
+    if (window.location.hash) {
+      // jump to hashed location
+      this.jumpToHash(window.location.hash)
+    }
   },
   methods: {
-    clickOnNav: function () {
+    clickOnNav: function (event) {
+      event.preventDefault()
       if (window.matchMedia('screen and (max-width: 800px)').matches) {
         this.showNav = false
+      }
+      window.location.hash = event.target.hash
+      this.jumpToHash(window.location.hash)
+    },
+
+    jumpToHash: function (hash) {
+      hash = hash.slice(1)
+      if (this.$refs.hasOwnProperty(hash)) {
+        window.requestAnimationFrame(() =>
+          this.$refs[hash].scrollIntoView(true)
+        )
+      }
+    },
+
+    toggleNav: function (flag) {
+      this.showNav = flag
+      if (!window.matchMedia('screen and (max-width: 800px)').matches) {
+        // navigation will affect the size of content, needs to keep proportion
+        let timeStart = null
+        let topElem = null
+        let findFirstVisibleNode = (node, scrollTop) => {
+          if (node.hasChildNodes()) {
+            if ([...node.childNodes].some(childNode =>
+              findFirstVisibleNode(childNode, scrollTop))
+            ) {
+              return true
+            }
+          }
+          if (node.offsetTop > scrollTop) {
+            topElem = node
+            return true
+          }
+          return false
+        }
+        findFirstVisibleNode(
+          this.$refs.manualContent, this.$refs.manualContent.scrollTop
+        )
+        let topDistance = topElem
+          ? this.$refs.manualContent.scrollTop - topElem.offsetTop
+          : 0
+        let updateScroll = timeStamp => {
+          if (!timeStart) {
+            timeStart = timeStamp
+          }
+          let progress = timeStamp - timeStart
+          if (topElem) {
+            this.$refs.manualContent.scrollTop = topElem.offsetTop + topDistance
+          }
+          if (progress <= SLIDE_TRANSITION_DURATION) {
+            window.requestAnimationFrame(updateScroll)
+          }
+        }
+        if (topElem) {
+          window.requestAnimationFrame(updateScroll)
+        }
       }
     }
   }

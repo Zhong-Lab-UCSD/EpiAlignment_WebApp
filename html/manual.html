@@ -16,11 +16,14 @@
 
 <body class="manual">
   <div id="manual_app" class="flex flexRow flexNoGap flexNoWrap" v-cloak>
+    <div v-show="!showNav" id="callOutNav" @click="toggleNav(true)">
+      Table of contents
+    </div>
     <transition name="nav-slide-right">
       <div v-show="showNav" id="manualNav" class="noFlex flexColumn flexNoGap flexEnd">
         <div id="navHeader" class="flexRow flexWrap flexNoGap flexCenter">
           <div class="flex">Table of contents</div>
-          <div id="collapseNavButton" @click="showNav = false">Collapse</div>
+          <div id="collapseNavButton" @click="toggleNav(false)">Collapse</div>
         </div>
         <div id="navContent" class="flex">
           <ul>
@@ -56,6 +59,9 @@
               <a href="#input" @click="clickOnNav">Input</a>
               <ul>
                 <li>
+                  <a href="#genomeAssembly" @click="clickOnNav">Genome assembly</a>
+                </li>
+                <li>
                   <a href="#peakFileAndDatasets" @click="clickOnNav">Peak files and public datasets</a>
                 </li>
                 <li>
@@ -73,7 +79,7 @@
                   <a href="#parameters" @click="clickOnNav">Parameters</a>
                   <ul>
                     <li>
-                      <a href="#weights" @click="clickOnNav">Sequence weight and epigenome weight</a>
+                      <a href="#weight" @click="clickOnNav">The epigenome weight</a>
                     </li>
                     <li>
                       <a href="#alignmentParameters" @click="clickOnNav">Alignment parameters</a>
@@ -103,10 +109,7 @@
         </div>
       </div>
     </transition>
-    <div id="manualContent" class="flex flexColumn flexNoWrap">
-      <div v-show="!showNav" id="callOutNav" @click="showNav = true">
-        Table of contents
-      </div>
+    <div id="manualContent" ref="manualContent" class="flex flexColumn flexNoWrap">
       <div id="header" class="noFlex flexRow flexCenter flexWrap">
         <!-- Introduction -->
         <div id="headerContainer" class="flex flexColumn flexStretch flexNoWrap flexNoGap">
@@ -122,8 +125,7 @@
             client template</a>
         </div>
       </div>
-      <a name="introduction"></a>
-      <div class="manualHeader">
+      <div ref="introduction" class="manualHeader">
         <h1>EpiAlignment documentation</h1>
       </div>
       <div class="section">
@@ -141,10 +143,9 @@
           engine for chromosomal similarity search. This web service aims to assist users with identifying regions with
           both sequence and epigenomic similarities across two species. The algorithm for similarity search was
           developed
-          based on our recently published probabilistic model of the co-evolution of genome and epigenome [<a href="#ref_1">1</a>].</p>
+          based on our recently published probabilistic model of the co-evolution of genome and epigenome [<a href="#ref_1" @click="clickOnNav">1</a>].</p>
       </div>
-      <a name="quickStart"></a>
-      <div class="section">
+      <div ref="quickStart" class="section">
         <!--Quick Start-->
         <h1>Quick start</h1>
         <p>EpiAlignment has two major alignment modes: promoter and enhancer. Given an input query region, the promoter
@@ -152,13 +153,13 @@
           to
           match the query region with a sub-region of the target region.</p>
 
-        <a name="promoterExample"></a>
-        <h3>An example for using the promoter mode</h3>
+        <h3 ref="promoterExample">An example for using the promoter mode</h3>
         <!--Example 1-->
-        <p>In this example, we attempt to search the promoters of two human melanoma antigen family genes, MAGEB6 and
-          MAGEB6B, against a mouse gene cluster to find mouse promoters with the highest chromosomal similarities
-          within
-          it. The mouse gene cluster contains promoters of five mouse genes: Mageb1, Mageb2, Mageb3, Gm5072 and Gm8914.</p>
+        <p>In this example, we attempt to search the promoter of a human protocadherin beta gene, PCDHB5, and the
+          promoter of a randomly selected gene, HTR1D, against a mouse gene cluster to find mouse promoters with the
+          highest chromosomal similarities
+          within it. The mouse gene cluster contains promoters of six mouse protocadherin beta genes: Pcdhb4, Pcdhb6,
+          Pcdhb8, Pcdhb10, Pcdhb11 and Pcdhb12.</p>
         <h4>Import sample data with one click:</h4>
         <div class="exampleSteps">
           <ul>
@@ -180,15 +181,15 @@
               <li>Paste or type the following gene names into the "Input regions"
                 textarea, <em>one name per line</em>:</li>
               <div>
-                MAGEB6<br>
-                MAGEB6B
+                PCDHB5<br>
+                HTR1D
               </div>
             </ul>
             <li>In the "Target region" box, make sure that "Search a gene cluster"
-              is selected, and type "MAGEB6" in the search bar. In the pop-up panel,
+              is selected, and type "PCDHB5" in the search bar. In the pop-up panel,
               click the box with arrow
               (<i class="material-icons">open_in_browser</i>) to the right of
-              the listed gene cluster "Cluster_13680" to select it.</li>
+              the first listed gene cluster <strong>"Cluster_1491"</strong> to select it.</li>
             <li>Click "Submit" in STEP 4.</li>
           </ul>
         </div>
@@ -196,8 +197,9 @@
         <h4>Output</h4>
         <p>After successfully submitting the data, you will be redirect to the result page. For the promoter mode, the
           result page shows two heatmaps and a table. The heatmaps illustrate alignment scores between every pair of
-          promoters and the best hits found for each query promoter.</p>
-        <div class="manualImg" class="large">
+          promoters and the best hits found for each query promoter. The three digits behind each gene name is the id
+          of the promoter region. </p>
+        <div class="manualImg large">
           <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
         </div>
         <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>)
@@ -207,12 +209,11 @@
         <p>You can sort the table by each column
           by clicking the arrow beside column name. Click the arrow beside "#" to reset the order. The table can be
           downloaded by clicking "Download results".</p>
-        <div class="manualImg" class="large">
+        <div class="manualImg large">
           <img alt="Data table for promoter mode" src="assets/images/PromoterTable_comments.png">
         </div>
 
-        <a name="enhancerExample"></a>
-        <h3>An example for using the enhancer mode</h3>
+        <h3 ref="enhancerExample">An example for using the enhancer mode</h3>
         <!--Example 2-->
         <p>In this example, we will search a mouse genomic region against the large neighboring region around its
           homologous region in human. This example will take about two minutes to run on EpiAlignment.</p>
@@ -255,7 +256,7 @@
           an interactive table with region information. You can click on each row to expand it and view the alignment
           score
           distribution along the target region.</p>
-        <div class="manualImg" class="large">
+        <div class="manualImg large">
           <img alt="Expandable data table for enhancer mode" src="assets/images/Enhancer_result_comment.png">
         </div>
         <p>The table can be downloaded by clicking "Download results".</p>
@@ -264,11 +265,9 @@
           section for more information.</p>
       </div>
 
-      <a name="usage"></a>
-      <a name="usageOverview"></a>
-      <div class="section">
+      <div ref="usage" class="section">
         <!--Usage-->
-        <h1>Usage</h1>
+        <h1 ref="usageOverview">Usage</h1>
         <h2>Overview</h2>
         <p>EpiAlignment provides two major alignment modes: promoter and enhancer. Both modes use a semi-global
           approach
@@ -322,8 +321,7 @@
             </tbody>
           </table>
         </div>
-        <a name="promoterMode"></a>
-        <h3>Promoter mode</h3>
+        <h3 ref="promoterMode">Promoter mode</h3>
         <h4>Search a gene cluster</h4>
         <p>This mode allows users to align query regions to promoters of a group of functional-related genes and find
           the
@@ -373,32 +371,24 @@
           will
           then align each input query region to all input target regions to find top hits.</p>
 
-        <a name="enhancerMode"></a>
-        <h3>Enhancer mode</h3>
+        <h3 ref="enhancerMode">Enhancer mode</h3>
         <h4>Use homologous regions in this species</h4>
         <p>This mode allows users to define target regions using homologous information. Specifically, EpiAlignment
-          will
-          first extend each query region by a specified distance (default: 20,000kb) upstream and downstream, and then
-          use
-          <a href="https://genome.ucsc.edu/cgi-bin/hgLiftOver" target="_blank">liftOver</a> to remap the extended
-          region
-          to
-          the other species. If the remapping succeeds, the result region will be
-          used as the target region.</p>
+          will first extend each query region by a specified distance (default: 20,000kb) upstream and downstream, and then
+          use <a href="https://genome.ucsc.edu/cgi-bin/hgLiftOver" target="_blank">liftOver</a> to remap the extended
+          region to the other species. If the remapping succeeds, the result region will be used as the target region.</p>
         <h4>Define target regions with a BED file</h4>
         <p>Similar to the second submode of the promoter mode, this is developed so that the users can define their own
           query and target regions. EpiAlignment will pair the query targe regions in the two input files based on
           their
           line number and perform a one-against-one alignment to identify the best-matching sub-regions.</p>
 
-
-        <a name="input"></a>
-        <h2>Input</h2>
+        <h2 ref="input">Input</h2>
         <!--Input-->
         <p>EpiAlignment takes a pair of input region files and a pair of peak files from ChIP-Seq experiments as
           inputs.
           The input file formats are different depending on the alignment mode and submode selected.</p>
-        <h3>Genome assembly</h3>
+        <h3 ref="genomeAssembly">Genome assembly</h3>
         <p>A pair of genome assemblies should be specified using the dropdown shown below:</p>
         <p>EpiAlignment currently supports two genome assemblies: hg38 (Homo sapiens) and mm10 (Mus musculus). Please
           note
@@ -407,8 +397,7 @@
           regions using homologous regions under the enhancer mode. For other modes, the two genome assemblies can be
           identical whereas not recommended.</p>
 
-        <a name="peakFileAndDatasets"></a>
-        <h3>Peak files and public datasets</h3>
+        <h3 ref="peakFileAndDatasets">Peak files and public datasets</h3>
         <p>EpiAlignment provides users with paired epigenomic peak files of matching tissues, curated from epigenome
           consortia including the RoadMap Project, ENCODE and mouse ENCODE, and public comparative epigenomic studies.</p>
         <p>To select public peak files, in the Query regions box, click "Click here to select a paired public dataset."</p>
@@ -442,13 +431,10 @@
           <img alt="Upload your own peak file" src="assets/images/UploadPeak_comment.png">
         </div>
 
-        <h3>
-          <a name="queryAndTargetRegions"></a>
-          <a name="promoterModeQueryAndTarget"></a>
-          <a name="promoterModeQuery"></a>
+        <h3 ref="queryAndTargetRegions">
           Query and target regions
         </h3>
-        <h4>Promoter mode</h4>
+        <h4 ref="promoterModeQueryAndTarget">Promoter mode</h4>
         <h5>Query regions</h5>
         <p>For the promoter mode, the input query regions can be defined by either a BED6 file or a gene name list, one
           name per line. The web service will fetch promoter regions automatically if gene names are provided. The BED
@@ -467,8 +453,12 @@
         <div class="manualImg">
           <img alt="Select TSS flanking ranges for promoters" src="assets/images/TSSrange_comments.png">
         </div>
-        <a name="promoterModeTarget"></a>
-        <h5>Target regions</h5>
+        <p>Given that a gene may have transcripts with overlapping promoter regions, EpiAlignment will merge promoters
+          of the same gene if their overlapping region is longer than 80% of the promoter length. For example, if
+          promoter regions are defined as 500kb upstream and 1000kb downstream the TSS, two promoters will be merged if
+          their overlapping region is longer than <span class="equation">1500 &#215; 0.8 = 1200</span>. The last three
+          digits of the promoter's genomic coordinate will be used as promoter id.</p>
+        <h5 ref="promoterModeTarget">Target regions</h5>
         <h6>Submode: search a gene cluster</h6>
         <p>In this mode, you may search for a gene cluster and define target regions with gene names in the cluster.
           You
@@ -480,7 +470,7 @@
           cluster. Click the box with arrow (<i class="material-icons">open_in_browser</i>) on the rightside of the
           cluster name to select the cluster you would like to
           use. You may click anywhere outside the pop-up panel at anytime to close it.</p>
-        <div class="manualImg" class="large">
+        <div class="manualImg large">
           <img alt="Gene cluster search and selection panel" src="assets/images/GeneClusters_comment.png">
         </div>
 
@@ -498,9 +488,7 @@
           not
           need to have the same row counts, as EpiAlignment will perform an all-against all alignment.</p>
 
-        <a name="enhancerModeQueryAndTarget"></a>
-        <a name="enhancerModeQuery"></a>
-        <h4>Enhancer mode</h4>
+        <h4 ref="enhancerModeQueryAndTarget">Enhancer mode</h4>
         <h5>Query regions</h5>
         <p>For the enhancer mode, the input query regions need to be defined with a BED6 file, in which each line
           should
@@ -508,8 +496,7 @@
         <div class="manualImg">
           <img alt="Enhancer mode sample query regions" src="assets/images/Enhancer_s1.png">
         </div>
-        <a name="enhancerModeTarget"></a>
-        <h5>Target regions</h5>
+        <h5 ref="enhancerModeTarget">Target regions</h5>
         <h6>Submode: use homologous regions in this species</h6>
         <p>This mode allows users to define target regions using homologous information. The user needs to specify how
           long
@@ -533,15 +520,14 @@
           <img alt="Enhancer mode sample target regions" src="assets/images/Enhancer_s2.png">
         </div>
 
-        <a name="parameters"></a>
-        <h3>Parameters</h3>
+        <h3 ref="parameters">Parameters</h3>
         <p>The alignment algorithm of EpiAlignment is developed on an evolutionary basis [<a href="#ref_1" @click="clickOnNav">1</a>].
           Therefore, the parameters describe evolutionary events. The user may change the parameters to adjust the
           rewards
           and penalties assigned to sequences and epigenomic modifications.</p>
-        <a name="weights"></a>
-        <h4>Sequence weight and epigenome weight</h4>
-        <p> The weights will be multiplied to the sequence and the epigenome parts of the alignment scores. With a
+        <h4 ref="weight">The epigenome weight</h4>
+        <p> This parameter represents the relative weight of the epigenome to the sequence. The weight will be
+          multiplied to the epigenome parts of the alignment scores. With a
           larger
           epigenomic weight, the chromosomal similarity search will rely more on epigenomic similarity than sequence
           similarity. Consequently, regions with larger sequence differences (i.e., more mismatches and indels) but
@@ -553,8 +539,7 @@
           sequence
           similarities and the epigenomic occupancies in the best hits.</p>
 
-        <a name="alignmentParameters"></a>
-        <h4>Alignment parameters</h4>
+        <h4 ref="alignmentParameters">Alignment parameters</h4>
         <ul id="paralist">
           <li><strong><em>s</em></strong>: sequence substitution rate. With a smaller <em>s</em>, a larger reward score
             will be assigned to a pair of matched bases, and a larger penalty score will be assigned to a pair of
@@ -574,8 +559,7 @@
             probability of having the epigenomic modification on genomic locations.</li>
         </ul>
 
-        <a name="output"></a>
-        <h2>Output</h2>
+        <h2 ref="output">Output</h2>
         <p>You will be redirect to the result page after successfully submitting your data. The result page will
           refresh
           automatically until the task is done. To align a pair of regions of lengths <span class="equation"><em>m</em></span>
@@ -588,12 +572,13 @@
           and come back later. We recommend that the users select either way if there are more than 100 region pairs,
           especially when using the enhancer mode.</p>
 
-        <a name="promoterOutput"></a>
-        <h3>Promoter mode</h3>
+        <h3 ref="promoterOutput">Promoter mode</h3>
         <p>For the promoter mode, the result page shows two heatmaps and a table. EpiAlignment scores are plotted in
           the
           first heatmap to show scores of any query region (row) against all target region(s) (column). A sequence-only
-          alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap. In
+          alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap.
+          The row and column names are promoter ids, which consist of gene names and the last three digits of
+          promoters' genomic coordinates. In
           each row, the cell with the highest score of the row is marked with a capital "H".</p>
         <p>For each query region (row), EpiAlignment detects if its best hit switches from one target region to another
           with EpiAlign and Sequence-only alignment. The best hit is considered as "changed" if it meets the following
@@ -655,6 +640,7 @@
         <p>For query regions with switched target, the best hit found by EpiAlign is highlighted by a green box, and
           the
           best hit found by Sequence-only alignment is highlighted by a gray box. </p>
+
         <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>)
           beside each genome coordinates to view the location in UCSC genome browser. The bigWig files of all preset
           ENCODE
@@ -670,8 +656,7 @@
           <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
         </div>
 
-        <a name="enhancerOutput"></a>
-        <h3>Enhancer mode</h3>
+        <h3 ref="enhancerOutput">Enhancer mode</h3>
         <p>For the enhancer mode, the result page shows an interactive table with alignment details. The table can be
           sorted by each column by clicking the arrow beside column name. You can also click on each row to expand it
           and
@@ -681,13 +666,10 @@
           downloaded by clicking "Download results".</p>
         <p>Similar to the result page of the promoter mode, you may click the icon (<i class="material-icons">open_in_new</i>)
           beside each genome coordinates in this table to view the location and any preset epigenomic data tracks in
-          UCSC
-          genome browser.</p>
-
+          UCSC genome browser.</p>
       </div>
 
-      <a name="pythonClientTemplate"></a>
-      <div class="section">
+      <div ref="pythonClientTemplate" class="section">
         <h1>Python client template</h1>
         <p>We provided EpiAlignment_PyClient.py, a python template program for users to access EpiAlignment from their
           own
@@ -700,7 +682,6 @@
           available in the same zip file. Please follow <a href="https://github.com/Zhong-Lab-UCSD/EpiAlignment_WebApp/blob/master/html/assets/PythonClient/README.md"
             target="_blank">the README.md file</a> (also included in the zip file) to prepare your sample sheet and
           submit jobs to EpiAlignment.</p>
-
       </div>
       <!--<div class="section">
         <h1>Computational methods</h1>
@@ -710,13 +691,11 @@
         
       </div> -->
 
-      <a name="references"></a>
-      <div class="section">
+      <div ref="references" class="section">
         <!-- References -->
         <h1>References</h1>
         <ol>
-          <li>
-            <a name="ref_1"></a>
+          <li ref="ref_1">
             Lu J, Cao X, Zhong S (2018) A likelihood approach to testing hypotheses on the co-evolution of epigenome
             and
             genome.

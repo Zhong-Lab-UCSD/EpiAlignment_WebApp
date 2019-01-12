@@ -671,14 +671,10 @@ def Manhattan(S, X):
 
             max_t = max(tmp0, tmp1)
 
-            if i - manh3_st[0][j][0] > j - manh3_st[0][j][1]:
-                ent0 = ent0_comp + manh3[0][j] - diag_norm
-            else:
-                ent0 = ent0_comp + manh3[0][j]
-            if j - manh3_st[1][j - 1][1] > i - manh3_st[1][j - 1][0]:
-                ent2 = log_lamb_beta + manh2[1][j - 1] - diag_norm
-            else:
-                ent2 = log_lamb_beta + manh2[1][j - 1]
+            ent0 = ent0_comp + manh3[0][j] - half_diag_norm
+
+            ent2 = log_lamb_beta + manh2[1][j - 1] - half_diag_norm
+
             ent1 = log_lamb_mu + max_t + manh3[0][j - 1] - log_equil_mat[S2[j - 1][0]][S2[j - 1][1]] - diag_norm
 
             max_v3, max_v2, tup_ind1, tup_ind2 = Maximum(ent0, ent1, ent2, j)
@@ -794,10 +790,11 @@ def Main():
     link_p = [Link_prob(1, 0, beta, lamb, mu), Link_prob(0, 1, beta, lamb, mu), Link_prob(1, 1, beta, lamb, mu), Link_prob(2, 1, beta, lamb, mu)]
     log_link_p = [log(p) for p in link_p]
 
-    global diag_norm, log_lamb_mu, log_lamb_beta
+    global diag_norm, half_diag_norm, log_lamb_mu, log_lamb_beta
     log_lamb_mu = log(lamb / mu)
     log_lamb_beta = log(lamb * beta)
     diag_norm = max(log_link_p[1], log_link_p[2]) + log_lamb_mu
+    half_diag_norm = 0.5 * diag_norm
 
     # Equilibrium probabilities
     global log_equil_mat

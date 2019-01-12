@@ -3,29 +3,54 @@
 We provided EpiAlignment_PyClient.py, a python template program for users to access EpiAlignment from their own server, submit multiple jobs and parse the output. The user may also modify the code and incorporate it into their own programs.
 
 ### Python platform and dependencies
-The current verion of EpiAlignment_PyClient.py only supports Python 2. The HTTP library [Requests] (http://docs.python-requests.org/en/master/) is required.
+The current verion of EpiAlignment_PyClient.py only supports Python 2. The HTTP library [Requests](http://docs.python-requests.org/en/master/) is required.
 
 ### Usage
 The basic usage of the template program is:
 
-```
+```bash
 python EpiAlignment_PyClient.py sampleSheet.txt
 ```
 where sampleSheet.txt is a tab-delimited text file with input information.
 
 A sample input file named sampleSheet.txt can be found in the zip file. This sample uses the enhancer mode and will take 1 to 2 minutes to finish.
 
+The template program also provides two auxiliary functions that allow users to view preset data in EpiAlignment:
+
+(1) View all paired ENCODE / public epigenomic datasets in EpiAlignment
+
+```bash
+python EpiAlignment_PyClient.py --public_data
+```
+A tab-delimited file named "EpiAlign_publicData.txt" will be generated. The file contains details of preset epigenomic datasets in EpiAlignment. 
+
+(2) Search for gene clusters
+
+```bash
+python EpiAlignment_PyClient.py --find_gene_cluster geneid
+```
+where gene id can be either a gene symbol/partial gene symbol, or an Ensembl id. The command will write gene clusters with fully-matched and partially-matched names to the standard output (stdout). You may try the following commands to see the results:
+
+```bash
+# find gene clusters with partially-matched names.
+python EpiAlignment_PyClient.py --find_gene_cluster GNG
+# find gene clusters with fully-matched names.
+python EpiAlignment_PyClient.py --find_gene_cluster GNG7
+``` 
+
+### Submitting jobs to EpiAlignment
+
 #### Input
-The template program parses a sample sheet to get input data of each job. The sample sheet starts with a header, specifying the cotent that should be put in each column. There are 25 fields in the sample sheet. Typically, the user only need to fill in part of the first 11 fields, whereas the others are parameters with default values.
+The template program parses a sample sheet to get input data of each job. The sample sheet starts with a header, specifying the cotent that should be put in each column. There are 24 fields in the sample sheet. Typically, the user only need to fill in part of the first 11 fields, whereas the others are parameters with default values.
 
 A file named sampleSheet_headerOnly.txt with the header and default parameter values is provided in the same zip file with EpiAlignment\_PyClient.py.
 
-The 25 fields are:
+The 24 fields are:
 >alignMode, searchRegionMode, genomeAssembly\_query, genomeAssembly\_target,
 >encodeData\_query, encodeData\_target, speciesPeak\_query, speciesPeak\_target,
 >speciesInput\_1, speciesInput\_2,clusters
 >promoterUp, promoterDown, enhancerUp, enhancerDown,
->seqweight, epiweight, paras, paramu,parak,
+>epiweight, paras, paramu,parak,
 >piA,piC,piG,piT,pi1
 
 The program will parse the information following the same order.
@@ -60,7 +85,7 @@ Please note that if you are using the "promoter-genecluster" or "enhancer-homore
 ##### clusters
 This field only needs to be filled when alignMode is "promoter" and searchRegionMode is "genecluster". A valid gene cluster name in the format of "Cluster_XXX" needs to be entered.
 
-##### fields 16 to 25: parameters
+##### fields 16 to 24: parameters
 These fields specify the parameters to be used for the alignments. Default values are available in the downloaded sample sheet. You may keep them as they are unless you'd like to adjust them.  
 
 #### Output

@@ -8,7 +8,7 @@ The current verion of EpiAlignment_PyClient.py only supports Python 2. The HTTP 
 ### Usage
 The basic usage of the template program is:
 
-```
+```bash
 python EpiAlignment_PyClient.py sampleSheet.txt
 ```
 where sampleSheet.txt is a tab-delimited text file with input information.
@@ -19,19 +19,19 @@ The template program also provides two auxiliary functions that allow users to v
 
 (1) View all paired ENCODE / public epigenomic datasets in EpiAlignment
 
-```
+```bash
 python EpiAlignment_PyClient.py --public_data
 ```
 A tab-delimited file named "EpiAlign_publicData.txt" will be generated. The file contains details of preset epigenomic datasets in EpiAlignment. 
 
 (2) Search for gene clusters
 
-```
+```bash
 python EpiAlignment_PyClient.py --find_gene_cluster geneid
 ```
 where gene id can be either a gene symbol/partial gene symbol, or an Ensembl id. The command will write gene clusters with fully-matched and partially-matched names to the standard output (stdout). You may try the following commands to see the results:
 
-```python
+```bash
 # find gene clusters with partially-matched names.
 python EpiAlignment_PyClient.py --find_gene_cluster GNG
 # find gene clusters with fully-matched names.

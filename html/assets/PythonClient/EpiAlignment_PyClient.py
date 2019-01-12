@@ -8,7 +8,7 @@ import datetime
 if sys.version_info[0] > 2:
   raise Exception("Please use Python 2 or convert the code to Python 3.")
 
-EpiAligment_URL = "https://beta.epialign.ucsd.edu"
+EpiAligment_URL = "https://epialign.ucsd.edu"
 
 RUNNING_CODE = -1
 # run info will be printed into the output file follow this order:

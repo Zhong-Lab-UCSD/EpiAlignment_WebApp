@@ -72,10 +72,6 @@ div#header a.buttons {
 	box-sizing: border-box;
 }
 
-div#header a.buttons:active {
-	background: rgba(255, 255, 255, 0.3);
-}
-
 div#header a.buttons:hover {
 	background: rgba(255, 255, 255, 0.15);
 }
@@ -1138,6 +1134,10 @@ div.heatmapBorder.epiMax.insignificant {
 	margin-right: 0.4em;
 }
 
+#heatmapLegend .withPercentile {
+	width: 3em;
+}
+
 div.legendIcon {
 	display: inline-block;
 	font-size: 12px;
@@ -1299,6 +1299,7 @@ div#manualContent {
 	overflow-y: auto;
 	flex-basis: 480px;
 	overflow-x: hidden;
+	max-height: 100vh;
 }
 
 div#callOutNav {
@@ -1475,7 +1476,7 @@ div.section div.manualImg.small {
 	max-width: 450px;
 }
 
-div.section img {
+div.section div.manualImg > img {
 	max-width: 100%;
 }
 
@@ -1521,10 +1522,6 @@ span.equation {
 		left: -0.15em;
 		padding: 0 1em 0.75em 1em;
 		font-size: 14px;
-	}
-
-	div#callOutNav:hover {
-		left: 0.5em;
 	}
 
 	div.section div.manualImg {

@@ -100,12 +100,13 @@ var app = new Vue({
     showHeatmap: false,
 
     heatmapDesc: {
-      min: ALIGN_SCORE_95 - MINIMUM_HEATMAP_GAP,
-      max: ALIGN_SCORE_95,
+      min: Number.MAX_VALUE,
+      max: Number.MIN_VALUE,
       span: MINIMUM_HEATMAP_GAP,
       showPercentile: false,
       percentileValue: ALIGN_SCORE_95
     },
+    percentileEnabled: false,
 
     showResultHint: true,
     doNotShowHintAgain: false,
@@ -415,8 +416,10 @@ var app = new Vue({
         this.epiHeatmapList.forEach(entry => entry.values.forEach(value => {
           value.seqScoreNorm =
             (value.seqScore - this.heatmapDesc.min) / this.heatmapDesc.span
-          value.insignificant =
-            (this.heatmapDesc.percentileValue > value.seqScore)
+          if (this.percentileEnabled) {
+            value.insignificant =
+              (this.heatmapDesc.percentileValue > value.seqScore)
+          }
         }))
       }
     },
@@ -451,6 +454,10 @@ var app = new Vue({
       return maxIndex
     },
     findMinMaxTableValue: function (table, entryPropertyList) {
+      if (this.percentileEnabled) {
+        this.heatmapDesc.min = ALIGN_SCORE_95 - MINIMUM_HEATMAP_GAP
+        this.heatmapDesc.max = ALIGN_SCORE_95
+      }
       table.forEach(entry => entry.values.forEach(
         value => entryPropertyList.forEach(prop => {
           if (this.heatmapDesc.min > value[prop]) {
@@ -458,7 +465,9 @@ var app = new Vue({
           }
           if (this.heatmapDesc.max < value[prop]) {
             this.heatmapDesc.max = value[prop]
-            this.heatmapDesc.showPercentile = true
+            if (this.percentileEnabled) {
+              this.heatmapDesc.showPercentile = true
+            }
           }
         })
       ))

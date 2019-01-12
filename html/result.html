@@ -166,23 +166,25 @@
               </div>
               <!-- H sign -->
               <div class="flexRow flexStart flexNoWrap">
-                <div class="legendIcon heatmapObj noFlex plain">
-                  <div class="overlay flexRow flexNoWrap flexCenter justifyCenter">H</div>
+                <div class="flexRow flexCenter noFlex flexNoGap flexNoWrap" :class="{ withPercentile: percentileEnabled }">
+                  <div class="legendIcon heatmapObj noFlex plain">
+                    <div class="overlay flexRow flexNoWrap flexCenter justifyCenter">H</div>
+                  </div>
                 </div>
                 <div class="flex">Target with highest score</div>
               </div>
               <!-- Seq-best pair -->
               <div v-if="hasSequence" class="flexRow flexStart flexNoWrap">
-                <div class="flexRow flexCenter noFlex flexNoGap flexNoWrap">
+                <div class="flexRow flexCenter noFlex flexNoGap flexNoWrap" :class="{ withPercentile: percentileEnabled }">
                   <div class="legendIcon heatmapBorder epiMax noFlex"></div>
-                  <div class="legendIcon heatmapBorder epiMax noFlex insignificant"></div>
+                  <div v-if="percentileEnabled" class="legendIcon heatmapBorder epiMax noFlex insignificant"></div>
                 </div>
                 <div class="flex">Shifted EpiAlign target</div>
               </div>
               <div v-if="hasSequence" class="flexRow flexStart flexNoWrap">
-                <div class="flexRow flexCenter noFlex flexNoGap flexNoWrap">
+                <div class="flexRow flexCenter noFlex flexNoGap flexNoWrap" :class="{ withPercentile: percentileEnabled }">
                   <div class="legendIcon heatmapBorder seqMax noFlex"></div>
-                  <div class="legendIcon heatmapBorder seqMax noFlex insignificant"></div>
+                  <div v-if="percentileEnabled" class="legendIcon heatmapBorder seqMax noFlex insignificant"></div>
                 </div>
                 <div class="flex">Original sequence-only alignment target</div>
               </div>
@@ -224,13 +226,15 @@
             <em>the old hit</em> will be marked with a gray square (
             <div class="legendIcon heatmapBorder seqMax"></div>
             ).
-            If <em>the new hit</em> has a lower Sequence-only score than the
-            95th percentile of random sequences (marked on the color scale bar
-            if it's not the maximum), the border of the square for both
-            <em>the new hit</em> and <em>the old hit</em> will be dashed (
+            <span v-if="percentileEnabled">
+              If <em>the new hit</em> has a lower Sequence-only score than the
+              95th percentile of random sequences (marked on the color scale bar
+              if it's not the maximum), the border of the square for both
+              <em>the new hit</em> and <em>the old hit</em> will be dashed (
               <div class="legendIcon heatmapBorder epiMax insignificant"></div>
-            and <div class="legendIcon heatmapBorder seqMax insignificant"></div>
-            ).
+              and <div class="legendIcon heatmapBorder seqMax insignificant"></div>
+              ).
+            </span>
           </p>
           <p>
             <em>

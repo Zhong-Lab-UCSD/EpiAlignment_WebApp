@@ -88,7 +88,9 @@ var app = new Vue({
     jumpToHash: function (hash) {
       hash = hash.slice(1)
       if (this.$refs.hasOwnProperty(hash)) {
-        this.$refs[hash].scrollIntoView(true)
+        window.requestAnimationFrame(() =>
+          this.$refs[hash].scrollIntoView(true)
+        )
       }
     },
 

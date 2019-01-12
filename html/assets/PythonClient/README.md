@@ -3,7 +3,7 @@
 We provided EpiAlignment_PyClient.py, a python template program for users to access EpiAlignment from their own server, submit multiple jobs and parse the output. The user may also modify the code and incorporate it into their own programs.
 
 ### Python platform and dependencies
-The current verion of EpiAlignment_PyClient.py only supports Python 2. The HTTP library [Requests] (http://docs.python-requests.org/en/master/) is required.
+The current verion of EpiAlignment_PyClient.py only supports Python 2. The HTTP library [Requests](http://docs.python-requests.org/en/master/) is required.
 
 ### Usage
 The basic usage of the template program is:

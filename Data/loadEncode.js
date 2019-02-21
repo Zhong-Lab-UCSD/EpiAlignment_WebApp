@@ -566,6 +566,12 @@ async function downloadFileObject (fileObj, filePath) {
     console.log(err)
     throw err
   })
+
+  if (needUpdateFile) {
+    console.log('Downloading experiment file from: ' + fileObj.href)
+  } else {
+    console.log('Skipping existing file from: ' + fileObj.href)
+  }
   // Download file with axios
   return needUpdateFile
     ? axios.request({
@@ -617,7 +623,6 @@ async function populateTissueExperiments (
           experimentObj => {
             experimentResultDict[experimentObj.id] =
               tissueResult[species]._expResultDict[experimentObj.id]
-            console.log('Downloading experiment file: ' + experimentObj.id)
             return downloadExperimentFiles(
               tissueResult[species]._expResultDict[experimentObj.id]
             )

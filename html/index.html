@@ -463,12 +463,12 @@
     <div v-show="showPreset" class="flexColumn flexCenter justifyCenter" id="encodeDialogContainer" @wheel.stop.prevent
       @click.self.stop.prevent="closeEncodeDialog">
       <div class="flexColumn flexStretch" id="encodeDialog">
-        <h2>Select paired peak datasets from ENCODE Project</h2>
+        <h2>Select paired peak datasets from ENCODE Project and other public datasets</h2>
         <div id="encodeDialogBody" class="flex flexColumn">
           <div>
             Here we provide some pre-compiled paired peak datasets from
             <a href="https://www.encodeproject.org/">the ENCODE and mouse ENCODE
-              project</a>.
+              project</a> and other public datasets.
             More data will be added here after they are matched.
           </div>
           <div>
@@ -491,7 +491,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="sampleEntry in encodeSamples" :key="sampleEntry.label">
+                    <tr v-for="sampleEntry in encodeSamples" v-if="sampleEntry.matchedFilters.some(filter => filter)" :key="sampleEntry.label">
                       <th>
                         {{ sampleEntry.label }}
                       </th>

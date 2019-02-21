@@ -122,9 +122,7 @@
       "ENCBS092MYO",
       "ENCBS713GAH",
       "ENCBS333ENC",
-      "ENCBS601VEO",
-      "ENCBS565AAA",
-      "ENCBS569AAA"
+      "ENCBS601VEO"
     ]
   },
   {
@@ -140,6 +138,145 @@
       "ENCBS976CGL",
       "ENCBS337ENC",
       "ENCBS419QNR"
+    ]
+  },
+  {
+    "__type": "Adult spleen",
+    "human": [
+      "ENCBS913XPU",
+      "ENCBS374UKE",
+      "ENCBS256UPD"
+    ],
+    "mouse": [
+      "ENCBS160ENC",
+      "ENCBS849TWQ"
+    ]
+  },
+  {
+    "__type": "Adult testis",
+    "human": [
+      "ENCBS631HJF"
+    ],
+    "mouse": [
+      "ENCBS166ENC",
+      "ENCBS223DMD"
+    ]
+  },
+  {
+    "__type": "Adult cerebellum",
+    "human": [
+      "ENCBS583GNF"
+    ],
+    "mouse": [
+      "ENCBS133ENC",
+      "ENCBS277HKG"
+    ]
+  },
+  {
+    "__type": "Adult lung",
+    "human": [
+      "ENCBS237TXC"
+    ],
+    "mouse": [
+      "ENCBS150ENC",
+      "ENCBS863EYZ"
+    ]
+  },
+  {
+    "__type": "Adult small intestine",
+    "human": [
+      "ENCBS372PVX",
+      "ENCBS853LFM"
+    ],
+    "mouse": [
+      "ENCBS157ENC",
+      "ENCBS959PBQ"
+    ]
+  },
+  {
+    "__type": "Embryonic brain",
+    "human": [
+      "ENCBS377MBP",
+      "ENCBS295DKP",
+      "ENCBS618VRU"
+    ],
+    "mouse": [
+      "ENCBS217XPO",
+      "ENCBS937EIV"
+    ]
+  },
+  {
+    "__type": "Embryonic heart",
+    "human": [
+      "ENCBS334PQY",
+      "ENCBS816GCP"
+    ],
+    "mouse": [
+      "ENCBS366XOW",
+      "ENCBS510GHM",
+      "ENCBS366XOW",
+      "ENCBS510GHM",
+      "ENCBS046IMM",
+      "ENCBS225RIF",
+      "ENCBS004ZLN",
+      "ENCBS452TDN",
+      "ENCBS490ZWZ",
+      "ENCBS814PLT",
+      "ENCBS535YJH",
+      "ENCBS809CMT",
+      "ENCBS563AAA",
+      "ENCBS566AAA",
+      "ENCBS595EMK",
+      "ENCBS909LOF",
+      "ENCBS217XWR",
+      "ENCBS955JPC"
+    ]
+  },
+  {
+    "__type": "Embryonic kidney",
+    "human": [
+      "ENCBS486NLG"
+    ],
+    "mouse": [
+      "ENCBS565AAA",
+      "ENCBS569AAA",
+      "ENCBS899UOK",
+      "ENCBS924ZKF",
+      "ENCBS519MUD",
+      "ENCBS529OHA"
+    ]
+  },
+  {
+    "__type": "Embryonic lung",
+    "human": [
+      "ENCBS241YJW",
+      "ENCBS324OQC",
+      "ENCBS907UWS",
+      "ENCBS840NUY"
+    ],
+    "mouse": [
+      "ENCBS006AAA",
+      "ENCBS018AAA",
+      "ENCBS217WPC",
+      "ENCBS467HSM",
+      "ENCBS377RBN",
+      "ENCBS833ZFI"
+    ]
+  },
+  {
+    "__type": "Embryonic stomach",
+    "human": [
+      "ENCBS602TSC",
+      "ENCBS052EGS",
+      "ENCBS956XJM"
+    ],
+    "mouse": [
+      "ENCBS564AAA",
+      "ENCBS568AAA",
+      "ENCBS355TAQ",
+      "ENCBS915SZN",
+      "ENCBS243DCE",
+      "ENCBS793TEW"
     ]
   }
 ]

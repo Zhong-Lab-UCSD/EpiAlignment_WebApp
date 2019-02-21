@@ -21,6 +21,10 @@
       "mouse": {
         "experiments": [
           {
+            "id": "GSM1674016",
+            "filterId": "chip_h3k4me3"
+          },
+          {
             "id": "GSM1674003",
             "filterId": "chip_h3k4me3"
           }
@@ -46,6 +50,15 @@
         "GSM1674003/mm10_RoundSpermatids_H3K4me3.broadPeak",
       "bigwig_file":
         "GSM1674003/mm10_RoundSpermatids_H3K4me3.bw"
+    },
+    "GSM1674016": {
+      "id": "GSM1674016",
+      "peak_id": "SRR1977636-P",
+      "bigwig_id": "SRR1977636-B",
+      "peak_file":
+        "GSM1674016/mouse2_e3_peaks.broadPeak.clean.bed",
+      "bigwig_file":
+        "GSM1674016/mouse2_RS_K4me3_ChIP_qf_sort_MAPQ6_rmdup_clean.bw"
     }
   }
 }

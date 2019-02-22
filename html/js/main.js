@@ -675,7 +675,7 @@ var app = new Vue({
         }
         this.formParams.genomeAssembly.splice(
           0, this.formParams.genomeAssembly.length, 'hg38', 'mm10')
-        this.formParams.speciesText.splice(0, 1, 'PCDHB5\nHTR1D')
+        this.formParams.speciesText.splice(0, 1, 'PCDHB5')
         this.clusterText = 'Cluster_1491'
         this.formParams.searchRegionMode = 'genecluster'
       } else {

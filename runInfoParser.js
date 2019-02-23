@@ -21,11 +21,11 @@ const runInfoArray = [
     values: [
       {
         key: 'enhancer',
-        name: 'Enhancer mode'
+        name: 'One-vs-one mode'
       },
       {
         key: 'promoter',
-        name: 'Promoter mode'
+        name: 'Many-vs-many mode'
       }
     ]
   },

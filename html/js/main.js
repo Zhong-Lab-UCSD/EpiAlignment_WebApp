@@ -130,7 +130,7 @@ var app = new Vue({
     clusterMessage: '',
 
     formParams: {
-      alignMode: null,
+      alignMode: 'enhancer',
       epiName: 'H3K4me3',
       genomeAssembly: [
         'hg38',

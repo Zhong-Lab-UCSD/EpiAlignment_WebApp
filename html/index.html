@@ -70,36 +70,38 @@
               <div>
                 <strong>Sample data is available in both modes.</strong>
               </div>
-              <div><a href="manual.html#overview">More information ...</a>
+              <div><a href="manual.html#usageOverview">More information ...</a>
               </div>
             </div>
             <div class="flexRow flexWrap flexNoGap flexStart">
               <div class="flex flexRow flexWrap flexNoGap flexStart twoColumnContent">
                 <div class="flex imgHolder">
-                  <img alt="Promoter mode demonstration" src="assets/images/PromoterStart.png">
+                  <img alt="One-vs-one mode demonstration" src="assets/images/DefaultStart.png">
                 </div>
                 <div class="flex">
-                  <strong>The promoter mode</strong> attempts to align every
-                  input query region to all target regions to find the best
-                  hit (all-against-all alignment).
-                  Therefore, it would be useful if you have query
-                  and target regions of similar lengths, and would like to find
-                  one best match for the query region among a set of target
-                  regions. The promoter mode could also be handy if you'd like
-                  to define promoter regions with gene names.
+                  The default <strong>one-vs-one mode</strong> is suitable if
+                  you have target regions much longer than
+                  the query regions, and you are trying to match the query
+                  region(s) to a sub-region of the target region(s)
+                  (one-against-one alignment, multiple paired inputs also
+                  supported). This mode allows defining target regions using
+                  homologous information.
                 </div>
               </div>
               <div class="flex flexRow flexWrap flexNoGap flexStart twoColumnContent">
                 <div class="flex imgHolder">
-                  <img alt="Enhancer mode demonstration" src="assets/images/EnhancerStart.png">
+                  <img alt="Many-vs-many mode demonstration" src="assets/images/ManyStart.png">
                 </div>
                 <div class="flex">
-                  <strong>The enhancer mode</strong>, on the other hand,
-                  is more useful if you have target regions much longer than
-                  the query regions, and you are trying to match the query
-                  regions to a sub-region of the target region
-                  (one-against-one alignment). This mode
-                  allows defining target regions using homologous information.
+                  The <strong>many-vs-many mode</strong> attempts to align every
+                  input query region to all target regions to find the best
+                  hit (the regions do not need to be paired).
+                  Therefore, it would be useful if you have query
+                  and target regions of similar lengths, and would like to find
+                  one best match for the query region among a set of target
+                  regions. This mode could also be handy if you'd like
+                  to use promoter regions as input data, which you can define
+                  with gene names.
                 </div>
               </div>
             </div>
@@ -202,7 +204,7 @@
                 <div class="errorMessage" v-show="formError.referenceError">
                   <i class="material-icons iconAtLeft">warning</i>
                   <span>Please do not use the same reference when using homologous
-                    regions to specify your target in enhancer mode.</span>
+                    regions to specify your target in one-vs-one mode.</span>
                 </div>
               </div>
             </div>
@@ -231,7 +233,7 @@
               <div v-show="!formParams.alignMode" class="tooltipPanel searchClassPlaceholder">
                 Please select the alignment mode to see specific search types.
               </div>
-              <!-- promoter mode -->
+              <!-- many-vs-many mode -->
               <div v-show="promoterSelected" class="flexRow flexStart flexWrap">
                 <div class="elemLabel flexRow flexStart flexNoWrap">
                   <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="genecluster"
@@ -296,7 +298,7 @@
                   </div>
                 </div>
               -->
-              <!-- enhancer mode -->
+              <!-- one-vs-one mode -->
               <div v-show="enhancerSelected" class="flexRow flexStart flexWrap">
                 <div class="elemLabel flexRow flexStart flexNoWrap">
                   <input type="radio" name="searchRegionMode" v-model="formParams.searchRegionMode" value="homoregion"
@@ -446,8 +448,8 @@
           </div>
           <div v-show="formParams.alignMode === 'enhancer' && !formParams.mail" class="tooltipPanel">
             <div>Due to the many processing steps and larger search regions
-              involved, enhancer mode runs longer than promoter mode and may
-              take minutes.</div>
+              involved, one-vs-one mode with larger regions runs longer than
+              many-vs-many mode and may take minutes.</div>
             <div> It is highly recommended to provide an email here
               to get notified when results become available. You may also
               bookmark the result page after submitting your data.</div>

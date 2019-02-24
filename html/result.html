@@ -255,7 +255,7 @@
         </div>
         <div class="enhancerHint tooltipPanel flexRow flexNoGap flexWrap justifyEnd" v-if="showResultHint">
           <div class="hintContent flex">You may click on the
-            <i class="material-icons">open_in_new</i> icon in the table to
+            <div class="btnWithAnno"><i class="material-icons">open_in_new</i><div class="annotation">UCSC</div></div> icon in the table to
             open the region in UCSC Genome Browser.
             <span v-if="alignMode === 'enhancer'">
               You may also click on individual table rows to see detailed results.
@@ -274,21 +274,26 @@
           <template slot="items" slot-scope="row">
             <tr @click="toggleRow(row)" :class=" { expandable: alignMode === 'enhancer' } ">
               <td class="dataTableCell">{{ row.item.index }}</td>
+              <td class="dataTableCell dataTableCellNoGap"><a @click.stop class="noFlex btnWithAnno" target="_blank" title="Open region in UCSC Genome Browser"
+                :href="getGiveLink([queryGenomeAssembly, targetGenomeAssembly], [row.item.region1, row.item.region2])"><i class="material-icons">
+                  open_in_new
+                </i><div class="annotation">GIVE</div>
+              </a></td>
               <td class="dataTableCell">{{ row.item[geneIdentifier1] }}</td>
               <td class="dataTableCell" v-if="row.item.ensID1 !== '.'">{{ row.item.ensID1 }}</td>
               <td class="dataTableCell">
-                {{ row.item.region1 }} <a @click.stop class="noFlex" target="_blank" title="Open region in UCSC Genome Browser"
+                {{ row.item.region1 }} <a @click.stop class="noFlex btnWithAnno" target="_blank" title="Open region in UCSC Genome Browser"
                   :href="getUcscLink(queryGenomeAssembly, row.item.region1)"><i class="material-icons">
                     open_in_new
-                  </i></a>
+                  </i><div class="annotation">UCSC</div></a>
               </td>
               <td class="dataTableCell" v-if="row.item[geneIdentifier2] !== '.'">{{ row.item[geneIdentifier2] }}</td>
               <td class="dataTableCell" v-if="row.item.ensID2 !== '.'">{{ row.item.ensID2 }}</td>
               <td class="dataTableCell">
-                {{ row.item.region2 }} <a @click.stop class="noFlex" target="_blank" title="Open region in UCSC Genome Browser"
+                {{ row.item.region2 }} <a @click.stop class="noFlex btnWithAnno" target="_blank" title="Open region in UCSC Genome Browser"
                   :href="getUcscLink(targetGenomeAssembly, row.item.region2)"><i class="material-icons">
                     open_in_new
-                  </i>
+                  </i><div class="annotation">UCSC</div></a>
               </td>
               <td class="dataTableCell" :class="{'text-xs-right': alignMode === 'promoter'}">{{ alignMode ===
                 'promoter' ?

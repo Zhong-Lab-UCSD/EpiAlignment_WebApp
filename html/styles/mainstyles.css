@@ -952,8 +952,34 @@ a.buttonLink {
 	text-decoration: none;
 }
 
-.dataTableCell {
+.btnWithAnno {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	margin: 0 0.3em;
+	text-decoration: none;
+	vertical-align: middle;
+}
+
+.btnWithAnno > i.material-icons {
+	font-size: 14px;
+	margin: -0.2em 0;
+}
+
+.btnWithAnno > div.annotation {
+	font-size: 10px;
+	font-family: "Consolas", "Lucida Console", "Monaco", monospace;
+	margin: -0.4em 0;
+}
+
+.dataTableCell:not(.dataTableCellNoGap) {
 	padding: 0 12px !important;
+	vertical-align: middle;
+}
+
+.dataTableCellNoGap {
+	padding: 0 !important;
+	vertical-align: middle;
 }
 
 tr.expandable {
@@ -966,7 +992,7 @@ tr.expandable {
 
 .dataTableCell > a:link,
 .dataTableCell > a:visited {
-	opacity: 0.6;
+	opacity: 0.7;
 }
 
 .dataTableCell > a:focus,

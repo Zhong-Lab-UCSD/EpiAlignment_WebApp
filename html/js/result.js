@@ -10,6 +10,7 @@ const INQUIRY_TARGET_PREFIX = '/backend/results/'
 const INQUIRY_IMAGE_PREFIX = '/backend/result_image/'
 
 const UCSC_TARGET = 'https://genome.ucsc.edu/cgi-bin/hgTracks?hgS_doOtherUser=submit&hgS_otherUserName=xycao&'
+const GIVE_TARGET = 'https://epialign.givengine.org/'
 
 const ucscRefToSession = {
   mm10: 'mm10_epialign',
@@ -126,6 +127,14 @@ var app = new Vue({
         align: 'left',
         sortable: true,
         class: 'dataTableCell',
+        width: 'auto'
+      },
+      {
+        text: '',
+        value: null,
+        align: 'left',
+        sortable: false,
+        class: ['dataTableCell', 'dataTableCellNoGap'],
         width: 'auto'
       },
       {
@@ -316,8 +325,8 @@ var app = new Vue({
       })
     },
     verifyNameSource: function (dataEntry) {
-      let headerName1Index = 1
-      let headerName2Index = 3
+      let headerName1Index = 2
+      let headerName2Index = 4
       if (!this.geneIdentifier1) {
         this.geneIdentifier1 =
           dataEntry.transID1 === '.' ? 'region_name1' : 'transID1'
@@ -480,7 +489,7 @@ var app = new Vue({
     },
     processEnhancerData: function (data) {
       // reformat table header
-      this.headers.splice(3, 1)
+      this.headers.splice(4, 1)
       this.headers.splice(-2, 2)
       this.headers.push({
         text: 'EpiAlign hit coordinate',
@@ -503,6 +512,9 @@ var app = new Vue({
       return UCSC_TARGET + 'hgS_otherUserSessionName=' +
         ucscRefToSession[assembly] +
         '&position=' + region
+    },
+    getGiveLink: function (assemblys, regions) {
+      return GIVE_TARGET
     }
   }
 })

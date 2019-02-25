@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>EpiAlignment Browser (powered by GIVE)</title>
+  <script src="https://beta.givengine.org/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+  <link rel="import" href="https://beta.givengine.org/components/chart-controller/chart-controller.html">
+  <script src="js/googleAnalytics.js"></script>
+</head>
+<body unresolved class="fullbleed layout vertical">
+  <chart-controller ref='["hg38", "mm10"]' id="mainChartController"
+    num-of-subs="2"
+    group-id-list='["genes", "epialign"]'
+    class="flex"
+    default-track-id-list='["knownGene"]'
+    coordinate='["chr5:141124567-141148657", "chr18:37411305-37451753"]'
+    title-text='EpiAlignment Browser (powered by GIVE)'>
+  </chart-controller>
+</body>
+</html>

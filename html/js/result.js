@@ -10,7 +10,7 @@ const INQUIRY_TARGET_PREFIX = '/backend/results/'
 const INQUIRY_IMAGE_PREFIX = '/backend/result_image/'
 
 const UCSC_TARGET = 'https://genome.ucsc.edu/cgi-bin/hgTracks?hgS_doOtherUser=submit&hgS_otherUserName=xycao&'
-const GIVE_TARGET = 'https://epialign.givengine.org/'
+const GIVE_TARGET = 'browser.html?'
 
 const ucscRefToSession = {
   mm10: 'mm10_epialign',
@@ -286,6 +286,25 @@ var app = new Vue({
           collapsedRunInfoKeyList, this.collapsedRunInfoList, response
         )
       }
+
+      if (response.publicDataDesc) {
+        // used public data
+        // use `response.queryPeak`, `response.targetPeak` to construct
+        // datasets to be used in GIVE browser
+        this.displayDataSets = [
+          [
+            'knownGene',
+            response.queryPeak.toLowerCase() + '-p',
+            response.queryPeak.toLowerCase() + '-b'
+          ], [
+            'knownGene',
+            response.targetPeak.toLowerCase() + '-p',
+            response.targetPeak.toLowerCase() + '-b'
+          ]
+        ]
+      } else {
+        this.displayDataSets = ['knownGene']
+      }
       this.downloadLink = window.location.protocol + '//' +
         window.location.host + '/download/' + this.runid + '.txt'
     },
@@ -513,8 +532,16 @@ var app = new Vue({
         ucscRefToSession[assembly] +
         '&position=' + region
     },
-    getGiveLink: function (assemblys, regions) {
-      return GIVE_TARGET
+    getGiveLink: function (refs, regions) {
+      let trackPart = ''
+      if (this.displayDataSets) {
+        trackPart = '&track=' +
+          window.encodeURIComponent(JSON.stringify(this.displayDataSets))
+      }
+      return GIVE_TARGET +
+        'ref=' + window.encodeURIComponent(JSON.stringify(refs)) +
+        '&coordinate=' + window.encodeURIComponent(JSON.stringify(regions)) +
+        trackPart
     }
   }
 })

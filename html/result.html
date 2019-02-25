@@ -274,7 +274,7 @@
           <template slot="items" slot-scope="row">
             <tr @click="toggleRow(row)" :class=" { expandable: alignMode === 'enhancer' } ">
               <td class="dataTableCell">{{ row.item.index }}</td>
-              <td class="dataTableCell dataTableCellNoGap"><a @click.stop class="noFlex btnWithAnno" target="_blank" title="Open region in UCSC Genome Browser"
+              <td class="dataTableCell dataTableCellNoGap"><a @click.stop class="noFlex btnWithAnno" target="_blank" title="Open region in GIVE Browser"
                 :href="getGiveLink([queryGenomeAssembly, targetGenomeAssembly], [row.item.region1, row.item.region2])"><i class="material-icons">
                   open_in_new
                 </i><div class="annotation">GIVE</div>

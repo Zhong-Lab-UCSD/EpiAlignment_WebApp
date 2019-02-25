@@ -369,7 +369,7 @@ var app = new Vue({
 
       // inputError
       this.formParams.speciesText.forEach((text, index) => {
-        if (!text.trim().length && // no input text
+        if ((!text || !text.trim().length) && // no input text
           !this.inputFiles[index].length && // no input file
           (
             // first input cannot be empty in non-gene-cluster sub-mode
@@ -400,7 +400,7 @@ var app = new Vue({
 
       // clusterError
       if (this.geneClusterSelected && !this.selectedCluster &&
-        !this.clusterText.match(/Cluster_[1-9][0-9]*/)
+        (!this.clusterText || !this.clusterText.match(/Cluster_[1-9][0-9]*/))
       ) {
         this.formError.clusterError = true
       }
@@ -475,7 +475,9 @@ var app = new Vue({
 
       if (this.selectedCluster) {
         formData.append('clusters', this.selectedCluster.id)
-      } else if (this.clusterText.match(/Cluster_[1-9][0-9]*/)) {
+      } else if (this.clusterText &&
+        this.clusterText.match(/Cluster_[1-9][0-9]*/)
+      ) {
         formData.append('clusters', this.clusterText)
       }
 

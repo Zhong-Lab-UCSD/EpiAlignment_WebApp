@@ -34,7 +34,7 @@ export default function postAjax (
         reject(err)
       }
     }
-    xhr.onerror = () => {
+    xhr.onerror = function () {
       let err = new Error('Connection error (' + this.status +
         ')' + (this.response ? ': ' + this.response : ''))
       err.status = this.status

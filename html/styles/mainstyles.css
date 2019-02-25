@@ -966,7 +966,7 @@ a.buttonLink {
 	margin: -0.2em 0;
 }
 
-.btnWithAnno > div.annotation {
+.btnWithAnno > .annotation {
 	font-size: 10px;
 	font-family: "Consolas", "Lucida Console", "Monaco", monospace;
 	margin: -0.4em 0;

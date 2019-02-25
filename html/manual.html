@@ -34,10 +34,10 @@
               <a href="#quickStart" @click="clickOnNav">Quick start</a>
               <ul>
                 <li>
-                  <a href="#promoterExample" @click="clickOnNav">Promoter mode example</a>
+                  <a href="#oneVsOneExample" @click="clickOnNav">One-vs-one mode example</a>
                 </li>
                 <li>
-                  <a href="#enhancerExample" @click="clickOnNav">Enhancer mode example</a>
+                  <a href="#manyVsManyExample" @click="clickOnNav">Many-vs-many mode example</a>
                 </li>
               </ul>
             </li>
@@ -48,10 +48,10 @@
                   <a href="#usageOverview" @click="clickOnNav">Overview</a>
                 </li>
                 <li>
-                  <a href="#promoterMode" @click="clickOnNav">Promoter mode</a>
+                  <a href="#oneVsOneMode" @click="clickOnNav">One-vs-one mode</a>
                 </li>
                 <li>
-                  <a href="#enhancerMode" @click="clickOnNav">Enhancer mode</a>
+                  <a href="#manyVsManyMode" @click="clickOnNav">Many-vs-many mode</a>
                 </li>
               </ul>
             </li>
@@ -68,10 +68,10 @@
                   <a href="#queryAndTargetRegions" @click="clickOnNav">Query and target regions</a>
                   <ul>
                     <li>
-                      <a href="#promoterModeQueryAndTarget" @click="clickOnNav">Promoter mode</a>
+                      <a href="#oneVsOneModeQueryAndTarget" @click="clickOnNav">One-vs-one mode</a>
                     </li>
                     <li>
-                      <a href="#enhancerModeQueryAndTarget" @click="clickOnNav">Enhancer mode</a>
+                      <a href="#manyVsManyModeQueryAndTarget" @click="clickOnNav">Many-vs-many mode</a>
                     </li>
                   </ul>
                 </li>
@@ -92,10 +92,10 @@
               <a href="#output" @click="clickOnNav">Output</a>
               <ul>
                 <li>
-                  <a href="#promoterOutput" @click="clickOnNav">Promoter mode</a>
+                  <a href="#oneVsOneOutput" @click="clickOnNav">One-vs-one mode</a>
                 </li>
                 <li>
-                  <a href="#enhancerOutput" @click="clickOnNav">Enhancer mode</a>
+                  <a href="#manyVsManyOutput" @click="clickOnNav">Many-vs-many mode</a>
                 </li>
               </ul>
             </li>
@@ -150,7 +150,7 @@
           mode can be used to identify the best-matching sub-region within the corresponding target region, 
           whereas the many-vs-many mode is useful for finding the best match among a set of target regions</p>
 
-        <h3 ref="enhancerExample">An example for using the one-vs-one mode</h3>
+        <h3 ref="oneVsOneExample">An example for using the one-vs-one mode</h3>
         <!--Example 1-->
         <p>In this example, we will search a mouse genomic region against the neighborhood of its
           homologous region in human. This example will take about two minutes to run on EpiAlignment.</p>
@@ -192,19 +192,23 @@
           shows
           an interactive table with details of the alignments. You can click on each row to expand it and view the alignment
           scores yielded with and without epigenomic information along the target region. For visualization, 
-          you can click the icon (<i class="material-icons">open_in_new</i>)
+          you can click the icon (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
+            <span class="annotation">GIVE</span>
+          </span>)
           at the beginning of each row to view query and target regions together 
           in the Genomic Interaction Visualization Engine (GIVE), or view each region individially in the UCSC genome 
-          browser by clicking the icon
+          browser by clicking the icon (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
+            <span class="annotation">UCSC</span>
+          </span>)
           beside each coordinate. In the UCSC genome browser, you can
           select any preset ENCODE/public epigenomic data from the custom tracks.
           </p>
         <div class="manualImg large">
-          <img alt="Expandable data table for enhancer mode" src="assets/images/Enhancer_result_comment.png">
+          <img alt="Expandable data table for one-vs-one mode" src="assets/images/Enhancer_result_comment.png">
         </div>
         <p>The table can be downloaded by clicking "Download results".</p>
 
-        <h3 ref="promoterExample">An example for using the many-vs-many mode</h3>
+        <h3 ref="manyVsManyExample">An example for using the many-vs-many mode</h3>
         <!--Example 2-->
         <p>In this example, we will use gene promoters as input regions. We will search the promoter of 
           a human protocadherin beta gene, PCDHB5,
@@ -251,7 +255,7 @@
           and the best hits found for each promoter. The three digits behind each gene name is the id
           of the promoter region. </p>
         <div class="manualImg large">
-          <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
+          <img alt="Heatmap for many-vs-many mode" src="assets/images/Heatmap.png">
         </div>
         <p>The table shows details of the alignments between each pair of promoters. You can sort the table by each column
           by clicking the column name. Click the arrow beside "#" to reset the order. 
@@ -260,7 +264,7 @@
           in the UCSC genome browser or GIVE. The table can be
           downloaded by clicking "Download results".</p>
         <div class="manualImg large">
-          <img alt="Data table for promoter mode" src="assets/images/PromoterTable_comments.png">
+          <img alt="Data table for many-vs-many mode" src="assets/images/PromoterTable_comments.png">
         </div>
         <p>&nbsp;</p>
         <p>EpiAlignment also provides many other ways of defining query and target regions. Please check out the Usage
@@ -324,7 +328,7 @@
           </table>
         </div>
 
-        <h3 ref="enhancerMode">One-vs-one mode (default)</h3>
+        <h3 ref="oneVsOneMode">One-vs-one mode (default)</h3>
         <h4>Use homologous regions in this species</h4>
         <p>This mode allows users to define target regions using homologous information. Specifically, EpiAlignment
           will first extend each query region by a user-specified distance (default: 20,000kb) upstream and downstream, and then
@@ -336,7 +340,7 @@
           their
           line number and perform a one-against-one alignment to identify the best-matching sub-regions.</p>
 
-        <h3 ref="promoterMode">Many-vs-many mode</h3>
+        <h3 ref="manyVsManyMode">Many-vs-many mode</h3>
         <h4>Search a gene cluster</h4>
         <p>This mode allows users to align query regions to promoters of a group of evolutionarily-related genes and find
           the
@@ -441,16 +445,16 @@
         <h3 ref="queryAndTargetRegions">
           Query and target regions
         </h3>
-        <h4 ref="enhancerModeQueryAndTarget">One-vs-one mode</h4>
+        <h4 ref="oneVsOneModeQueryAndTarget">One-vs-one mode</h4>
         <h5>Query regions</h5>
         <p>For the default mode, the input query regions need to be defined with genomic coordinates in BED6 format.
           The coordinates can be either pasted into the textarea (one region per line) or uploaded as a file. 
           Please note that each line should
           have a unique name. A sample data is shown below:</p>
         <div class="manualImg">
-          <img alt="Enhancer mode sample query regions" src="assets/images/Enhancer_s1.png">
+          <img alt="One-vs-one mode sample query regions" src="assets/images/Enhancer_s1.png">
         </div>
-        <h5 ref="enhancerModeTarget">Target regions</h5>
+        <h5 ref="oneVsOneModeTarget">Target regions</h5>
         <h6>Use homologous regions in this species</h6>
         <p>In this case, users only need to specify the number of base pairs 
           by which the query regions will be increased. By default, they will be extended 20,000 kb
@@ -467,11 +471,11 @@
           refer to individual pairs, so it is recommended to keep the names same between query and the target
           regions. A sample input file is shown below, paired with the sample query region file shown above:</p>
         <div class="manualImg">
-          <img alt="Enhancer mode sample target regions" src="assets/images/Enhancer_s2.png">
+          <img alt="One-vs-one mode sample target regions" src="assets/images/Enhancer_s2.png">
         </div>
 
 
-        <h4 ref="promoterModeQueryAndTarget">Many-vs-many mode</h4>
+        <h4 ref="manyVsManyModeQueryAndTarget">Many-vs-many mode</h4>
         <h5>Query regions</h5>
         <p>In this mode, the query regions can be provided as genomic coordinates in BED6 format. 
           Gene symbols or Ensembl IDs are also accepted if gene promoters are used as input regions. 
@@ -494,7 +498,7 @@
           promoter regions are defined as 500kb upstream and 1000kb downstream the TSS, two promoters will be merged if
           their overlapping region is longer than <span class="equation">1500 &#215; 0.8 = 1200</span>. The last three
           digits of the promoter's genomic coordinate will be used as promoter id.</p>
-        <h5 ref="promoterModeTarget">Target regions</h5>
+        <h5 ref="manyVsManyModeTarget">Target regions</h5>
         <h6>Search a gene cluster</h6>
         <p>In this mode, you may search for a gene cluster and use promoters of genes in the cluster as target regions.
           You
@@ -567,24 +571,46 @@
           may provide your email and choose to be notified by email after the task is done, or you can bookmark the
           page
           and come back later. We recommend that the users select either way if there are more than 100 region pairs,
-          especially when using the enhancer mode.</p>
+          especially when using the one-vs-one mode.</p>
 
-        <h3 ref="promoterOutput">Promoter mode</h3>
-        <p>For the promoter mode, the result page shows two heatmaps and a table. EpiAlignment scores are plotted in
+        <h3 ref="oneVsOneOutput">One-vs-one mode</h3>
+        <p>For the one-vs-one mode, the result page shows an interactive table with alignment details. The table can be
+          sorted by each column by clicking the arrow beside column name. Click the arrow beside
+          "#" to reset the order. The table can be downloaded by clicking "Download results".</p>
+        <p>You may click the icon (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
+          <span class="annotation">GIVE</span>
+        </span>) at the front of each row to launch a browser powered by GIVE to have a side-by-side view of both the query
+          and the target regions. If you have chosen a preset dataset, the dataset will be included in the browser
+          automatically. If you click the icon (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
+          <span class="annotation">UCSC</span>
+          </span>) beside each genome coordinates, you can
+          see the location in UCSC genome browser. The bigWig files of all preset
+          ENCODE and public datasets were available in this browser page. You may select any ENCODE/public epigenomic data
+          tracks in "Custom Tracks", change the display mode from "hide" to "dense" to view them at the same location. </p>
+        <p>Besides, each row of the table can be clicked to expand and show the details of the one-vs-one alignment. This
+          includes highest alignment scores, and how the alignment scores
+          with ("EpiAlign") or without ("SeqOnly") epigenomic information, distribute along the target region plotted in a
+          graph.
+          Note: if you set epigenomic weight to zero during input, the EpiAlignment score will be the degenerated
+          sequence-only alignment score, and no "SeqOnly" result will be reported.</p>
+
+        <h3 ref="manyVsManyOutput">Many-vs-many mode</h3>
+        <p>For the many-vs-many mode, the result page shows two heatmaps and a table. EpiAlignment scores are plotted in
           the
           first heatmap to show scores of any query region (row) against all target region(s) (column). A sequence-only
           alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap.
-          The row and column names are promoter ids, which consist of gene names and the last three digits of
-          promoters' genomic coordinates. In
-          each row, the cell with the highest score of the row is marked with a capital "H".</p>
+          The row and column names are region names. If gene names or gene clusters are used as the query input to align
+          promoter regions, the row and column names will consist of gene names and the last three digits of
+          promoters' genomic coordinates. In each row, the cell with the highest score of the row is marked with a
+          capital "H".</p>
         <p>For each query region (row), EpiAlignment detects if its best hit switches from one target region to another
-          with EpiAlign and Sequence-only alignment. The best hit is considered as "changed" if it meets the following
-          criteria:</p>
+          when aligning with and without epigenomic information. The best hit is considered as "changed" if it meets
+          the following criteria:</p>
 
         <div class="exampleSteps">
           <div class="flexRow flexWrap flexStretch">
             <table>
-              <caption>EpiAlign scores</caption>
+              <caption>Alignment scores with epigenomic information</caption>
               <thead>
                 <tr>
                   <th></th>
@@ -601,7 +627,7 @@
               </tbody>
             </table>
             <table>
-              <caption>Sequence-only alignment scores</caption>
+              <caption>Alignment scores without epigenomic information</caption>
               <thead>
                 <tr>
                   <th></th>
@@ -618,52 +644,37 @@
               </tbody>
             </table>
           </div>
-          <p>Assume that in Sequence-only alignment, <span class="equation"><em>S<sub>A</sub></em> &#62; <em>S<sub>B</sub></em></span>,
-            whereas in EpiAlign, <span class="equation"><em>E<sub>A</sub></em> &#60; <em>E<sub>B</sub></em></span>. For
-            the
-            queryregion, the best hit of the query
+          <p>Assume that in alignment <em>without</em> epigenomic information,
+            <span class="equation"><em>S<sub>A</sub></em> &#62; <em>S<sub>B</sub></em></span>,
+            whereas in alignment <em>with</em> epigenomic information,
+            <span class="equation"><em>E<sub>A</sub></em> &#60; <em>E<sub>B</sub></em></span>. For
+            the query region, the best hit of the query
             region will be considered as switched from
-            Target A to B when using EpiAlign if <span class="equation"><em>E<sub>B</sub></em> &#62; <em>S<sub>B</sub></em></span>
+            Target A to B when using EpiAlignment if <span class="equation"><em>E<sub>B</sub></em> &#62; <em>S<sub>B</sub></em></span>
             and <span class="equation"><em>E<sub>A</sub></em> &#60; <em>S<sub>A</sub></em></span>.
-            In
-            other words, we required that for the hit found by EpiAlign, the epigenomic information has to reinforce
-            the
-            chromosomal similarity, where as for the hit found by Sequence-only alignment, the epigenomic information
-            has
-            to
-            undermine the chromosomal similarity.</p>
+            In other words, we required that for the hit found by EpiAlignment with epigenomic information,
+            the epigenomic information has to reinforce the chromosomal similarity, where as for the hit found by
+            sequence-only alignment, the epigenomic information has to undermine the chromosomal similarity.</p>
         </div>
 
-        <p>For query regions with switched target, the best hit found by EpiAlign is highlighted by a green box, and
-          the
-          best hit found by Sequence-only alignment is highlighted by a gray box. </p>
+        <p>For query regions with switched target, the best hit found by EpiAlignment with epigenomic information
+          is highlighted by a green box, and the best hit found by alignment without epigenomic information is
+          highlighted by a gray box. </p>
 
-        <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>)
-          beside each genome coordinates to view the location in UCSC genome browser. The bigWig files of all preset
-          ENCODE
-          and public datasets were available in this browser page. You may select any ENCODE/public epigenomic data
-          tracks
-          in "Custom Tracks", change the display mode from "hide" to "dense" to view them at the same location. </p>
-        <p>You can also sort the table by each column by clicking the arrow beside column name. Click the arrow beside
-          "#"
-          to reset the order. The table can be downloaded by clicking "Download results".</p>
-        <p>Note: if you set epigenomic weight to zero during input, the EpiAlignment score will be the degenerated
-          sequence-only alignment score, and no sequence-only result will be reported.</p>
+        <p>The table shows details of the alignments between each pair of promoters. Similar to the one-vs-one mode,
+          You may click the icon
+          (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
+            <span class="annotation">GIVE</span>
+          </span>) at the front of each row to see a side-by-side view in the GIVE browser, or click
+          (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
+            <span class="annotation">UCSC</span>
+          </span>)
+          beside each genome coordinates to view the location in UCSC genome browser. </p>
+        <p>You can also sort the table by each column by clicking the arrow beside column name, or download the table
+          by clicking "Download results".</p>
         <div class="manualImg large">
-          <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
+          <img alt="Heatmap for many-vs-many mode" src="assets/images/Heatmap.png">
         </div>
-
-        <h3 ref="enhancerOutput">Enhancer mode</h3>
-        <p>For the enhancer mode, the result page shows an interactive table with alignment details. The table can be
-          sorted by each column by clicking the arrow beside column name. You can also click on each row to expand it
-          and
-          view the highest alignment scores and the alignment score distributions along the target region. The table
-          can
-          be
-          downloaded by clicking "Download results".</p>
-        <p>Similar to the result page of the promoter mode, you may click the icon (<i class="material-icons">open_in_new</i>)
-          beside each genome coordinates in this table to view the location and any preset epigenomic data tracks in
-          UCSC genome browser.</p>
       </div>
 
       <div ref="pythonClientTemplate" class="section">

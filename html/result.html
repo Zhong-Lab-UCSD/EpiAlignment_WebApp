@@ -255,8 +255,13 @@
         </div>
         <div class="enhancerHint tooltipPanel flexRow flexNoGap flexWrap justifyEnd" v-if="showResultHint">
           <div class="hintContent flex">You may click on the
-            <div class="btnWithAnno"><i class="material-icons">open_in_new</i><div class="annotation">UCSC</div></div> icon in the table to
-            open the region in UCSC Genome Browser.
+            <div class="btnWithAnno"><i class="material-icons">open_in_new</i>
+              <div class="annotation">GIVE</div>
+            </div> icon at the beginning of each row to show a side-by-side
+            view of the query and the target region in a browser powered by
+            GIVE, or click on the
+            <div class="btnWithAnno"><i class="material-icons">open_in_new</i><div class="annotation">UCSC</div></div>
+            icon after each coordinate to open the region in UCSC Genome Browser.
             <span v-if="alignMode === 'enhancer'">
               You may also click on individual table rows to see detailed results.
             </span>

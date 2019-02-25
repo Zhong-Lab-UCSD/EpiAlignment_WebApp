@@ -146,79 +146,18 @@
       <div ref="quickStart" class="section">
         <!--Quick Start-->
         <h1>Quick start</h1>
-        <p>EpiAlignment has two major alignment modes: promoter and enhancer. Given an input query region, the promoter
-          mode is useful for finding the best hit among a set of target regions, whereas the enhancer mode can be used
-          to
-          match the query region with a sub-region of the target region.</p>
+        <p>EpiAlignment has two major alignment modes: one-vs-one (default) and many-vs-many. Given an input query region, the default
+          mode can be used to identify the best-matching sub-region within the corresponding target region, 
+          whereas the many-vs-many mode is useful for finding the best match among a set of target regions</p>
 
-        <h3 ref="promoterExample">An example for using the promoter mode</h3>
+        <h3 ref="enhancerExample">An example for using the one-vs-one mode</h3>
         <!--Example 1-->
-        <p>In this example, we attempt to search the promoter of a human protocadherin beta gene, PCDHB5, and the
-          promoter of a randomly selected gene, HTR1D, against a mouse gene cluster to find mouse promoters with the
-          highest chromosomal similarities
-          within it. The mouse gene cluster contains promoters of six mouse protocadherin beta genes: Pcdhb4, Pcdhb6,
-          Pcdhb8, Pcdhb10, Pcdhb11 and Pcdhb12.</p>
-        <h4>Import sample data with one click:</h4>
-        <div class="exampleSteps">
-          <ul>
-            <li>Select the "Promoter" alignment mode in STEP 1.</li>
-            <li>Click the "Use sample data" button in STEP 2.</li>
-            <li>Click "Submit" in STEP 4</li>
-          </ul>
-        </div>
-        <h4>OR, enter data manually:</h4>
-        <div class="exampleSteps">
-          <ul class="sampleSteps">
-            <li>Select the "Promoter" alignment mode in STEP 1.</li>
-            <li>In STEP 2, "Query region" box:</li>
-            <ul class="sampleStepsSub">
-              <li>Press "Click here to select a paired public dataset", find "Public Datasets" and select "Round
-                spermatids
-                ChIP-Seq (H3K4me3)" by clicking on the blue cell.
-                Press the confirm button. </li>
-              <li>Paste or type the following gene names into the "Input regions"
-                textarea, <em>one name per line</em>:</li>
-              <div>
-                PCDHB5<br>
-                HTR1D
-              </div>
-            </ul>
-            <li>In the "Target region" box, make sure that "Search a gene cluster"
-              is selected, and type "PCDHB5" in the search bar. In the pop-up panel,
-              click the box with arrow
-              (<i class="material-icons">open_in_browser</i>) to the right of
-              the first listed gene cluster <strong>"Cluster_1491"</strong> to select it.</li>
-            <li>Click "Submit" in STEP 4.</li>
-          </ul>
-        </div>
-
-        <h4>Output</h4>
-        <p>After successfully submitting the data, you will be redirect to the result page. For the promoter mode, the
-          result page shows two heatmaps and a table. The heatmaps illustrate alignment scores between every pair of
-          promoters and the best hits found for each query promoter. The three digits behind each gene name is the id
-          of the promoter region. </p>
-        <div class="manualImg large">
-          <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
-        </div>
-        <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>)
-          beside each genome coordinates to view the location in UCSC genome browser. In the genome browser, you may
-          select
-          any preset ENCODE/public epigenomic data tracks to view them at the same location.</p>
-        <p>You can sort the table by each column
-          by clicking the arrow beside column name. Click the arrow beside "#" to reset the order. The table can be
-          downloaded by clicking "Download results".</p>
-        <div class="manualImg large">
-          <img alt="Data table for promoter mode" src="assets/images/PromoterTable_comments.png">
-        </div>
-
-        <h3 ref="enhancerExample">An example for using the enhancer mode</h3>
-        <!--Example 2-->
-        <p>In this example, we will search a mouse genomic region against the large neighboring region around its
+        <p>In this example, we will search a mouse genomic region against the neighborhood of its
           homologous region in human. This example will take about two minutes to run on EpiAlignment.</p>
         <h4>Import sample data with one click:</h4>
         <div class="exampleSteps">
           <ul>
-            <li>Select the "Enhancer" alignment mode in STEP 1.</li>
+            <li>Make sure that the "many-vs-many" mode is selected in STEP 1.</li>
             <li>Click the "Use sample data" button in STEP 2.</li>
             <li>Click "Submit" in STEP 4</li>
           </ul>
@@ -227,7 +166,7 @@
         <h4>OR, enter data manually:</h4>
         <div class="exampleSteps">
           <ul class="sampleSteps">
-            <li>Select the "Enhancer" alignment mode in STEP 1.</li>
+            <li>Make sure that the "many-vs-many" mode is selected in STEP 1.</li>
             <li>In STEP 2, "Query region" box:</li>
             <ul class="sampleStepsSub">
               <li>Set "Genome assembly" to mm10.</li>
@@ -249,19 +188,79 @@
         </div>
 
         <h4>Output</h4>
-        <p>You will be redirected to the result page after submitting the data. For the enhancer mode, the result page
+        <p>You will be redirected to the result page after submitting the data. In this mode, the result page
           shows
-          an interactive table with region information. You can click on each row to expand it and view the alignment
-          score
-          distribution along the target region.</p>
+          an interactive table with details of the alignments. You can click on each row to expand it and view the alignment
+          scores yielded with and without epigenomic information along the target region.</p>
         <div class="manualImg large">
           <img alt="Expandable data table for enhancer mode" src="assets/images/Enhancer_result_comment.png">
         </div>
         <p>The table can be downloaded by clicking "Download results".</p>
-        <p>&nbsp;</p>
-        <p>EpiAlignment also provides many other ways of defining query and target regions. Please check out the Usage
-          section for more information.</p>
-      </div>
+
+        <h3 ref="promoterExample">An example for using the many-vs-many mode</h3>
+          <!--Example 2-->
+          <p>In this example, we will use gene promoters as input regions. We will search the promoter of 
+            a human protocadherin beta gene, PCDHB5,
+            against a mouse gene cluster to find mouse promoters with the
+            highest structural similarities
+            within it. The mouse gene cluster contains promoters of six mouse protocadherin beta genes: Pcdhb4, Pcdhb6,
+            Pcdhb8, Pcdhb10, Pcdhb11 and Pcdhb12, all of which are annotated orthologous genes of PCDHB5.</p>
+          <h4>Import sample data with one click:</h4>
+          <div class="exampleSteps">
+            <ul>
+              <li>Select the "many-vs-many" alignment mode in STEP 1.</li>
+              <li>Click the "Use sample data" button in STEP 2.</li>
+              <li>Click "Submit" in STEP 4</li>
+            </ul>
+          </div>
+          <h4>OR, enter data manually:</h4>
+          <div class="exampleSteps">
+            <ul class="sampleSteps">
+              <li>Select the "many-vs-many" alignment mode in STEP 1.</li>
+              <li>In STEP 2, "Query region" box:</li>
+              <ul class="sampleStepsSub">
+                <li>Press "Click here to select a paired public dataset", find "Public Datasets" and select "Round
+                  spermatids
+                  ChIP-Seq (H3K4me3)" by clicking on the blue cell.
+                  Press the confirm button. </li>
+                <li>Paste or type the following gene names into the "Input regions"
+                  textarea, <em>one name per line</em>:</li>
+                <div>
+                  PCDHB5
+                </div>
+              </ul>
+              <li>In the "Target region" box, make sure that "Search a gene cluster"
+                is selected, and type "PCDHB5" in the search bar. In the pop-up panel,
+                click the box with arrow
+                (<i class="material-icons">open_in_browser</i>) to the right of
+                the first listed gene cluster <strong>"Cluster_1491"</strong> to select it.</li>
+              <li>Click "Submit" in STEP 4.</li>
+            </ul>
+          </div>
+
+          <h4>Output</h4>
+          <p>After successfully submitting the data, you will be redirect to the result page. In this mode, 
+            two heatmaps and a table will be retunred. The heatmaps illustrate alignment scores of every promoter pair 
+            and the best hits found for each promoter. The three digits behind each gene name is the id
+            of the promoter region. </p>
+          <div class="manualImg large">
+            <img alt="Heatmap for promoter mode" src="assets/images/Heatmap.png">
+          </div>
+          <p>The table shows details of the alignments between each pair of promoters. You may click the icon (<i class="material-icons">open_in_new</i>)
+            at the beginning of each row to view a pair of query and target regions together 
+            in the Genomic Interaction Visualization Engine (GIVE), or view each region individially by clicking the icon
+            beside each coordinate in UCSC genome browser. In the UCSC genome browser, you may
+            select
+            any preset ENCODE/public epigenomic data from the custom tracks.</p>
+          <p>You can sort the table by each column
+            by clicking the column name. Click the arrow beside "#" to reset the order. The table can be
+            downloaded by clicking "Download results".</p>
+          <div class="manualImg large">
+            <img alt="Data table for promoter mode" src="assets/images/PromoterTable_comments.png">
+          </div>
+          <p>&nbsp;</p>
+          <p>EpiAlignment also provides many other ways of defining query and target regions. Please check out the Usage
+            section for more information.</p>
 
       <div ref="usage" class="section">
         <!--Usage-->

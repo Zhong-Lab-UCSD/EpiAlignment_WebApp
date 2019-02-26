@@ -90,6 +90,7 @@ var app = new Vue({
     downloadLink: '',
     error: false,
     errorMessage: '',
+    showWarning: false,
     imageBlobUrl: null,
     alignMode: null,
     pollingTime: null,
@@ -185,7 +186,7 @@ var app = new Vue({
       this.loading = false
       this.error = true
       this.errorCode = response.status
-      this.errorMessage = response.errMessage
+      this.errorMessage = response.errMessage.trim()
     })
     this.runInfoDictPromise = postAjax(RUN_INFO_DICT, null, 'json', 'GET')
   },
@@ -201,6 +202,9 @@ var app = new Vue({
         localStorage.setItem('doNotShowResultHint', 'true')
       }
       this.showResultHint = false
+    },
+    closeWarning: function () {
+      this.showWarning = false
     },
     foldRunInfoDetails: function () {
       this.showRunDetails = false
@@ -272,6 +276,11 @@ var app = new Vue({
     setRunParameters: function (response, refresh) {
       document.title = 'EpiAlignment - Result (submitted at: ' +
         response.completeTime + ')'
+
+      if (response.errMessage) {
+        this.errorMessage = response.errMessage.trim()
+        this.showWarning = true
+      }
 
       this.alignMode = response.alignMode
 

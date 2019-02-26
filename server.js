@@ -132,7 +132,7 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
     '9500 Gilman Dr.\nLa Jolla, CA 92122-0412\nUnited States'
 
   console.log('[' + runid + '] Process quit with code : ' + code)
-  if (code) {
+  if (errorMsg) {
     console.log(errorMsg)
     runInfo.addProperty('errMessage', errorMsg)
   }

@@ -89,8 +89,29 @@
         your approved sender list ("white list") and/or in your address book.
       </div>
     </div>
-    <div id="errorContainer" v-show="error">
-      Error: {{ errorMessage }}
+    <div class="errorContainer" v-if="error">
+      <p>Error encountered when calculating your results. Please check your inputs
+        and try again.</p>
+      <p> If you have any questions, please use the "Contact us via
+        email" link at the bottom of the page to report the problems, or report
+        the issue via Github from the "Find us on Github" link. Please include
+        your Run ID (shown above) when reporting an error.
+      </p>
+      <p>Error message:
+        <code>{{ errorMessage }}</code>
+      </p>
+    </div>
+    <div class="errorContainer warning" v-if="showWarning && !error">
+      <div class="tooltipPanel flexColumn">
+        <div class="flexRow flexWrap flexNoGap">
+          <div class="flex">The following warning message occured during
+            the alignment run:</div>
+          <div class="closeError noFlex">
+            <i class="material-icons button" @click="closeWarning()">close</i>
+          </div>
+        </div>
+        <code>{{ errorMessage }}</code>
+      </div>
     </div>
     <div id="pageContainer" class="flexRow flexStart flexWrap flexNoGap" v-if="!loading && !error">
       <div id="heatmapPanel" class="flexRow flexStart flex flexWrap" v-if="alignMode === 'promoter'">

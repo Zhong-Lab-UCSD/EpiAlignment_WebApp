@@ -65,19 +65,22 @@ function parseResult (resultObj, expDict, result) {
             : ' (Dataset ID: ' + experiment.id + ')'
           let expId = experiment.id
           let filterDesc = filters[experiment.filterId]['.label']
+          let shortLabelFilterShort = filterDesc.replace(/ChIP-Seq \((.*?)\)/, '$1')
           let title = filterDesc + ' on ' + label + sampleDesc
           let dataUrl
           // find file in expDict
           if (expDict[expId].bigwig_file) {
             dataUrl = DATA_URL_BASE + expDict[expId].bigwig_file
-            ucscEntry = 'track type=bigWig name="' + filterDesc + ' ' +
-              (experiment.biosampleId || experiment.id) + '" description="' +
+            ucscEntry = 'track type=bigWig name="' + shortLabelFilterShort + ' ' +
+              label +
+              ' ' + (experiment.biosampleId || experiment.id) + '" description="' +
               title + '" ' +
               'visibility=0 bigDataUrl=' + dataUrl
           } else if (expDict[expId].peak_file) {
             dataUrl = DATA_URL_BASE + expDict[expId].peak_file
-            ucscEntry = 'track type=bed name="' + filterDesc + ' ' +
-              (experiment.biosampleId || experiment.id) + '" description="' +
+            ucscEntry = 'track type=bed name="' + shortLabelFilterShort + ' ' +
+              label +
+              ' ' + (experiment.biosampleId || experiment.id) + '" description="' +
               title + '" ' +
               'visibility=2 bigDataUrl=' + dataUrl
           }

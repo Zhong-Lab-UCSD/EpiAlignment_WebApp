@@ -894,8 +894,34 @@ div.runInfoShowHide:active {
 	background: #AAAAAA;
 }
 
-div#errorContainer {
-	padding: 1rem 2rem;
+div.errorContainer {
+	padding: 1rem 2rem 0 2rem;
+	font-size: 14px;
+}
+
+div.errorContainer code {
+	padding-left: 1em;
+	padding-right: 1em;
+	width: auto;
+	margin: 0.5rem 1rem;
+	display: block;
+}
+
+div.errorContainer code::before {
+	content: '';
+}
+
+div.errorContainer.warning {
+	padding: 1rem 2rem 0 2rem;
+	font-size: 14px;
+}
+
+div.errorContainer div.closeError > *:not(:last-child) {
+	margin-right: 0.5em;
+}
+
+div.errorContainer div.closeError > i {
+	margin-left: 0.5em;
 }
 
 div#pageContainer {

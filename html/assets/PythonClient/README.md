@@ -49,7 +49,7 @@ The 24 fields are:
 >alignMode, searchRegionMode, genomeAssembly\_query, genomeAssembly\_target,
 >encodeData\_query, encodeData\_target, speciesPeak\_query, speciesPeak\_target,
 >speciesInput\_1, speciesInput\_2,clusters
->promoterUp, promoterDown, enhancerUp, enhancerDown,
+>promoterUp, promoterDown, liftUp, liftDown,
 >epiweight, paras, paramu,parak,
 >piA,piC,piG,piT,pi1
 
@@ -60,10 +60,10 @@ These two fields specified the alignment mode and submode to be used. Valid valu
 
 | alignMode value| searchRegionMode value| alignment mode on the website  | submode on the website |
 | --------- |:-----------:| :-----:|:-----:|
-| promoter  | genecluster | promoter |Search a gene cluster|
-| promoter  | genomeregion| promoter |Define target regions with a BED file / a gene list|
-| enhancer  | homoregion  | enhancer |Use homologous regions in this species|
-| enhancer  | genomeregion| enhancer | Define target regions with a BED file|
+| One  | homoregion  | One-vs-one |Use homologous regions in this species|
+| One  | genomeregion| One-vs-one | Define target regions with a BED file|
+| Many  | genecluster | Many-vs-many |Search a gene cluster|
+| Many  | genomeregion| Many-vs-many |Define target regions with a BED file / a gene list|
 
 ##### genomeAssembly
 The genomeAssembly\_query and genomeAssembly\_target fields can be "hg38" or "mm10". 
@@ -78,12 +78,12 @@ These fields specify the input peak files. If you would like to use a preset ENC
 You may also provide your own input files. To do this, put the file names in speciesPeak\_query, speciesPeak\_target and leave the encodeData\_query and encodeData\_target fields empty. Please note that if your files are not in the same folder as the program, you need to put the absolute of our files here.
 
 ##### speciesInput\_1 and speciesInput\_2
-These fields specify the input query and target files. Please put the file names in these two fields. For promoter mode, the two files can be either BED6 files or gene name lists. For enhancer mode, only BED6 files are acceptable. 
+These fields specify the input query and target files. Please put the file names in these two fields. For One-vs-one mode, only BED6 files are acceptable. For Many-vs-many mode, the two files can be either BED6 files or gene name lists (if promoters are used as input regions).
 
-Please note that if you are using the "promoter-genecluster" or "enhancer-homoregion" mode, only the speciesInput\_1 is required. You don't have to provide the second input file in this case.
+Please note that if you are using the  "One-homoregion" or "Many-genecluster" mode, only the speciesInput\_1 is required. You don't have to provide the second input file in this case.
 
 ##### clusters
-This field only needs to be filled when alignMode is "promoter" and searchRegionMode is "genecluster". A valid gene cluster name in the format of "Cluster_XXX" needs to be entered.
+This field only needs to be filled when alignMode is "Many" and searchRegionMode is "genecluster". A valid gene cluster name in the format of "Cluster_XXX" needs to be entered.
 
 ##### fields 16 to 24: parameters
 These fields specify the parameters to be used for the alignments. Default values are available in the downloaded sample sheet. You may keep them as they are unless you'd like to adjust them.  

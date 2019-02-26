@@ -15,7 +15,7 @@ RUNNING_CODE = -1
 Run_info = [ ["runid", "alignMode", "subMode"],\
 ["queryGenomeAssembly", "queryInput", "queryPeak"],\
 ["targetGenomeAssembly", "clusters", "targetInput", "targetPeak"],\
-["promoterUp", "promoterDown", "enhancerUp", "enhancerDown"],\
+["promoterUp", "promoterDown", "liftUp", "liftDown"],\
 ["seqWeight", "epiWeight", "paraS", "paraMu", "paraK", "piA", "piC", "piG", "piT", "pi1"] ]
 # Results will be printed into the output file follow this order:
 Out_list = ["index", "region_name1", "ensID1", "transID1", "region1",\
@@ -97,7 +97,11 @@ class SFObject:
     # Add elements including genome assemblies, peak files and parameters to the data dict.
     self.ParseEssential(line, data_dict, file_list)
 
-    data_dict["alignMode"] = line[0]
+    if line[0] == "One":
+      data_dict["alignMode"] = "enhancer"
+    elif line[0] == "Many":
+      data_dict["alignMode"] = "promoter"
+
     data_dict["searchRegionMode"] = line[1]
     finput1 = line[8]
     finput2 = line[9]
@@ -118,12 +122,12 @@ class SFObject:
         print >> sys.stderr, "Please provide paired input files or change the searchRegionMode."
         sys.exit(1)
       file_list.append(("speciesInput2", open(finput2, "rb")))
-      if line[0] == "promoter":
+      if line[0] == "Many":
         data_dict["promoterUp"] = promoterUp
         data_dict["promoterDown"] = promoterDown
 
     else:
-      if line[0] == "promoter" and line[1] == "genecluster":
+      if line[0] == "Many" and line[1] == "genecluster":
         # search a gene cluster.
         if cluster_name == "":
           print >> sys.stderr, "Please provide a cluster name."
@@ -132,7 +136,7 @@ class SFObject:
         data_dict["promoterUp"] = promoterUp
         data_dict["promoterDown"] = promoterDown
 
-      elif line[0] == "enhancer" and line[1] == "homoregion":
+      elif line[0] == "One" and line[1] == "homoregion":
         # define target regions using homologous regions.
         if enhancerUp == "" or enhancerDown == "":
           print >> sys.stderr, "Please provide enhancerUp and enhancerDown."
@@ -266,6 +270,12 @@ def ParseOutput(json_dict, fout_name):
   with open(fout_name, "w") as fout:
     # Print task information into the file.
     # These lines all start with "#".
+    # Convert alignment mode names
+    if json_dict["alignMode"] == "enhancer":
+      json_dict["alignMode"] = "OneVsOne"
+    elif json_dict["alignMode"] == "promoter":
+      json_dict["alignMode"] = "ManyVsMany"
+    
     for info_line in Run_info:
       line = "# "
       line += "  ".join([item + ": " + str(json_dict[item]) for item in info_line if item in json_dict])
@@ -412,7 +422,7 @@ def Main():
     sample_index = 1
     for data, files in SampleForm:
       # Send a post requests to transfer data and files to EpiAlignment.
-      # This function will return the runid of 
+      # This function will return the runid
       runid = session.Post_sample(data, files)
       print runid
       # Get the result when the job is done. 

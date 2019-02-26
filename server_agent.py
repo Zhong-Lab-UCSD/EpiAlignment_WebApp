@@ -254,7 +254,7 @@ def LiftOver(input_bed, genAssem):
   exit_code = p.returncode
 
   if exit_code != 0:
-    print >> sys.stderr, "[EpiAlignment]Failed to generate the input file. Exit code: " + str(exit_code)
+    print >> sys.stderr, "[EpiAlignment]Failed to generate the input file. liftOver exited with code: " + str(exit_code)
     sys.exit(exit_code)
   return input_bed + ".lift"
 

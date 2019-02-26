@@ -18,6 +18,9 @@ const ucscRefToSession = {
 }
 
 const RUN_INFO_DICT = 'assets/runInfoDict.json'
+const DEFAULT_ERROR_MSG = 'Error happened during epialignment.\n' +
+  'If you wish to report the issue, please include your URL in the address ' +
+  'bar in your report.'
 
 const STATUS_RUNNING = -1
 const POLLING_INTERVAL_ENHANCER = 20000 // 20 seconds
@@ -186,7 +189,8 @@ var app = new Vue({
       this.loading = false
       this.error = true
       this.errorCode = response.status
-      this.errorMessage = response.errMessage.trim()
+      this.errorMessage =
+        (response.errMessage || response || DEFAULT_ERROR_MSG).trim()
     })
     this.runInfoDictPromise = postAjax(RUN_INFO_DICT, null, 'json', 'GET')
   },

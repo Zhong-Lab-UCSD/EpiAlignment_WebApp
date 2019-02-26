@@ -261,7 +261,11 @@ app.get('/results/:runid', function (req, res) {
     // The query id does not exist.
     console.log('Invalid runid requested: ' + runid)
     res.status(401)
-    res.send('This query ID does not exist!')
+    res.json({
+      errMessage: 'This Run ID does not exist! This may be due to a wrong' +
+        ' link or an expired alignment run.\nPlease check your link and/or' +
+        ' run your alignment again.'
+    })
   } else {
     readFilePromise(runInfoPath, 'utf8')
       .then(infoString => {

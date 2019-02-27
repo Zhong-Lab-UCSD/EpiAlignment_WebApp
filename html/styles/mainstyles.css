@@ -285,10 +285,26 @@ button {
 	border-radius: 8px;
 	background: linear-gradient(to bottom, #F0F0F0, #DDDDDD);
 	cursor: pointer;
+	position: relative;
+	overflow: visible;
+}
+
+button > div.buttonTip {
+	display: none;
+	position: absolute;
+	left: 9em;
+	top: 0;
+	width: 15em;
+	text-align: left;
 }
 
 button:active {
 	background: linear-gradient(to top, #F0F0F0, #DDDDDD);
+}
+
+button:hover > div.buttonTip,
+button:active > div.buttonTip {
+	display: block;
 }
 
 .encodeButton {

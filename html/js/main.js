@@ -192,6 +192,11 @@ var app = new Vue({
       return Math.max(this.encodeFilters.length, this.publicFilters.length)
     },
 
+    expectedRunTime: function () {
+      return this.formParams.alignMode === 'enhancer'
+        ? '1 minute' : '10 seconds'
+    },
+
     presetButtonText: function () {
       if (!this.selectedExperimentIds) {
         if (this.peakFiles.some(peakFile => peakFile.length)) {

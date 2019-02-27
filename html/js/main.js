@@ -691,6 +691,7 @@ var app = new Vue({
         this.formParams.speciesText.splice(
           0, 1, 'chr12\t8207583\t8209349\tRegion_example\t0\t+\n')
         this.formParams.searchRegionMode = 'homoregion'
+        this.formParams.enhancerDown = 0
       }
     },
 

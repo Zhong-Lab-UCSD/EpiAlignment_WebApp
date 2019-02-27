@@ -23,7 +23,7 @@ const DEFAULT_ERROR_MSG = 'Error happened during epialignment.\n' +
   'bar in your report.'
 
 const STATUS_RUNNING = -1
-const POLLING_INTERVAL_ENHANCER = 20000 // 20 seconds
+const POLLING_INTERVAL_ENHANCER = 15000 // 15 seconds
 const POLLING_INTERVAL_PROMOTER = 3000 // 3 seconds
 
 const MINIMUM_HEATMAP_GAP = 10

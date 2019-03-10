@@ -48,8 +48,7 @@ def CheckFileType(file1, align_mode):
       return "name"
     else:
       if align_mode == "enhancer":
-        print >> sys.stderr, "[EpiAlignment]Your input file doesn't have 6 fields.\
-        Genomic coordinates have to be provided in the bed6 format."
+        print >> sys.stderr, "[EpiAlignment]Your input file doesn't have 6 fields. Genomic coordinates have to be provided in the bed6 format."
       elif align_mode == "promoter":
         print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files (6 columns) or genelists (1 columns)."
       sys.exit(201)

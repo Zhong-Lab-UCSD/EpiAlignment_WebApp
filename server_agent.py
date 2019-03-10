@@ -44,14 +44,16 @@ def CheckFileType(file1, align_mode):
     line = fin.readline().strip().split()
     if len(line) == 6:
       return "bed"
-    elif len(line) == 1:
-      return "name"
     else:
       if align_mode == "enhancer":
         print >> sys.stderr, "[EpiAlignment]Your input file doesn't have 6 fields. Genomic coordinates have to be provided in the bed6 format."
+        sys.exit(201)
       elif align_mode == "promoter":
-        print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files (6 columns) or genelists (1 columns)."
-      sys.exit(201)
+        if len(line) == 1:
+          return "name"
+        else:
+          print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files (6 columns) or genelists (1 columns)."
+          sys.exit(201)
 
 def StripDigits(qstr):
   '''

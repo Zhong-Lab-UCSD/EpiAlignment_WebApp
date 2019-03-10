@@ -173,7 +173,7 @@ var app = new Vue({
         (this.enhancerSelected ? '.' : ' / a gene list.')
     },
     genomePlaceholder: function () {
-      return 'Paste BED data ' +
+      return 'Paste BED6 data ' +
         (this.enhancerSelected ? 'here.' : 'or gene names here.')
     },
     genomeRegionSelected: function () {

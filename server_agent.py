@@ -39,7 +39,7 @@ def CheckFileLength(file1, file2):
       sys.exit(202)
 
 
-def CheckFileType(file1):
+def CheckFileType(file1, search_mode):
   with open(file1, "r") as fin:
     line = fin.readline().strip().split()
     if len(line) == 6:
@@ -47,7 +47,11 @@ def CheckFileType(file1):
     elif len(line) == 1:
       return "name"
     else:
-      print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files or genelists."
+      if search_mode == "enhancer":
+        print >> sys.stderr, "[EpiAlignment]Your input file doesn't have 6 fields.\
+        Genomic coordinates have to be provided in the bed6 format."
+      elif search_mode == "promoter":
+        print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files (6 columns) or genelists (1 columns)."
       sys.exit(201)
 
 def StripDigits(qstr):
@@ -85,12 +89,13 @@ def ParsePeaks(of_name, json_dict, runid):
     print >> fpeak, "@species2"
     print >> fpeak, peak2
 
-def FileOrTextarea(textarea_input, json_files, key, of_name, runid):
+def FileOrTextarea(textarea_input, json_files, key, search_mode, of_name, runid):
   '''
   Determine if input was pasted into the textarea or uploaded as a file.
   textarea_input: a string. Text in textarea.
   json_files: json "files" value.
   key: key value of the file.
+  search_mode: search mode, promoter or enhancer.
   of_name: output folder name.
   return: a string and file type. If a file was uploaded, simply return file name. If data was pasted into the textarea,
   write the data into a new file.
@@ -107,7 +112,7 @@ def FileOrTextarea(textarea_input, json_files, key, of_name, runid):
     # no data provided.
     return "", ""
 
-  intype = CheckFileType(fname)
+  intype = CheckFileType(fname, search_mode)
   return fname, intype
 
 ########################
@@ -310,7 +315,7 @@ def CreateInputBeds(of_name, json_dict, runid):
   enhancerDown = CheckNumber("enhancerDown", json_dict["body"])
 
   # Is input1 a file or a pasted text?
-  input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", of_name, runid)
+  input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", searchMode, of_name, runid)
   if input1 == "" and (not json_dict["body"]["searchRegionMode"] == "genecluster"):
     print >> sys.stderr, "[EpiAlignment]No input regions provided."
     sys.exit(200)
@@ -318,7 +323,7 @@ def CreateInputBeds(of_name, json_dict, runid):
   if searchMode == "genomeregion":
     # Mode 1: define search regions with bed files or gene lists.
     # Is input2 a file or a pasted text?
-    input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", of_name, runid)
+    input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", searchMode, of_name, runid)
     if alignMode == "enhancer":
       if CheckFileLength(input1, input2):
         return input1, input2, intype1, intype2

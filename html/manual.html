@@ -134,28 +134,37 @@
       <div class="section">
         <!--Introduction-->
         <h1>Introduction</h1>
-        <p>Sequence similarity has been the primary information used for annotating regulatory sequences across
-          species.
-          However, this strategy has limited capability on sequences less selectively constrained. It also takes no
-          account
-          of the dynamics of genomic functions in different tissues. The epigenome, on the other hand, contains both
-          structural and functional information. Hence, considering both the genome and the epigenome in similarity
-          search
-          may help to identify regions with similar structures and functions. Here, we present EpiAlignment, a
-          web-based
-          engine for chromosomal similarity search. This web service aims to assist users with identifying regions with
-          both sequence and epigenomic similarities across two species.</p>
+        <p>EpiAlignment is a web-based tool that can align genomic regions with both sequence and epigenomic information.
+           This web server aims to assist users with matching genomic elements
+           with functional and structural similarities across two species.</p>
+        <p>The web server has two alignment modes: one-vs-one (default) and many-vs-many. The default one-vs-one mode is 
+           suitable if you have <strong>medium-sized query regions, 
+           usually marked by epigenomic modifications, (e.g. ChIP-Seq peaks, hundreds to thousands of base pairs long)</strong>, 
+           and much longer target regions. 
+           It will match the query region(s) to a sub-region of the target region(s). The many-vs-many mode attempts to align 
+           every input query region to all target regions to find the best hit. 
+           It would be useful if you have query and target regions of similar lengths (medium-sized), and would like to find one best match 
+           for the query region among a set of target regions. The two modes are illustrated in figures below.</p>
+        <div class="flexRow">
+          <div class="manualImg small">
+            <img alt="Expandable image for one-vs-one mode" src="assets/images/DefaultStart.png">
+          </div>
+          <div class="manualImg small">
+            <img alt="Expandable image for many-vs-many mode" src="assets/images/ManyStart.png">
+          </div>
+        </div>
       </div>
       <div ref="quickStart" class="section">
         <!--Quick Start-->
         <h1>Quick start</h1>
-        <p>EpiAlignment has two major alignment modes: one-vs-one (default) and many-vs-many. Given an input query region, the default
+        <p>EpiAlignment has two major alignment modes: one-vs-one (default) and many-vs-many. Given an input query region 
+          (usually hundreds to thousands of bp), the default
           mode can be used to identify the best-matching sub-region within the corresponding target region, 
-          whereas the many-vs-many mode is useful for finding the best match among a set of target regions</p>
+          whereas the many-vs-many mode is useful for finding the best match among a set of target regions.</p>
 
         <h3 ref="oneVsOneExample">An example for using the one-vs-one mode</h3>
         <!--Example 1-->
-        <p>In this example, we will search a mouse genomic region against the neighborhood of its
+        <p>In this example, we will search a H3K4me3-marked mouse genomic region (~2kb) against the neighborhood of its
           homologous region in human. This example will take about one minute to run on EpiAlignment.</p>
         <h4>Import sample data with one click:</h4>
         <div class="exampleSteps">
@@ -283,7 +292,9 @@
           different. 
           The one-vs-one mode attempts to find a best-matching part for a query region in the 
           corresponding target region (one-against-one alignment). 
-          It is more useful in cases where target regions are much longer than query regions, 
+          It is more useful in cases where query regions are functional genomic elements marked by epigenomic modifications (usually hundreds 
+          to thousands base pairs), while the target regions 
+          are much longer,
           and the best match of the query region cannot be easily determined in the target species with sequence homologies only.
           This mode allows defining target regions using homologous information.</p>
         <p>The many-vs-many mode, on the other hand, aligns every input query region to 
@@ -451,7 +462,9 @@
         <h4 ref="oneVsOneModeQueryAndTarget">One-vs-one mode</h4>
         <h5>Query regions</h5>
         <p>For the default mode, the input query regions need to be defined with genomic coordinates in BED6 format.
-          The coordinates can be either pasted into the textarea (one region per line) or uploaded as a file. 
+          The coordinates can be either pasted into the textarea (one region per line) or uploaded as a file. Typically, the 
+          query regions are hundreds to thousands bp-long genomic elements marked by epigenomic modifications, such as ChIP-Seq 
+          peaks. If your query regions are longer than 10kb, a warning will show up on the result page.
           Please note that each line should
           have a unique name. A sample data is shown below:</p>
         <div class="manualImg">

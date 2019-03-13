@@ -383,7 +383,7 @@ def CreateInputBeds(of_name, json_dict, runid):
   if searchMode == "genomeregion":
     # Mode 1: define search regions with bed files or gene lists.
     # Is input2 a file or a pasted text?
-    input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", searchMode, of_name, runid)
+    input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", alignMode, of_name, runid)
     if alignMode == "enhancer":
       if CheckFileLength(input1, input2):
         return input1, input2, intype1, intype2

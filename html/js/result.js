@@ -226,8 +226,8 @@ var app = new Vue({
         .then(response => {
           this.email = response.email || this.email
 
-          this.setRunParameters(response)
           if (response.status === STATUS_RUNNING) {
+            this.setRunParameters(response)
             if (!this.pollingTime) {
               this.pollingTime = response.alignMode === 'promoter'
                 ? POLLING_INTERVAL_PROMOTER : POLLING_INTERVAL_ENHANCER

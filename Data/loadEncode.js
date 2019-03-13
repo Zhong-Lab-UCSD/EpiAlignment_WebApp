@@ -200,7 +200,8 @@ async function getExperimentsUsingBiosample (biosampleObj, notReleaseOnly) {
   } catch (err) {
     if (err.response && err.response.status === 404) {
       // no result
-      console.log('No results for biosample ' + biosampleObj.accession + '.')
+      console.log('No results for biosample ' + biosampleObj.accession +
+        '. UUID = ' + biosampleObj.uuid)
       return null
     }
     console.log('Error getting ENCODE object for biosample ' +

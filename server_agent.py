@@ -8,6 +8,7 @@ import os
 import re
 
 ensembl_regexp = 'ENS[A-Z]+[0-9]{11}'
+WARNING_SIZE = 10000
 
 def ParseJson():
   '''
@@ -39,21 +40,27 @@ def CheckFileLength(file1, file2):
       sys.exit(202)
 
 
-def CheckFileType(file1, align_mode):
-  with open(file1, "r") as fin:
-    line = fin.readline().strip().split()
-    if len(line) == 6:
+def CheckLineType(line, align_mode, oldType = None):
+  if len(line) == 6:
+    if oldType != "name":
       return "bed"
     else:
-      if align_mode == "enhancer":
-        print >> sys.stderr, "[EpiAlignment]Your input file doesn't have 6 fields. Genomic coordinates have to be provided in the bed6 format."
-        sys.exit(201)
-      elif align_mode == "promoter":
-        if len(line) == 1:
+      print >> sys.stderr, "[EpiAlignment]The format of your input file is not consistent. Please use all gene names or all BED6 format."
+      sys.exit(201)
+  else:
+    if align_mode == "enhancer":
+      print >> sys.stderr, "[EpiAlignment]Your input file doesn't have 6 fields. Genomic coordinates have to be provided in the bed6 format."
+      sys.exit(201)
+    elif align_mode == "promoter":
+      if len(line) == 1:
+        if oldType != "bed":
           return "name"
         else:
-          print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files (6 columns) or genelists (1 columns)."
+          print >> sys.stderr, "[EpiAlignment]The format of your input file is not consistent. Please use all gene names or all BED6 format."
           sys.exit(201)
+      else:
+        print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files (6 columns) or genelists (1 columns)."
+        sys.exit(201)
 
 def StripDigits(qstr):
   '''
@@ -90,7 +97,31 @@ def ParsePeaks(of_name, json_dict, runid):
     print >> fpeak, "@species2"
     print >> fpeak, peak2
 
-def FileOrTextarea(textarea_input, json_files, key, align_mode, of_name, runid):
+
+def parseBedStrand(bedFields, warningSize=None, strandIndex=5):
+  try:
+    if bedFields[strandIndex] == "+" or bedFields[strandIndex] == "." or bedFields[strandIndex] == "1":
+      bedFields[strandIndex] = "+"
+    elif bedFields[strandIndex] == "-" or bedFields[strandIndex] == "0":
+      bedFields[strandIndex] = "-"
+    else:
+      raise Exception('strand is not "+", "-" or "." ("." will be considered as "+").')
+    if warningSize is not None and int(bedFields[2]) - int(bedFields[1]) > int(warningSize):
+      print >> sys.stderr, ('[EpiAlignment]Long query region detected (>' +
+                            str(warningSize) + 'bp). ' +
+                            'EpiAlignment is designed to match ' +
+                            'medium-sized functional genomic elements to '+
+                            'a best hit within the long target region. ' +
+                            'The biological insight from results of such ' +
+                            'long query regions may be limited. ' +
+                            '(Please see the manual for details.) ' +
+                            'In addition, the run time may be very long.')
+    return bedFields
+  except (IndexError, TypeError):
+    raise Exception('Not a BED6 format.')
+      
+
+def FileOrTextarea(textarea_input, json_files, key, align_mode, of_name, runid, warningSize = None):
   '''
   Determine if input was pasted into the textarea or uploaded as a file.
   textarea_input: a string. Text in textarea.
@@ -101,20 +132,46 @@ def FileOrTextarea(textarea_input, json_files, key, align_mode, of_name, runid):
   return: a string and file type. If a file was uploaded, simply return file name. If data was pasted into the textarea,
   write the data into a new file.
   '''
+  lineType = None
   if key in json_files:
     # uploaded file
     fname = of_name + json_files[key][0]["filename"]
+    fOutName = of_name + key + "_" + runid
+    with open(fname, 'r') as fIn, open(fOutName, 'w') as fOut:
+      lineNum = 0
+      for line in fIn:
+        try:
+          lineNum += 1
+          line = line.strip().split()
+          lineType = CheckLineType(line, align_mode, lineType)
+          if lineType == 'bed':
+            parseBedStrand(line, warningSize)
+          print >> fOut, '\t'.join(line)
+        except Exception as err:
+          print >> sys.stderr, '[EpiAlignment]Skipping line #' + str(
+              lineNum) + ': ' + err.message
   elif textarea_input != "":
     # paste data
-    fname = of_name + key + "_" + runid
-    with open(fname, "w") as fsp:
-      print >> fsp, textarea_input.rstrip("\n")
+    fOutName = of_name + key + "_" + runid
+    with open(fOutName, "w") as fOut:
+      lineNum = 0
+      lines = textarea_input.rstrip("\n").split('\n')
+      for line in lines:
+        try:
+          lineNum += 1
+          line = line.strip().split()
+          lineType = CheckLineType(line, align_mode, lineType)
+          if lineType == 'bed':
+            parseBedStrand(line, warningSize)
+          print >> fOut, '\t'.join(line)
+        except Exception as err:
+          print >> sys.stderr, '[EpiAlignment]Skipping line #' + str(
+              lineNum) + ': ' + err.message
   else:
     # no data provided.
     return "", ""
 
-  intype = CheckFileType(fname, align_mode)
-  return fname, intype
+  return fOutName, lineType
 
 ########################
 ## Mode 1: genelist   ##
@@ -158,6 +215,7 @@ def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, 
         print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
         print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
         i += 1
+
   if i > 10000:
     print >> sys.stderr, "[EpiAlignment]Too many regions..."
     sys.exit(210)
@@ -215,7 +273,7 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
     trans_list1 = []
     for gene in cluster_genes1:
       if gene in transDict1:
-        trans_list1 += PromoterMerge(gene, transDic1, promoterUp, promoterDown)
+        trans_list1 += PromoterMerge(gene, transDict1, promoterUp, promoterDown)
 
     with open(fname1, "w") as fout1, open(fname2, "w") as fout2:
       for region1 in trans_list1:
@@ -223,6 +281,7 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
           region_name = region1[3] + "[===]" + region2[3]
           print >> fout1, "\t".join(region1[0:3] + [region_name] + region1[4:])
           print >> fout2, "\t".join(region2[0:3] + [region_name] + region2[4:])
+
     return fname1, fname2 
 
 
@@ -241,7 +300,7 @@ def ExtendBed(fname, enhUp, enhDown):
       if line[5] == "+":
         line[1] = str(int(line[1]) - enhUp)
         line[2] = str(int(line[2]) + enhDown)
-      elif line[5] == "-":
+      else:
         line[1] = str(int(line[1]) - enhDown)
         line[2] = str(int(line[2]) + enhUp)
       print >> fout, "\t".join(line)
@@ -316,7 +375,7 @@ def CreateInputBeds(of_name, json_dict, runid):
   enhancerDown = CheckNumber("enhancerDown", json_dict["body"])
 
   # Is input1 a file or a pasted text?
-  input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", alignMode, of_name, runid)
+  input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", alignMode, of_name, runid, WARNING_SIZE)
   if input1 == "" and (not json_dict["body"]["searchRegionMode"] == "genecluster"):
     print >> sys.stderr, "[EpiAlignment]No input regions provided."
     sys.exit(200)
@@ -525,7 +584,7 @@ def TargetRegion(bed_list, res_line):
   if bed_list[3] == "+":
     start = int(bed_list[1]) + int(res_line[5])
     stop = int(bed_list[1]) + int(res_line[6])
-  else:
+  elif bed_list[3] == "-":
     start = int(bed_list[2]) - int(res_line[6])
     stop = int(bed_list[2]) - int(res_line[5])
   return bed_list[0] + ":" + str(start) + "-" + str(stop) + "(" + bed_list[3] + ")"
@@ -576,33 +635,35 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
       if len(line_epi) == 0:
         break
       pair_name = line_epi[0].split("_", 2)[-1]
-
-      #Initialize json_obj
-      if seq_stat:
-        json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi, line_seq)
-      else:
-        json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi)
-
-      if (alignMode == "enhancer"):
-        # a pair of bed.
-        json_obj["region_name1"] = pair_name
-
-      else:
-        pair_name = pair_name.split("[===]")
-        if intype1 == "bed":
-          json_obj["region_name1"] = pair_name[0]
+      try:
+        #Initialize json_obj
+        if seq_stat:
+          json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi, line_seq)
         else:
-          json_obj["ensID1"] = pair_name[0].split("_")[0]
-          json_obj["transID1"] = pair_name[0].split("_")[1]
-        if intype2 == "bed":
-          json_obj["region_name2"] = pair_name[1]
-        else:
-          json_obj["ensID2"] = pair_name[1].split("_")[0]
-          json_obj["transID2"] = pair_name[1].split("_")[1]
+          json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi)
 
-      WriteFinalResult(json_obj, fout, alignMode)
-      json_list.append(json_obj)
-      i += 1
+        if (alignMode == "enhancer"):
+          # a pair of bed.
+          json_obj["region_name1"] = pair_name
+
+        else:
+          pair_name = pair_name.split("[===]")
+          if intype1 == "bed":
+            json_obj["region_name1"] = pair_name[0]
+          else:
+            json_obj["ensID1"] = pair_name[0].split("_")[0]
+            json_obj["transID1"] = pair_name[0].split("_")[1]
+          if intype2 == "bed":
+            json_obj["region_name2"] = pair_name[1]
+          else:
+            json_obj["ensID2"] = pair_name[1].split("_")[0]
+            json_obj["transID2"] = pair_name[1].split("_")[1]
+
+        WriteFinalResult(json_obj, fout, alignMode)
+        json_list.append(json_obj)
+        i += 1
+      except Exception as e:
+        print >> sys.stderr, '[EpiAlignment]Error parsing item: ' + e.message
 
   json_dump_dict = {"data": json_list, "alignMode": alignMode, "searchRegionMode": searchRegionMode, "runid": runid}
   with open(of_name + runid + ".json", "w") as fjson:

@@ -64,7 +64,7 @@ const CLUSTER_QUERY_TAGET = '/backend/get_cluster'
 const CLUSTER_QUERY_DEBOUNCE = 300
 const CLUSTER_QUERY_DEBOUNCE_WHEN_OPEN = 50
 
-const NUM_UP_DOWN_STREAN = 2
+const NUM_UP_DOWN_STREAM = 2
 const NUM_PARAMS = 8
 
 var app = new Vue({
@@ -79,6 +79,7 @@ var app = new Vue({
       inputError: [false, false],
       promoterLengthError: false,
       referenceError: false,
+      searchRegionModeError: false,
       clusterError: false,
       enhancerLengthError: false,
       weightError: false,
@@ -141,7 +142,7 @@ var app = new Vue({
       speciesInput: [null, null],
       promoterUp: PROMOTER_UP_DEFAULT,
       promoterDown: PROMOTER_DOWN_DEFAULT,
-      searchRegionMode: null,
+      searchRegionMode: 'homoregion',
       genetypeSelect: null,
       enhancerUp: ENHANCER_FLANK_DEFAULT,
       enhancerDown: ENHANCER_FLANK_DEFAULT,
@@ -372,6 +373,11 @@ var app = new Vue({
         })
       }
 
+      // searchRegionModeError
+      if (!this.formParams.searchRegionMode) {
+        this.formError.searchRegionModeError = true
+      }
+
       // inputError
       this.formParams.speciesText.forEach((text, index) => {
         if ((!text || !text.trim().length) && // no input text
@@ -388,7 +394,7 @@ var app = new Vue({
       })
 
       // promoterLengthError
-      for (let i = 0; i < NUM_UP_DOWN_STREAN; i++) {
+      for (let i = 0; i < NUM_UP_DOWN_STREAM; i++) {
         if (!this.$refs['promoter[' + i + ']'].checkValidity()) {
           this.formError.promoterLengthError = true
           break
@@ -412,7 +418,7 @@ var app = new Vue({
 
       // enhancerLengthError
       if (this.homologRegionSelected) {
-        for (let i = 0; i < NUM_UP_DOWN_STREAN; i++) {
+        for (let i = 0; i < NUM_UP_DOWN_STREAM; i++) {
           if (!this.$refs['enhancer[' + i + ']'].checkValidity()) {
             this.formError.enhancerLengthError = true
             break

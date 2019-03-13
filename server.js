@@ -237,6 +237,10 @@ app.post('/form_upload', cpUpload, function (req, res) {
       if (errLine && errLine.trim().startsWith('[EpiAlignment]')) {
         errLine = errLine.replace('[EpiAlignment]', '').trim()
         stdErrData += (stdErrData ? '\n' : '') + errLine
+        runInfoObject.addProperty('errMessage', stdErrData, true)
+        writePromise = writePromise.then(() => writeFilePromise(
+          runInfoPath, JSON.stringify(runInfoObject, null, 2)
+        ))
       } else {
         console.log('[stderr] ' + data + '')
       }

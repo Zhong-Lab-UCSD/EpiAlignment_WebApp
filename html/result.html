@@ -51,6 +51,33 @@
         <div class="runInfoShowHide selfAlignStart" @click="foldRunInfoDetails">Fold details</div>
       </div>
     </div>
+    <div class="errorContainer" v-if="error">
+      <p>Error encountered when calculating your results. Please check your inputs
+        and try again.</p>
+      <p> If you have any questions, please use the "Contact us via
+        email" link at the bottom of the page to report the problems, or report
+        the issue via Github from the "Find us on Github" link. Please include
+        your Run ID (shown above) when reporting an error.
+      </p>
+      <p>Error message:
+        <code>{{ errorMessage }}</code>
+      </p>
+    </div>
+    <div class="errorContainer warning" v-if="showWarning && !error">
+      <div class="tooltipPanel flexColumn">
+        <div class="flexRow flexWrap flexNoGap">
+          <div class="flex">The following warning(s) occured during
+            the alignment run:</div>
+          <div class="closeError noFlex" v-show="loading">
+            <em>You may hide the warning(s) once the job is done.</em>
+          </div>
+          <div class="closeError noFlex" v-show="!loading">
+            <i class="material-icons button" @click="closeWarning()">close</i>
+          </div>
+        </div>
+        <code>{{ errorMessage }}</code>
+      </div>
+    </div>
     <div class="loadingHolder flexColumn flexStretch" v-show="loading">
       <h3>Calculating...</h3>
       <img class="selfAlignStart" src="assets/images/loading.gif">
@@ -87,30 +114,6 @@
         please check your spam folder regularly, or make sure
         messenger@mail.givengine.org is on
         your approved sender list ("white list") and/or in your address book.
-      </div>
-    </div>
-    <div class="errorContainer" v-if="error">
-      <p>Error encountered when calculating your results. Please check your inputs
-        and try again.</p>
-      <p> If you have any questions, please use the "Contact us via
-        email" link at the bottom of the page to report the problems, or report
-        the issue via Github from the "Find us on Github" link. Please include
-        your Run ID (shown above) when reporting an error.
-      </p>
-      <p>Error message:
-        <code>{{ errorMessage }}</code>
-      </p>
-    </div>
-    <div class="errorContainer warning" v-if="showWarning && !error">
-      <div class="tooltipPanel flexColumn">
-        <div class="flexRow flexWrap flexNoGap">
-          <div class="flex">The following warning message occured during
-            the alignment run:</div>
-          <div class="closeError noFlex">
-            <i class="material-icons button" @click="closeWarning()">close</i>
-          </div>
-        </div>
-        <code>{{ errorMessage }}</code>
       </div>
     </div>
     <div id="pageContainer" class="flexRow flexStart flexWrap flexNoGap" v-if="!loading && !error">

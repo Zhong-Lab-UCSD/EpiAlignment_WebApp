@@ -488,10 +488,12 @@ class RunInfo {
     }
   }
 
-  addProperty (propName, value) {
-    if (value && !this._resultFormatted.hasOwnProperty(propName) &&
-      !this._result.hasOwnProperty(propName)
-    ) {
+  addProperty (propName, value, overwrite) {
+    if (value && (overwrite ||
+      (!this._resultFormatted.hasOwnProperty(propName) &&
+        !this._result.hasOwnProperty(propName)
+      )
+    )) {
       this._result[propName] = value
     }
   }

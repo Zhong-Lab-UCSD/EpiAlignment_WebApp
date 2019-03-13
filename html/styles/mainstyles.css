@@ -1544,6 +1544,10 @@ div.section div.manualImg.small {
 	max-width: 450px;
 }
 
+div.section div.manualImg.tiny {
+	max-width: 300px;
+}
+
 div.section div.manualImg > img {
 	max-width: 100%;
 }

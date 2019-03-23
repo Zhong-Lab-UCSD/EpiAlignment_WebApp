@@ -354,7 +354,7 @@ app.get('/result_image/:runid/:index.png', function (req, res) {
           base: imageName
         }))
       } catch (err) {
-        res.send(404).send('No image file available.')
+        res.status(404).send('No image file available.')
       }
     })
     // python input
@@ -374,7 +374,7 @@ app.get('/get_cluster/:partialName', (req, res) => {
     res.json(result)
   }).catch(err => {
     console.log(err)
-    res.send(400).send('Cannot get clusters.')
+    res.status(400).send('Cannot get clusters.')
   })
 })
 

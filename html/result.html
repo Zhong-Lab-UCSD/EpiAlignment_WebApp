@@ -336,13 +336,14 @@
           <template slot="expand" slot-scope="entry">
             <v-card flat>
               <div class="flexRow flexStretch enhancerCardContainer">
-                <div v-show="!entry.item.imageError"
-                  class="resultImgHolder flexColumn flexCenter flexNoWrap flexNoGap noFlex justifyCenter">
-                  <img v-show="entry.item.image" :src="entry.item.image">
-                </div>
-                <div v-show="entry.item.imageError"
-                  class="resultImgHolder flexColumn flexCenter flexNoWrap flexNoGap noFlex justifyCenter">
-                  {{ entry.item.imageError }}
+                <div
+                  class="resultImgHolder flexColumn flexCenter flexNoWrap flexNoGap noFlex justifyCenter"
+                  :class="{ 'loading': !entry.item.imageError && !entry.item.image }"
+                  >
+                  <img v-show="entry.item.image && !entry.item.imageError" :src="entry.item.image">
+                  <div v-show="entry.item.imageError">
+                    {{ entry.item.imageError }}
+                  </div>
                 </div>
                 <div class="flex resultDesc">
                   <div class="resultHeader">Result description</div>

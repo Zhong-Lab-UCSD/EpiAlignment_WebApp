@@ -1278,9 +1278,12 @@ div.resultImgHolder {
 	min-width: 30rem;
 	flex: 0 1 38rem;
 	min-height: 15rem;
-	background-image: url('../assets/images/loading.gif');
 	background-repeat: no-repeat;
 	background-position: center center;
+}
+
+div.resultImgHolder.loading {
+	background-image: url('../assets/images/loading.gif');
 }
 
 div.resultImgHolder > img {

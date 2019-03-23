@@ -357,7 +357,8 @@ var app = new Vue({
         Vue.set(rowItem, 'image', this.imageBlobUrl)
       }).catch(async error => {
         Vue.set(rowItem, 'imageError',
-          await (new window.Response(error)).text() || 'Cannot load image.')
+          await (new window.Response(error.response || error)).text() ||
+            'Cannot load image.')
       })
     },
     verifyNameSource: function (dataEntry) {

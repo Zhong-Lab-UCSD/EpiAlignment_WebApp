@@ -338,6 +338,7 @@ var app = new Vue({
       if (this.alignMode === 'enhancer') {
         row.expanded = !row.expanded
         Vue.set(row.item, 'image', null)
+        Vue.set(row.item, 'imageError', false)
         if (row.expanded) {
           this.getEnhancerImage(row.item)
         }
@@ -354,6 +355,9 @@ var app = new Vue({
         }
         this.imageBlobUrl = window.URL.createObjectURL(imageBlob)
         Vue.set(rowItem, 'image', this.imageBlobUrl)
+      }).catch(async error => {
+        Vue.set(rowItem, 'imageError',
+          await (new window.Response(error)).text() || 'Cannot load image.')
       })
     },
     verifyNameSource: function (dataEntry) {

@@ -129,7 +129,7 @@ img#ucsdLogo {
 	margin: 15px 25px;
 }
 
-code {
+code.codeParagraph {
 	margin: 0.5rem 2rem 0.5rem 1rem;
 	background: #EEEEEE;
 	width: 100%;
@@ -335,17 +335,14 @@ button:active > div.buttonTip {
 	margin-right: 1em;
 }
 
-.flexRow.flexWrap:not(.flexNoGap) > *:not(.flexWrap):not(.flexColumn) {
+.flexRow.flexWrap:not(.flexNoGap) > *:not(.flexWrap):not(.flexColumn):not(.flexNoGapElem),
+.flexColumn:not(.flexNoGap) > *:not(:last-child):not(.flexWrap):not(.flexNoGapElem) {
 	margin-bottom: 0.7em;
 }
 
 .flexColumn {
 	display: flex;
 	flex-direction: column;
-}
-
-.flexColumn:not(.flexNoGap) > *:not(:last-child):not(.flexWrap) {
-	margin-bottom: 0.7em;
 }
 
 .flex {
@@ -485,6 +482,22 @@ div#step1 > div.stepright > div > input:not(:first-of-type) {
 
 div#step1 > div.stepright > div > input {
 	margin-right: 0.5em;
+}
+
+div.textAreaHolder {
+	position: relative;
+	margin-top: -0.5em;
+	margin-bottom: 0.5em;
+}
+
+div.bedFormatHint {
+	font-size: 14px;
+	line-height: 20px;
+	padding: 0.5em 0.75em;
+	background: #faf5de;
+	box-sizing: border-box;
+	box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.35);
+	position: absolute;
 }
 
 div.elemLabel {

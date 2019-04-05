@@ -169,7 +169,14 @@
               <div class="elemLabel">Input regions:</div>
               <div class="flexColumn flexStretch flex">
                 <textarea spellcheck="false" autocomplete="new-password" name="speciesText[]" v-model="formParams.speciesText[0]"
-                  :placeholder="genomePlaceholder"></textarea>
+                  :placeholder="genomePlaceholder" @focus="bedHint1On = true" @blur="bedHint1On = false"></textarea>
+                <div class="flexNoGapElem textAreaHolder">
+                  <div class="bedFormatHint" v-show="bedHint1On"><strong>BED6 fields:</strong><br>
+                    <code>chrom&#9;chromStart&#9;chromEnd&#9;name&#9;score&#9;strand</code><br>
+                    <strong>Example:</strong><br>
+                    <code>chr12&#9;8207583&#9;8209349&#9;Example&#9;0&#9;+</code>
+                  </div>
+                </div>
                 <div class="flexRow flexStart flexWrap">
                   <div class="subElemLabel">or upload a file:</div>
                   <input ref="speciesInputFile1" class="flex" type="file" name="speciesInput1" @change="inputFileChanged($event, 0)">
@@ -343,7 +350,15 @@
                 </div>
                 <div class="flexColumn flexStretch flex" :class="{ inactive: !genomeRegionSelected }">
                   <textarea spellcheck="false" autocomplete="new-password" :disabled="!genomeRegionSelected" name="speciesText[]"
-                    v-model="formParams.speciesText[1]" :placeholder="genomePlaceholder"></textarea>
+                    v-model="formParams.speciesText[1]" :placeholder="genomePlaceholder"
+                    @focus="bedHint2On = true" @blur="bedHint2On = false"></textarea>
+                <div class="flexNoGapElem textAreaHolder">
+                  <div class="bedFormatHint" v-show="bedHint2On"><strong>BED6 fields:</strong><br>
+                    <code>chrom&#9;chromStart&#9;chromEnd&#9;name&#9;score&#9;strand</code><br>
+                    <strong>Example:</strong><br>
+                    <code>chr12&#9;8207583&#9;8209349&#9;Example&#9;0&#9;+</code>
+                  </div>
+                </div>
                   <div class="flexRow flexStart flexWrap">
                     <div class="subElemLabel">or upload a file:</div>
                     <input ref="speciesInputFile2" :disabled="!genomeRegionSelected" class="flex" type="file" name="speciesInput2"

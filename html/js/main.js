@@ -89,6 +89,9 @@ var app = new Vue({
     submitStatus: null,
     showModeHelp: false,
 
+    bedHint1On: false,
+    bedHint2On: false,
+
     // parameters involved in preset dataset loading
     showPreset: false,
     presetLoaded: false,

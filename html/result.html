@@ -60,7 +60,7 @@
         your Run ID (shown above) when reporting an error.
       </p>
       <p>Error message:
-        <code>{{ errorMessage }}</code>
+        <code class="codeParagraph">{{ errorMessage }}</code>
       </p>
     </div>
     <div class="errorContainer warning" v-if="showWarning && !error">
@@ -75,7 +75,7 @@
             <i class="material-icons button" @click="closeWarning()">close</i>
           </div>
         </div>
-        <code>{{ errorMessage }}</code>
+        <code class="codeParagraph">{{ errorMessage }}</code>
       </div>
     </div>
     <div class="loadingHolder flexColumn flexStretch" v-show="loading">

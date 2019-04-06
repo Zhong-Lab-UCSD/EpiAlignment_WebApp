@@ -3,11 +3,18 @@
 We provided ``EpiAlignment_PyClient``, a python template program for users to access EpiAlignment from their own computer, submit multiple jobs and parse the output. The user may also modify the code and incorporate it into their own programs.
 
 ### Python platform and dependencies
-The current verion of ``EpiAlignment_PyClient`` supports both Python 3 and Python 2.
+The current verion of ``EpiAlignment_PyClient`` supports both Python 3 and Python 2. If you are using Python 2, please use ``EpiAlignment_PyClient_2.py`` instead of ``EpiAlignment_PyClient.py``.
 
-If Python 3 and ``pipenv`` is available, you can use ``pipenv run python EpiAlignment_PyClient.py`` to run ``EpiAlignment_PyClient``, ``pipenv`` will automatically install all required dependencies. If ``pipenv`` is not available, you will need to install the HTTP library [Requests](http://docs.python-requests.org/en/master/) before using ``python EpiAlignment_PyClient.py``. 
+If Python 3 and ``pipenv`` are available, you may use ``pipenv check`` to see if all required dependencies are available on your system, and ``pipenv install`` to automatically install all dependencies. You may then use ``pipenv run python EpiAlignment_PyClient.py`` to run ``EpiAlignment_PyClient``. 
 
-If you are using Python 2, please use ``EpiAlignment_PyClient_2.py`` instead of ``EpiAlignment_PyClient.py``.
+If ``pipenv`` is not available, you will need to install the HTTP library [``requests``](http://docs.python-requests.org/en/master/) before using ``python EpiAlignment_PyClient.py``. 
+
+The following versions of Python and the ``requests`` library have been tested to work with ``EpiAlignment_PyClient``.
+
+| Dependencies | version     |
+| ------------ | ----------- |
+| Python       | 2.7, >= 3.5 |
+| ``requests`` | >= 2.14.0   |
 
 ### Usage
 The basic usage of the template program is:

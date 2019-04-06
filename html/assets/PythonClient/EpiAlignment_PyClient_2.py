@@ -5,8 +5,8 @@ import argparse
 from time import time, sleep
 import datetime
 
-if sys.version_info[0] < 3:
-  raise Exception("Please use Python 3 to run this client. If you are using Python 2, please run EpiAlignment_PyClient_2.py instead.")
+if sys.version_info[0] > 2:
+  raise Exception("Please use Python 2 or convert the code to Python 3.")
 
 EpiAligment_URL = "https://epialign.ucsd.edu"
 
@@ -27,7 +27,7 @@ def ParseArg():
   p.add_argument("--public_data", action="store_true", help="If specified, get available ENCODE/public dataset IDs and descriptions in EpiAlignment.")
   p.add_argument("--find_gene_cluster", type=str, help="Search for gene clusters containing a gene name/Ensembl id. Please provide an ensembl id or a gene name/partial name.")
   if len(sys.argv) == 1:
-    print(p.print_help(), file=sys.stderr)
+    print >> sys.stderr, p.print_help()
     sys.exit(0)
   return p.parse_args()
 
@@ -40,8 +40,8 @@ class SFObject:
   def __iter__(self):
     return self
 
-  def __next__(self):
-    line = next(self.fin)
+  def next(self):
+    line = self.fin.next()
     return self.ParseFormLine(line)
 
 
@@ -54,9 +54,9 @@ class SFObject:
     para_list = line[15:24]
     para_name_list = ["epiweight", "paras", "paramu", "parak", "piA", "piC", "piG", "piT", "pi1"]
     if "" in para_list or len(para_name_list) != len(para_list):
-      print("Please check the parameters.", file=sys.stderr)
+      print >> sys.stderr, "Please check the parameters."
       sys.exit(1)
-    p_dict = list(zip(para_name_list, para_list))
+    p_dict = zip(para_name_list, para_list)
     d_dict.update(p_dict)
     
     # Parse all peak files. If encode/public ids are provided, they will be added to the data dictionary. 
@@ -72,7 +72,7 @@ class SFObject:
       f_list.append(("speciesPeak1[]", open(fpeak1, "rb")))
       f_list.append(("speciesPeak2[]", open(fpeak2, "rb")))
     else:
-      print("Please provide paired peak files.", file=sys.stderr)
+      print >> sys.stderr, "Please provide paired peak files."
       sys.exit(1)
     
     # Add genome assemblies into the data dictionary.
@@ -81,7 +81,7 @@ class SFObject:
     if sp1 != "" and sp2 != "":
       d_dict["genomeAssembly"] = [sp1, sp2]
     else:
-      print("Please provide genome assemblies.", file=sys.stderr)
+      print >> sys.stderr, "Please provide genome assemblies."
       sys.exit(1)
 
 
@@ -112,14 +112,14 @@ class SFObject:
     enhancerDown = line[14]
     # The first input file is required.
     if finput1 == "":
-      print("The query input file is required.", file=sys.stderr)
+      print >> sys.stderr, "The query input file is required."
       sys.exit(1)
     file_list.append(("speciesInput1", open(finput1, "rb")))
 
     if line[1] == "genomeregion":
       # define target regions with an input file.
       if finput2 == "":
-        print("Please provide paired input files or change the searchRegionMode.", file=sys.stderr)
+        print >> sys.stderr, "Please provide paired input files or change the searchRegionMode."
         sys.exit(1)
       file_list.append(("speciesInput2", open(finput2, "rb")))
       if line[0] == "Many":
@@ -130,7 +130,7 @@ class SFObject:
       if line[0] == "Many" and line[1] == "genecluster":
         # search a gene cluster.
         if cluster_name == "":
-          print("Please provide a cluster name.", file=sys.stderr)
+          print >> sys.stderr, "Please provide a cluster name."
           sys.exit(1)
         data_dict["clusters"] = cluster_name
         data_dict["promoterUp"] = promoterUp
@@ -139,13 +139,13 @@ class SFObject:
       elif line[0] == "One" and line[1] == "homoregion":
         # define target regions using homologous regions.
         if enhancerUp == "" or enhancerDown == "":
-          print("Please provide enhancerUp and enhancerDown.", file=sys.stderr)
+          print >> sys.stderr, "Please provide enhancerUp and enhancerDown."
           sys.exit(1)
         data_dict["enhancerUp"] = enhancerUp
         data_dict["enhancerDown"] = enhancerDown
 
       else:
-        print("Please check your alignMode and searchRegionMode.", file=sys.stderr)
+        print >> sys.stderr, "Please check your alignMode and searchRegionMode."
         sys.exit(1)
     return data_dict, file_list
 
@@ -170,10 +170,10 @@ class RequestsEpiAlign:
         r = self.post("/backend/form_upload", data = data)
       r.raise_for_status()
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-      print("Fail to connect.", file=sys.stderr)
+      print >> sys.stderr, "Fail to connect."
       return
     except requests.exceptions.HTTPError:
-      print("HTTP error.", file=sys.stderr)
+      print >> sys.stderr, "HTTP error."
       return
     else:
       runid_dict = json.loads(r.text)
@@ -200,24 +200,24 @@ class RequestsEpiAlign:
         json_dict = json.loads(r.text)
         if int(json_dict["status"]) == -1:
           # The task is still running. Wait for 'gap' time.
-          print("[" + str(datetime.datetime.now()) + "] Job " + runid + " is still running...\r", end=' ', file=sys.stderr)
+          print >> sys.stderr, "[" + str(datetime.datetime.now()) + "] Job " + runid + " is still running...\r",
           sleep(gap)
           time_waited += gap
         elif int(json_dict["status"]) == 0:
           # Finished successfully.
-          print("", file=sys.stderr)
-          print("[" + str(datetime.datetime.now()) + "] Job " + runid + " has been finished successfully!", file=sys.stderr)
+          print >> sys.stderr, ""
+          print >> sys.stderr, "[" + str(datetime.datetime.now()) + "] Job " + runid + " has been finished successfully!"
           return json_dict
         else:
           # Finished with error.
-          print("Job finished with error. Error code: " + str(json_dict["status"]), file=sys.stderr)
+          print >> sys.stderr, "Job finished with error. Error code: " + str(json_dict["status"])
           return
 
       except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        print("Fail to connect.", file=sys.stderr)
+        print >> sys.stderr, "Fail to connect."
         return
       except requests.exceptions.HTTPError:
-        print("HTTP error.", file=sys.stderr)
+        print >> sys.stderr, "HTTP error."
         return
 
   def Get_cluster(self, partial_name):
@@ -234,10 +234,10 @@ class RequestsEpiAlign:
       return json_dict
 
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-      print("Fail to connect.", file=sys.stderr)
+      print >> sys.stderr, "Fail to connect."
       return
     except requests.exceptions.HTTPError:
-      print("HTTP error.", file=sys.stderr)
+      print >> sys.stderr, "HTTP error."
       return
 
   def Get_publicData(self):
@@ -254,10 +254,10 @@ class RequestsEpiAlign:
       pub_dict = json.loads(r_public.text)
       return enc_dict, pub_dict
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-      print("Fail to connect.", file=sys.stderr)
+      print >> sys.stderr, "Fail to connect."
       return
     except requests.exceptions.HTTPError:
-      print("HTTP error.", file=sys.stderr)
+      print >> sys.stderr, "HTTP error."
       return
 
 
@@ -279,15 +279,15 @@ def ParseOutput(json_dict, fout_name):
     for info_line in Run_info:
       line = "# "
       line += "  ".join([item + ": " + str(json_dict[item]) for item in info_line if item in json_dict])
-      print(line, file=fout)
+      print >> fout, line
 
     # Print a header into the output file.
-    print("\t".join(["Index", "Query_region_name", "Query_gene", "Query_transcript", "Query_coordinate",\
+    print >> fout, "\t".join(["Index", "Query_region_name", "Query_gene", "Query_transcript", "Query_coordinate",\
      "Target_region_name", "Target_gene", "Target_transcript", "Target_coordinate", "EpiAlign_score",\
-      "SeqOnly_score", "EpiAlign_target", "SeqOnly_target"]), file=fout)
+      "SeqOnly_score", "EpiAlign_target", "SeqOnly_target"])
     # Iterate region pairs and print results into the output file, one result per line.
     for res in json_dict["data"]:
-      print("\t".join([str(res[key]) for key in Out_list]), file=fout)
+      print >> fout, "\t".join([str(res[key]) for key in Out_list])
 
 
 def PublicDataInfo(data_dict, fout):
@@ -316,7 +316,7 @@ def PublicDataInfo(data_dict, fout):
         else:
           biosampleID = "."
         peakId = dataset["id"]
-        print("\t".join([biosample_name, epiMark, assay, species, biosampleID, peakId]), file=fout)
+        print >> fout, "\t".join([biosample_name, epiMark, assay, species, biosampleID, peakId])
 
 
 def ParsePublicData(enc_dict, pub_dict):
@@ -330,7 +330,7 @@ def ParsePublicData(enc_dict, pub_dict):
   # column names
   dcol_names = ["biosample", "epiMark", "assay", "species", "biosampleId", "peakFileId"]
   with open(fdata_name, "w") as fout:
-    print("\t".join(dcol_names), file=fout)
+    print >> fout, "\t".join(dcol_names)
     PublicDataInfo(enc_dict, fout)
     PublicDataInfo(pub_dict, fout)
 
@@ -346,17 +346,17 @@ def ContainStr(gene, search_str):
   out_str = gene["symbol"] + " " + gene["ensemblId"]
   if search_str == gene["ensemblId"]:
     # if search string is an ensembl ID, it should always be fully matched to an ID in the cluster.
-    print(contained_holder + out_str)
+    print contained_holder + out_str
     return
   search_str = search_str.lower()
   if search_str in gene["symbol"].lower():
-    print(contained_holder + out_str)
+    print contained_holder + out_str
     return
   for altname in gene["aliases"]:
     if search_str in altname.lower():
-      print(contained_holder + out_str + " " + ",".join(gene["aliases"][1:]))
+      print contained_holder + out_str + " " + ",".join(gene["aliases"][1:])
       return
-  print(uncontained_holder + out_str)
+  print uncontained_holder + out_str
 
 
 def PrintClusterGenes(cluster_list, search_str):
@@ -366,12 +366,12 @@ def PrintClusterGenes(cluster_list, search_str):
   for cluster in cluster_list:
     # cluster is a dictionary.
     # print cluster name
-    print(cluster["id"])
+    print cluster["id"]
     for species in cluster["genesBySpecies"]:
-      print(species)
+      print species
       for gene in cluster["genesBySpecies"][species]:
         ContainStr(gene, search_str)
-    print("")
+    print ""
 
 
 def ParseClusterInfo(json_dict, search_str):
@@ -382,21 +382,21 @@ def ParseClusterInfo(json_dict, search_str):
   Gene symbols and ensembl ids will always be printed out. If the query string matches
   an alias, all aliases of the gene will also be provided.
   '''
-  print("Query string: %s"%(search_str))
+  print "Query string: %s"%(search_str)
   if json_dict["maxExceeded"]:
-    print("The query string is too short. Please use a more specific query string to search for gene clusters.")
+    print "The query string is too short. Please use a more specific query string to search for gene clusters."
     sys.exit(0)
   elif len(json_dict["fullMatchList"]) == 0 and len(json_dict["partialMatchList"]) == 0:
-    print("The gene does not exist or there is no paralogues matched in selected species.")
+    print "The gene does not exist or there is no paralogues matched in selected species."
     sys.exit(0)
   else:
     if len(json_dict["fullMatchList"]) != 0:
-      print("")
-      print("Cluster(s) with fully-matched names:")
+      print ""
+      print "Cluster(s) with fully-matched names:"
       PrintClusterGenes(json_dict["fullMatchList"], search_str)
     if len(json_dict["partialMatchList"]) != 0:
-      print("")
-      print("Cluster(s) with partially-matched names:")
+      print ""
+      print "Cluster(s) with partially-matched names:"
       PrintClusterGenes(json_dict["partialMatchList"], search_str)
       
 
@@ -424,7 +424,7 @@ def Main():
       # Send a post requests to transfer data and files to EpiAlignment.
       # This function will return the runid
       runid = session.Post_sample(data, files)
-      print(runid)
+      print runid
       # Get the result when the job is done. 
       # The function will return a python dictionary.
       # Use result_dict["data"] to access the list of results. 

@@ -5,9 +5,9 @@ We provided ``EpiAlignment_PyClient``, a python template program for users to ac
 ### Python platform and dependencies
 The current verion of ``EpiAlignment_PyClient`` supports both Python 3 and Python 2. If you are using Python 2, please use ``EpiAlignment_PyClient_2.py`` instead of ``EpiAlignment_PyClient.py``.
 
-If Python 3 and ``pipenv`` are available, you may use ``pipenv check`` to see if all required dependencies are available on your system, and ``pipenv install`` to automatically install all dependencies. You may then use ``pipenv run python EpiAlignment_PyClient.py`` to run ``EpiAlignment_PyClient``. 
+If Python 3 and ``pipenv`` are available, you may use ``pipenv install`` to automatically install all dependencies. You may then use ``pipenv run python3 EpiAlignment_PyClient.py`` to run ``EpiAlignment_PyClient``. 
 
-If ``pipenv`` is not available, you will need to install the HTTP library [``requests``](http://docs.python-requests.org/en/master/) before using ``python EpiAlignment_PyClient.py``. 
+If ``pipenv`` is not available, you will need to install the HTTP library [``requests``](http://docs.python-requests.org/en/master/) before using ``python3 EpiAlignment_PyClient.py`` or ``python EpiAlignment_PyClient_2.py``. 
 
 The following versions of Python and the ``requests`` library have been tested to work with ``EpiAlignment_PyClient``.
 
@@ -20,7 +20,7 @@ The following versions of Python and the ``requests`` library have been tested t
 The basic usage of the template program is:
 
 ```bash
-pipenv run python EpiAlignment_PyClient.py sampleSheet.txt
+pipenv run python3 EpiAlignment_PyClient.py sampleSheet.txt
 ```
 where sampleSheet.txt is a tab-delimited text file with input information.
 
@@ -31,22 +31,22 @@ The template program also provides two auxiliary functions that allow users to v
 (1) View all paired ENCODE / public epigenomic datasets in EpiAlignment
 
 ```bash
-pipenv run python EpiAlignment_PyClient.py --public_data
+pipenv run python3 EpiAlignment_PyClient.py --public_data
 ```
 A tab-delimited file named "EpiAlign_publicData.txt" will be generated. The file contains details of preset epigenomic datasets in EpiAlignment. 
 
 (2) Search for gene clusters
 
 ```bash
-pipenv run python EpiAlignment_PyClient.py --find_gene_cluster geneid
+pipenv run python3 EpiAlignment_PyClient.py --find_gene_cluster geneid
 ```
 where gene id can be either a gene symbol/partial gene symbol, or an Ensembl id. The command will write gene clusters with fully-matched and partially-matched names to the standard output (stdout). You may try the following commands to see the results:
 
 ```bash
 # find gene clusters with partially-matched names.
-pipenv run python EpiAlignment_PyClient.py --find_gene_cluster GNG
+pipenv run python3 EpiAlignment_PyClient.py --find_gene_cluster GNG
 # find gene clusters with fully-matched names.
-pipenv run python EpiAlignment_PyClient.py --find_gene_cluster GNG7
+pipenv run python3 EpiAlignment_PyClient.py --find_gene_cluster GNG7
 ``` 
 
 ### Submitting jobs to EpiAlignment

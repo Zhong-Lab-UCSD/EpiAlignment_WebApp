@@ -8,7 +8,7 @@ from time import time, sleep
 import datetime
 
 if sys.version_info[0] > 2:
-  raise Exception("Please use Python 2 or convert the code to Python 3.")
+  raise Exception("Please use Python 2 to run this client. If you are using Python 3, please run EpiAlignment_PyClient.py instead.")
 
 EpiAligment_URL = "https://epialign.ucsd.edu"
 

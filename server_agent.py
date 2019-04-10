@@ -1,5 +1,7 @@
 import subprocess
 from subprocess import Popen, PIPE
+from numpy import percentile, mean
+from scipy.stats import norm
 from GeneAnno import *
 import json
 import shutil
@@ -205,7 +207,7 @@ def Cons_transList(input1, intype1, promoterUp, promoterDown, sp, of_name):
 
 def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem, of_name):
   trans_list1 = Cons_transList(input1, intype1, promoterUp, promoterDown, genAssem[0], of_name)
-  trans_list2 = Cons_transList(input2, intype2, promoterUp, promoterDown, genAssem[1], of_name)
+  trans_list2 = Cons_transList(input2, intype2, promoterUp, promoterDown, gsenAssem[1], of_name)
 
   with open(input1 + ".bed", "w") as fout1, open(input2 + ".bed", "w") as fout2:
     i = 0
@@ -552,25 +554,6 @@ def ExeEpiAlignment(alignMode, searchRegionMode, of_name, runid):
 ## Parse results ##
 ###################
 
-def InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, line_epi, line_seq = ""):
-  '''
-  Initialize a json object
-  ifseq: If sequence-only alignment has been done. 
-  '''
-  json_obj = {"index":ind, "region1": ConcateBed(bed_dict1[pair_name]), "region2": ConcateBed(bed_dict2[pair_name]),\
-  "scoreE": line_epi[1], "targetE": TargetRegion(bed_dict2[pair_name], line_epi),\
-  "region_name1": ".", "region_name2": ".", "ensID1": ".", "ensID2": ".", "transID1":".", "transID2": "."}
-
-  if line_seq == "":
-    json_obj["scoreS"] = "."
-    json_obj["targetS"] = "."
-  else:
-    json_obj["scoreS"] = line_seq[1]
-    json_obj["targetS"] = TargetRegion(bed_dict2[pair_name], line_seq)
-
-  return json_obj
-
-
 def BedDict(fname):
   bed_dict = {}
   with open(fname, "r") as fin:
@@ -579,20 +562,151 @@ def BedDict(fname):
       bed_dict[line[3]] = line[0:3] + [line[5]]
   return bed_dict
 
-
-def TargetRegion(bed_list, res_line):
+def TargetRegion(bed_list, hit_start, hit_stop):
   if bed_list[3] == "+":
-    start = int(bed_list[1]) + int(res_line[5])
-    stop = int(bed_list[1]) + int(res_line[6])
+    start = int(bed_list[1]) + int(hit_start)
+    stop = int(bed_list[1]) + int(hit_stop)
   elif bed_list[3] == "-":
-    start = int(bed_list[2]) - int(res_line[6])
-    stop = int(bed_list[2]) - int(res_line[5])
+    start = int(bed_list[2]) - int(hit_stop)
+    stop = int(bed_list[2]) - int(hit_start)
   return bed_list[0] + ":" + str(start) + "-" + str(stop) + "(" + bed_list[3] + ")"
-
 
 def ConcateBed(coor_list):
   return coor_list[0] + ":" + str(coor_list[1]) + "-" + str(coor_list[2]) + "(" + coor_list[3] + ")"
 
+def InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, line_epi, line_seq):
+  '''
+  Initialize a json object: index; all locations including
+  region1, region2, queryLength,
+  targetE, target S; epi-hit scoreE and seq-hit scoreS.
+  ifseq: If sequence-only alignment has been done. 
+  '''
+  query_len = int(bed_dict1[pair_name][2]) - int(bed_dict1[pair_name][1])
+  json_obj = {"index":ind, "region1": ConcateBed(bed_dict1[pair_name]), "region2": ConcateBed(bed_dict2[pair_name]),\
+    "queryLength":query_len, \
+    "scoreE": float(line_epi[1]) * 1000 / query_len, "targetE": TargetRegion(bed_dict2[pair_name], line_epi[5], line_epi[6]), \
+    "scoreS": ".", "targetS": ".", "shifted": "."}
+
+  if line_seq:
+    json_obj["scoreS"] = float(line_seq[1]) * 1000 / query_len
+    json_obj["targetS"] = TargetRegion(bed_dict2[pair_name], line_seq[5], line_seq[6])
+    # shifted or not
+    if abs(int(line_epi[6]) - int(line_seq[6])) > json_obj["queryLength"]:
+      json_obj["shifted"] = "Y"
+    else:
+      json_obj["shifted"] = "N"
+
+  return json_obj
+
+
+def RegionName(json_obj, pair_name, intype1, intype2, alignMode):
+  name_dict = {"region_name1": ".", "region_name2": ".", "ensID1": ".", "ensID2": ".", "transID1":".", "transID2": "."}
+  json_obj.update(name_dict)
+  if (alignMode == "enhancer"):
+    # a pair of bed.
+    json_obj["region_name1"] = pair_name
+  else:
+    pair_name = pair_name.split("[===]")
+    if intype1 == "bed":
+      json_obj["region_name1"] = pair_name[0]
+    else:
+      json_obj["ensID1"] = pair_name[0].split("_")[0]
+      json_obj["transID1"] = pair_name[0].split("_")[1]
+    if intype2 == "bed":
+      json_obj["region_name2"] = pair_name[1]
+    else:
+      json_obj["ensID2"] = pair_name[1].split("_")[0]
+      json_obj["transID2"] = pair_name[1].split("_")[1]
+
+def ExtractScore(scores, pos, ext_dis):
+  start = max(0, pos - ext_dis)
+  stop = pos + ext_dis
+  return max(scores[start:stop])
+
+def Signal_to_Noise(scores, bin, query_len):
+  '''
+  Fragmentize the score list into bins with length bin. 
+  Compute max and min in each bin. 
+  Return medians of maximum and minimum. 
+  '''
+  i = query_len
+  max_values = []
+  min_values = []
+  print >> sys.stderr, len(scores)
+  while i + bin < len(scores):
+    max_values.append(max(scores[i:i + bin]))
+    min_values.append(min(scores[i:i + bin]))
+    i = i + bin
+  max_values.append(max(scores[i:]))
+  min_values.append(min(scores[i:]))
+  return percentile(max_values, 75), percentile(min_values, 25)
+
+
+def snCalculater(signal, mid_point, half_noise):
+  if signal:
+    return (signal - mid_point) / half_noise
+  return "."
+
+def SeqBg(s, mu):
+  seq_dict = {"backgroundMean": ".", "backgroundSd": ".", "orthoMean": ".", "orthoSd": "."}
+  s = str(round(float(s), 2))
+  mu = str(round(float(mu), 2))
+  bg_anno = "Annotation/AnnotationFiles/seqBackground.txt"
+  with open(bg_anno, "r") as fin:
+    for line in fin:
+      line = line.strip().split()
+      if line[0] == s and line[1] == mu:
+        seq_dict["backgroundMean"] = float(line[2])
+        seq_dict["backgroundSd"] = float(line[3])
+        seq_dict["orthoMean"] = float(line[4])
+        seq_dict["orthoSd"] = float(line[5])
+        break
+  return seq_dict
+
+def FitNorm(signal, mean_value, sd_value):
+  if signal:
+    return 1 - norm(mean_value, sd_value).cdf(signal)
+  return "."
+
+
+def SequenceEvaluation(json_obj, line_epi, line_seq, epiScore, seqScore, s, mu, seq_bg):
+  '''
+  In json object, "shifted" has three possible values: Y, N, .
+  The last value means that only sequence-only alignment was performed.
+  '''
+  query_len = json_obj["queryLength"]
+  norm_factor = 1000.0 / query_len
+  seqEval_dict = {"scoreS2": ".", "scoreE2": "."}
+  # Extract scores.
+  s1 = json_obj["scoreS"]
+  s2 = None
+  if json_obj["shifted"] == "Y":
+    # extract epi-score for the seq-hit
+    e2 = ExtractScore(epiScore, int(line_seq[6]), 50) * norm_factor
+    # extract seq-score for the epi-hit
+    s2 = ExtractScore(seqScore, int(line_epi[6]), 50) * norm_factor
+    seqEval_dict["scoreE2"] = e2
+    seqEval_dict["scoreS2"] = s2
+  elif json_obj["shifted"] == ".":
+    s2 = json_obj["scoreE"]
+    s1 = None
+  # Orthologous and Background
+  seqEval_dict["bgPvalueS"] = FitNorm(s1, seq_bg["backgroundMean"], seq_bg["backgroundSd"])
+  seqEval_dict["bgPvalueE"] = FitNorm(s2, seq_bg["backgroundMean"], seq_bg["backgroundSd"])
+  # SignalToNoise ratio
+  if json_obj["shifted"] != ".":
+    upper, lower = Signal_to_Noise(seqScore, 500, query_len)
+  else:
+    upper, lower = Signal_to_Noise(epiScore, 500, query_len)
+  upper = upper * norm_factor
+  lower = lower * norm_factor
+  seqEval_dict["signalToNoise"] = {"upperBound": upper, "lowerBound": lower} 
+  half_noise = (upper - lower) / 2
+  mid_point = (upper + lower) / 2
+  seqEval_dict["signalToNoise"]["snS"] = snCalculater(s1, mid_point, half_noise)
+  seqEval_dict["signalToNoise"]["snE"] = snCalculater(s2, mid_point, half_noise)
+  
+  json_obj.update(seqEval_dict)
 
 def WriteFinalResult(json_obj, fout, alignMode):
   if json_obj["index"] == 1:
@@ -605,7 +719,7 @@ def WriteFinalResult(json_obj, fout, alignMode):
     json_obj["region_name2"], json_obj["ensID2"], json_obj["transID2"], json_obj["region2"],\
     json_obj["scoreE"], json_obj["scoreS"], json_obj["targetE"], json_obj["targetS"] ] ])
 
-def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode, of_name, runid):
+def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode, of_name, runid, s, mu):
   '''
   Parse alignment results.
   bed1, bed2: the two bed files used for generating input file.
@@ -613,6 +727,10 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
   of_name: output folder.
   runid: runid.
   return: None. This function will write a json object to a file.
+  json object items: index, region1(chr:start:stop), region2,
+  queryLength, scoreE, targetE, scoreEalt, scoreS, targetS, scoreSalt,
+  sequenceEval(signalToNoise, background, orthologous)
+  region_name1, region_name2, ensID1, ensID2, transID1, transID2.
   '''
   bed_dict1 = BedDict(bed1)
   bed_dict2 = BedDict(bed2)
@@ -620,52 +738,59 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
 
   epi_fname = of_name + "epialign_res_" + runid
   seq_fname = of_name + "seqalign_res_" + runid
+  epiScore_fname = of_name + "epi_scores_" + runid
+  seqScore_fname = of_name + "seq_scores_" + runid
   out_name = of_name + "AlignResults_" + runid + ".txt"
   seq_stat = os.path.isfile(seq_fname)
 
   if seq_stat:
     fseq = open(seq_fname, "r")
+  if alignMode == "enhancer":
+    fepiScore = open(epiScore_fname, "r")
+    seq_bg = SeqBg(s, mu)
+    if seq_stat:
+      fseqScore = open(seqScore_fname, "r")
 
   with open(epi_fname, "r") as fepi, open(out_name, "w") as fout:
     i = 1
+    line_seq = None
+    line_seqScore = None
     while True:
+      # Alignment results
       line_epi = fepi.readline().strip().split()
       if seq_stat:
         line_seq = fseq.readline().strip().split()
+      # ALignment scores.
       if len(line_epi) == 0:
         break
       pair_name = line_epi[0].split("_", 2)[-1]
+
       try:
         #Initialize json_obj
-        if seq_stat:
-          json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi, line_seq)
-        else:
-          json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi)
+        json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi, line_seq)
+        # Add region names.
+        RegionName(json_obj, pair_name, intype1, intype2, alignMode)
+        # The following steps are only for enhancer mode.
+        if alignMode == "enhancer":
+          query_len = json_obj["queryLength"]
+          line_epiScore = [float(f) for f in fepiScore.readline().strip().split(",")[1:]]
+          target_len = len(line_epiScore)
+          line_epiScore = line_epiScore[0:target_len]
+          if seq_stat:
+            line_seqScore = [float(f) for f in fseqScore.readline().strip().split(",")[1:]]
+            line_seqScore = line_seqScore[0:target_len]
+          # Extract the two additional scores. Evaluate sequence similarity.
 
-        if (alignMode == "enhancer"):
-          # a pair of bed.
-          json_obj["region_name1"] = pair_name
+          SequenceEvaluation(json_obj, line_epi, line_seq, line_epiScore, line_seqScore, s, mu, seq_bg)
 
-        else:
-          pair_name = pair_name.split("[===]")
-          if intype1 == "bed":
-            json_obj["region_name1"] = pair_name[0]
-          else:
-            json_obj["ensID1"] = pair_name[0].split("_")[0]
-            json_obj["transID1"] = pair_name[0].split("_")[1]
-          if intype2 == "bed":
-            json_obj["region_name2"] = pair_name[1]
-          else:
-            json_obj["ensID2"] = pair_name[1].split("_")[0]
-            json_obj["transID2"] = pair_name[1].split("_")[1]
-
+        # Write results to file.
         WriteFinalResult(json_obj, fout, alignMode)
         json_list.append(json_obj)
         i += 1
       except Exception as e:
         print >> sys.stderr, '[EpiAlignment]Error parsing item: ' + e.message
 
-  json_dump_dict = {"data": json_list, "alignMode": alignMode, "searchRegionMode": searchRegionMode, "runid": runid}
+  json_dump_dict = {"data": json_list, "seqBg": seq_bg, "alignMode": alignMode, "searchRegionMode": searchRegionMode, "runid": runid}
   with open(of_name + runid + ".json", "w") as fjson:
     json.dump(json_dump_dict, fjson)
       
@@ -696,7 +821,8 @@ def Main():
   # Run EpiAlignment
   ExeEpiAlignment(web_json["body"]["alignMode"], web_json["body"]["searchRegionMode"], out_folder, runid)
   # Parse the alignment results.
-  ParseAlignResults(bed1, bed2, intype1, intype2, web_json["body"]["alignMode"], web_json["body"]["searchRegionMode"], out_folder, runid)
+  ParseAlignResults(bed1, bed2, intype1, intype2, web_json["body"]["alignMode"], web_json["body"]["searchRegionMode"], \
+    out_folder, runid, web_json["body"]["paras"], web_json["body"]["paramu"])
 
 
 

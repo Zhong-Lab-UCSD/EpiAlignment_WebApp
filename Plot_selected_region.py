@@ -30,22 +30,24 @@ def Extract_name(fname, ind):
         return xtitle, int(coord[1]), int(coord[2]), strand
 
 
-def Extract_selected_region(fname, ind):
+def Extract_selected_region(fname, ind, tlen):
+  '''
+  tlen: length of the target region.
+  '''
   i = 1
   with open(fname, "r") as fin:
     for line in fin:
       if i == ind:
         line = line.strip().split(",")[1:]
-        flag = 1
-        return [float(f) for f in line]
+        query_len = len(line) - tlen
+        norm_factor = 1000.0 / query_len
+        return [float(f) * norm_factor for f in line]
       i += 1
 
   print >> sys.stderr, "No such image index."
   sys.exit(310)
 
-def Plot_ScoreDist(epi_list, seq_list, ind, of_name, runid):
-  xtitle, start, stop, strand = Extract_name(of_name + "AlignResults_" + runid + ".txt", ind)
-  tlen = stop - start
+def Plot_ScoreDist(epi_list, seq_list, ind, of_name, runid, xtitle, start, stop, strand, tlen):
   seq_stat = 1 if seq_list != "" else 0
   if strand == "+":
     epi_array = epi_list[0:tlen]
@@ -90,18 +92,22 @@ def Main():
 
   out_folder = allpath_res + "/tmp_" + runid + "/"
 
+  # Extract 
+  xtitle, start, stop, strand = Extract_name(out_folder + "AlignResults_" + runid + ".txt", ind)
+  tlen = stop - start
+
   fename = out_folder + "epi_scores_" + runid
   if not os.path.isfile(fename):
     sys.exit(0)
-  selected_list_epi = Extract_selected_region(fename, ind)
+  selected_list_epi = Extract_selected_region(fename, ind, tlen)
 
   fsname = out_folder + "seq_scores_" + runid
   if not os.path.isfile(fsname):
     selected_list_seq = ""
   else:
-    selected_list_seq = Extract_selected_region(fsname, ind)
+    selected_list_seq = Extract_selected_region(fsname, ind, tlen)
 
-  Plot_ScoreDist(selected_list_epi, selected_list_seq, ind, out_folder, runid)
+  Plot_ScoreDist(selected_list_epi, selected_list_seq, ind, out_folder, runid, xtitle, start, stop, strand, tlen)
 
 Main()
 

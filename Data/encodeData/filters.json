@@ -21,7 +21,7 @@
     ".id": "expression_value",
     ".label": "Gene Expression Values",
     "assay_term_name": "RNA-seq",
-    "category_slims.0": "transcription profiling",
+    "assay_title": "total RNA-seq",
     ".isExpression": true
   }
 ]

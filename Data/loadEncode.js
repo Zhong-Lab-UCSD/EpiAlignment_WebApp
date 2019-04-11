@@ -166,13 +166,13 @@ async function randomDelay () {
   return new Promise((resolve, reject) => setTimeout(resolve, time))
 }
 
-async function axiosGetWrapper (url) {
+async function axiosGetWrapper (url, criteria) {
   let retries = 0
   let resultObj
   while (retries < RETRY_TIMES) {
     try {
       resultObj = await axios.get(url)
-      if (resultObj.data) {
+      if (resultObj.data && (!criteria || criteria(resultObj.data))) {
         return resultObj
       }
       throw resultObj
@@ -208,11 +208,11 @@ async function axiosRequestWrapper (...args) {
  * @param {string} id ENCODE ID
  * @returns {Promise<object>} ENCODE object
  */
-async function getEncodeObject (type, id) {
+async function getEncodeObject (type, id, criteria) {
   // console.log('https://www.encodeproject.org/' + type +
   //   '/' + id + '?format=json')
   return axiosGetWrapper('https://www.encodeproject.org/' + type +
-    '/' + id + '?format=json'
+    '/' + id + '?format=json', criteria
   ).then(response => response.data
   ).catch(err => {
     console.log('Error getting ENCODE object: ' +
@@ -274,6 +274,7 @@ const getNestedObject = function getNestedObject (nestedObj, pathArr) {
  * @param {Array<object>} filters Filters, each filter should be an object with
  *    all required string properties. Multiple filters are combined with 'OR'.
  *    properties should be matched
+ * @param {string} species species of the biosample ('human' or 'mouse')
  * @returns {Array<object>} An array of experimentEntry object:
  * ```json
  * {
@@ -282,12 +283,16 @@ const getNestedObject = function getNestedObject (nestedObj, pathArr) {
  *    "expressionId": "<the Experiment ID for expression of the same biosample"
  * }
  * ```
+ * @async
  */
-function filterSearchResults (searchObj, filters) {
+async function filterSearchResults (searchObj, filters, species) {
   let result = []
   if (searchObj && Array.isArray(searchObj['@graph'])) {
-    searchObj['@graph'].forEach(
-      graphObj => filters.some(filter => {
+    for (let expIndex = 0; expIndex < searchObj['@graph'].length; expIndex++) {
+      let graphObj = searchObj['@graph'][expIndex]
+      for (let filterIndex = 0; filterIndex < filters.length; filterIndex++) {
+        let filter = filters[filterIndex]
+        let criteriaMatched = true
         for (let key in filter) {
           if (!key.startsWith('.') && filter.hasOwnProperty(key)) {
             // key may be something like 'a.b', in which case we need to descend
@@ -295,27 +300,31 @@ function filterSearchResults (searchObj, filters) {
             if ((filter[key] + '').toLowerCase() !==
               (getNestedObject(graphObj, key.split('.')) + '').toLowerCase()
             ) {
-              return false
+              criteriaMatched = false
+              break
             }
           }
         }
-        // Passed filter, construct an object with Experiment IDs and filter ID
-        // that are passed
-        result.push({
-          filterId: filter['.id'],
-          id: graphObj.accession,
-          isExpression: filter['.isExpression'] || false
-        })
-        if (filter['.isExpression'] && verifyExpressionId(graphObj.accession)) {
-          result.expressionId = result.expressionId || graphObj.accession
+        if (criteriaMatched) {
+          // Passed filter, construct an object with Experiment IDs and filter ID
+          // that are passed
+          result.push({
+            filterId: filter['.id'],
+            id: graphObj.accession,
+            isExpression: filter['.isExpression'] || false
+          })
+          if (filter['.isExpression'] &&
+            await verifyExpressionId(graphObj.accession, references[species])
+          ) {
+            result.expressionId = result.expressionId || graphObj.accession
+          }
+          break
         }
-        return true
-      })
-    )
+      }
+    }
   }
   if (result.expressionId) {
     result.forEach(item => (item.expressionId = result.expressionId))
-    result = result.filter(item => !item.isExpression)
   }
   return result
 }
@@ -333,7 +342,8 @@ function filterSearchResults (searchObj, filters) {
  * @returns {object} returns an experiment object (see "Final result format")
  */
 async function verifyExpressionId (experimentId, assembly) {
-  let experimentObj = await getEncodeObject('experiments', experimentId)
+  let experimentObj =
+    await getEncodeObject('experiments', experimentId, data => data.files)
   let availableFiles = experimentObj.files.filter(file => (
     file.assembly === assembly && file.output_category !== 'raw data' &&
     file.status === 'released' &&
@@ -352,7 +362,7 @@ async function verifyExpressionId (experimentId, assembly) {
   // fields of the experiment
 
   if (expressionFiles.length) {
-    experimentResult = Object.assign({ id: experimentId })
+    experimentResult = { id: experimentId }
     experimentResult.experiment_file_ids =
       expressionFiles.map(file => file.accession)
     experimentResult.experiment_file_objs = expressionFiles
@@ -445,6 +455,7 @@ async function processExperimentFileObj (
  * @param {Array<object>} filters Filters
  * @param {object} tissueResult tissueResult object
  *    (to fill '.term', '.life_stage' and '.label' element only)
+ * @param {string} species species of the biosample ('human' or 'mouse')
  * @returns {Array<object>} An array of experimentEntry object:
  * ```json
  * {
@@ -453,7 +464,9 @@ async function processExperimentFileObj (
  * }
  * ```
  */
-async function processSingleBiosample (biosampleId, filters, tissueResult) {
+async function processSingleBiosample (
+  biosampleId, filters, tissueResult, species
+) {
   let biosampleObj = await getEncodeObject('biosamples', biosampleId)
 
   if (!tissueResult.hasOwnProperty('.label')) {
@@ -469,7 +482,7 @@ async function processSingleBiosample (biosampleId, filters, tissueResult) {
     let searchObj = await getExperimentsUsingBiosample(biosampleObj)
     // TODO: replace superseded experiments
 
-    return filterSearchResults(searchObj, filters)
+    return await filterSearchResults(searchObj, filters, species)
   } catch (err) {
     console.log('Error processSingleBiosample (' + biosampleId + ').')
     return []
@@ -499,7 +512,7 @@ async function processSingleTissue (tissueObj, filters) {
       let experimentEntryArray = await Promise.all(
         tissueObj[species].map(
           biosampleId => processSingleBiosample(
-            biosampleId, filters, tissueResult
+            biosampleId, filters, tissueResult, species
           ))
       )
       // construct a preliminary list of experiments
@@ -519,10 +532,21 @@ async function processSingleTissue (tissueObj, filters) {
             id: experimentEntry.id,
             filterId: experimentEntry.filterId,
             expressionId: experimentEntry.expressionId ||
-              tissueResult[species].expressionId || null
+              tissueResult[species].expressionId || null,
+            isExpression: experimentEntry.isExpression
           }))
         ), []
       )
+
+      tissueResult[species].experiments =
+        tissueResult[species].experiments.filter(expEntry => {
+          if (expEntry.isExpression) {
+            return false
+          } else {
+            delete expEntry.isExpression
+            return true
+          }
+        })
       console.log(tissueResult[species].experiments.length +
         ' filtered experiment(s) for "' + tissueResult['.label'] +
         '" in species ' + species)
@@ -538,8 +562,6 @@ async function processSingleTissue (tissueObj, filters) {
   }
 
   // find the overlapping experiments (filterId that appear in all species)
-  console.log('Raw species filter set: ')
-  console.log(speciesFilterSet)
   return tissueResult
 }
 
@@ -613,16 +635,10 @@ function filterMismatchedSingleTissue (tissueResult) {
   }
 
   // find the overlapping experiments (filterId that appear in all species)
-  console.log('Processed species filter set before matching: ')
-  console.log(speciesFilterSet)
-
   let intersectSet = new Set(speciesFilterSet.reduce(
     (setArray, currSet) => setArray.filter(id => currSet.has(id)),
     speciesFilterSet[0] ? [...speciesFilterSet[0]] : []
   ))
-
-  console.log('Processed species filter set after matching: ')
-  console.log(intersectSet)
 
   // remove species-unique experiments
   for (let species in tissueResult) {
@@ -724,13 +740,15 @@ async function downloadExperimentFiles (experimentResult) {
   if (experimentResult.expressionId) {
     let expressionEntry = expressionIdDict[experimentResult.expressionId]
     if (expressionEntry.experiment_file_objs) {
-      expressionEntry.expression_files =
-        await expressionEntry.experiment_file_objs.map(
-          async fileObj => path.format({
-            dir: scriptPath,
-            base: await downloadFileObject(fileObj)
-          }))
-      delete expressionEntry.experiment_file_objs
+      expressionEntry.expression_files = []
+      for (let i = 0; i < expressionEntry.experiment_file_objs.length; i++) {
+        let fileObj = expressionEntry.experiment_file_objs[i]
+        let base = await downloadFileObject(fileObj)
+        expressionEntry.expression_files[i] = path.format({
+          dir: scriptPath,
+          base: base
+        })
+      }
     }
     experimentResult.expression_files = expressionEntry.expression_files
   }
@@ -791,7 +809,9 @@ Promise.all([readTissuePromise, readFilterPromise])
   .then(results => {
     let [tissues, filters] = results
     encodeResult.filters = filters.reduce((prev, curr) => {
-      prev[curr['.id']] = curr
+      if (!curr['.isExpression']) {
+        prev[curr['.id']] = curr
+      }
       return prev
     }, {})
     // first get raw tissue results

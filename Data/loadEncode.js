@@ -33,6 +33,11 @@ const outputExperimentFile = 'experimentDict.json'
 
 const MILLISECONDS_IN_A_DAY = 1000 * 60 * 60 * 24
 
+const DELAY_MINIMUM = 500
+const DELAY_MAXIMUM = 2000
+
+const RETRY_TIMES = 5
+
 /**
  * Workflow:
  *
@@ -47,6 +52,7 @@ const MILLISECONDS_IN_A_DAY = 1000 * 60 * 60 * 24
  *    {
  *      ".id": "<filter_id>",
  *      ".label": "<human_readable_label>",
+ *      ".isExpression": "<is_expression_value>",
  *      // ...
  *      // all properties from ENCODE search object that must match
  *      // sub-properties can be represented by using '.', e.g. 'target.label'
@@ -131,6 +137,8 @@ var publicResult = {
   matchedTissues: []
 }
 
+var expressionIdDict = {}
+
 /**
  * Dictionary mapping experiment IDs to data files and limited meta info.
  * Should be:
@@ -151,6 +159,48 @@ var publicResult = {
  */
 var experimentDict = {}
 
+async function randomDelay () {
+  let time =
+    Math.floor(Math.random() * (DELAY_MAXIMUM - DELAY_MINIMUM) + DELAY_MINIMUM)
+  console.log('Delaying ' + time + ' ms.')
+  return new Promise((resolve, reject) => setTimeout(resolve, time))
+}
+
+async function axiosGetWrapper (url) {
+  let retries = 0
+  let resultObj
+  while (retries < RETRY_TIMES) {
+    try {
+      resultObj = await axios.get(url)
+      if (resultObj.data) {
+        return resultObj
+      }
+      throw resultObj
+    } catch (err) {
+      retries++
+      console.log('Error requesting ' + url)
+      await randomDelay()
+    }
+  }
+  throw resultObj
+}
+
+async function axiosRequestWrapper (...args) {
+  let retries = 0
+  let resultObj
+  while (retries < RETRY_TIMES) {
+    try {
+      resultObj = await axios.request(...args)
+      return resultObj
+    } catch (err) {
+      retries++
+      console.log('Error in request.')
+      await randomDelay()
+    }
+  }
+  throw resultObj
+}
+
 /**
  * Get the ENCODE JSON Object of the biosample
  * @async
@@ -161,7 +211,7 @@ var experimentDict = {}
 async function getEncodeObject (type, id) {
   // console.log('https://www.encodeproject.org/' + type +
   //   '/' + id + '?format=json')
-  return axios.get('https://www.encodeproject.org/' + type +
+  return axiosGetWrapper('https://www.encodeproject.org/' + type +
     '/' + id + '?format=json'
   ).then(response => response.data
   ).catch(err => {
@@ -191,7 +241,7 @@ async function getExperimentsUsingBiosample (biosampleObj, notReleaseOnly) {
     status = 'status=released'
   }
   try {
-    let resultObj = await axios.get(
+    let resultObj = await axiosGetWrapper(
       queryUrlBase + (status ? '&' + status : '')
     )
     console.log('Found ' + resultObj.data['@graph'].length +
@@ -228,7 +278,8 @@ const getNestedObject = function getNestedObject (nestedObj, pathArr) {
  * ```json
  * {
  *    "id": "<Experiment_IDs>",
- *    "filter": "<the filter object that this experiment passed>"
+ *    "filter": "<the filter object that this experiment passed>",
+ *    "expressionId": "<the Experiment ID for expression of the same biosample"
  * }
  * ```
  */
@@ -252,13 +303,64 @@ function filterSearchResults (searchObj, filters) {
         // that are passed
         result.push({
           filterId: filter['.id'],
-          id: graphObj.accession
+          id: graphObj.accession,
+          isExpression: filter['.isExpression'] || false
         })
+        if (filter['.isExpression'] && verifyExpressionId(graphObj.accession)) {
+          result.expressionId = result.expressionId || graphObj.accession
+        }
         return true
       })
     )
   }
+  if (result.expressionId) {
+    result.forEach(item => (item.expressionId = result.expressionId))
+    result = result.filter(item => !item.isExpression)
+  }
   return result
+}
+
+/**
+ * Verify the expression ID:
+ * *   Use ENCODE API to get experiment information;
+ * *   Find the 'released' results;
+ * *   Find the 'gene quantifications' files
+ * *   Save the ID of those files (for the final downloading) and add them
+ *     to the expressionIdDict list.
+ * @async
+ * @param {string} experimentId ENCODE ID for the experiment
+ * @param {string} assembly the assembly of the file
+ * @returns {object} returns an experiment object (see "Final result format")
+ */
+async function verifyExpressionId (experimentId, assembly) {
+  let experimentObj = await getEncodeObject('experiments', experimentId)
+  let availableFiles = experimentObj.files.filter(file => (
+    file.assembly === assembly && file.output_category !== 'raw data' &&
+    file.status === 'released' &&
+    file.output_type === 'gene quantifications'
+  ))
+
+  let expressionFiles = availableFiles.filter(file => (
+    file.output_type === 'gene quantifications' && (
+      !file.superseded_by || !file.superseded_by.length
+    )
+  ))
+
+  let experimentResult = null
+
+  // Then just use bedFiles[0] and bwFiles[0] to populate the peak and bigwig
+  // fields of the experiment
+
+  if (expressionFiles.length) {
+    experimentResult = Object.assign({ id: experimentId })
+    experimentResult.experiment_file_ids =
+      expressionFiles.map(file => file.accession)
+    experimentResult.experiment_file_objs = expressionFiles
+
+    expressionIdDict[experimentId] = experimentResult
+  }
+
+  return experimentResult
 }
 
 /**
@@ -356,7 +458,7 @@ async function processSingleBiosample (biosampleId, filters, tissueResult) {
 
   if (!tissueResult.hasOwnProperty('.label')) {
     // initialize the properties with this biosample
-    tissueResult['.term'] = biosampleObj.biosample_term_name
+    tissueResult['.term'] = biosampleObj.biosample_ontology.term_name
     tissueResult['.life_stage'] = biosampleObj.life_stage
     tissueResult['.label'] = (
       tissueResult['.life_stage'] ? tissueResult['.life_stage'] + ' ' : ''
@@ -370,7 +472,7 @@ async function processSingleBiosample (biosampleId, filters, tissueResult) {
     return filterSearchResults(searchObj, filters)
   } catch (err) {
     console.log('Error processSingleBiosample (' + biosampleId + ').')
-    throw err
+    return []
   }
 }
 
@@ -401,17 +503,26 @@ async function processSingleTissue (tissueObj, filters) {
           ))
       )
       // construct a preliminary list of experiments
-      tissueResult[species] = {
-        experiments: experimentEntryArray.reduce(
-          (prev, current, index) => prev.concat(
-            current.map(experimentEntry => ({
-              biosampleId: tissueObj[species][index],
-              id: experimentEntry.id,
-              filterId: experimentEntry.filterId
-            }))
-          ), []
-        )
-      }
+      tissueResult[species] = {}
+      experimentEntryArray.some(entryArray => {
+        if (entryArray[0] && entryArray[0].expressionId) {
+          tissueResult[species].expressionId = entryArray[0].expressionId
+          return true
+        }
+        return false
+      })
+
+      tissueResult[species].experiments = experimentEntryArray.reduce(
+        (prev, current, index) => prev.concat(
+          current.map(experimentEntry => ({
+            biosampleId: tissueObj[species][index],
+            id: experimentEntry.id,
+            filterId: experimentEntry.filterId,
+            expressionId: experimentEntry.expressionId ||
+              tissueResult[species].expressionId || null
+          }))
+        ), []
+      )
       console.log(tissueResult[species].experiments.length +
         ' filtered experiment(s) for "' + tissueResult['.label'] +
         '" in species ' + species)
@@ -467,7 +578,8 @@ async function filterInvalidDataSingleTissue (tissueResult, filterDict) {
           experimentObj => processExperimentFileObj(
             experimentObj.id, references[species], {
               'experiment_type': filterDict[experimentObj.filterId]['.label'],
-              'biosample_label': tissueResult['.label']
+              'biosample_label': tissueResult['.label'],
+              'expressionId': tissueResult[species].expressionId || null
             })
         )
       )
@@ -575,7 +687,7 @@ async function downloadFileObject (fileObj, filePath) {
   }
   // Download file with axios
   return needUpdateFile
-    ? axios.request({
+    ? axiosRequestWrapper({
       url: 'https://www.encodeproject.org' + fileObj.href,
       responseType: 'arraybuffer'
     }).catch(err => {
@@ -608,6 +720,19 @@ async function downloadExperimentFiles (experimentResult) {
       base: await downloadFileObject(experimentResult.bigwig_file_obj)
     })
     delete experimentResult.bigwig_file_obj
+  }
+  if (experimentResult.expressionId) {
+    let expressionEntry = expressionIdDict[experimentResult.expressionId]
+    if (expressionEntry.experiment_file_objs) {
+      expressionEntry.expression_files =
+        await expressionEntry.experiment_file_objs.map(
+          async fileObj => path.format({
+            dir: scriptPath,
+            base: await downloadFileObject(fileObj)
+          }))
+      delete expressionEntry.experiment_file_objs
+    }
+    experimentResult.expression_files = expressionEntry.expression_files
   }
   return experimentResult
 }

@@ -16,5 +16,12 @@
     ".label": "ChIP-Seq (H3K4me1)",
     "assay_term_name": "ChIP-seq",
     "target.label": "H3K4me1"
+  },
+  {
+    ".id": "expression_value",
+    ".label": "Gene Expression Values",
+    "assay_term_name": "RNA-seq",
+    "category_slims.0": "transcription profiling",
+    ".isExpression": true
   }
 ]

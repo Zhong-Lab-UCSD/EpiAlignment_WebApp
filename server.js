@@ -108,45 +108,36 @@ function getRunIdImagePath (runid, index) {
   })
 }
 
-function postJobRun (code, runInfo, errorMsg, writePromise) {
-  let message = null
-  let runid = runInfo.getDisplayValue('runid')
-  let email = runInfo.getDisplayValue('email')
-  runInfo.status = code
-  let hostName = runInfo.getDisplayValue('hostName') || fallbackHostName
+function updateExpression (runInfo) {
+  // update gene expression value if needed
 
-  let runInfoPath = getRunIdInfoPath(runid)
+}
+
+function sendEmail (runInfo) {
+  let email = runInfo.getDisplayValue('email')
   if (email) {
-    message = {
+    let message = {
       from: 'EpiAlignment Notification <messenger@' + getMailDomain(
         hostName.includes('beta')
       ) + '>',
       to: email,
       replyTo: 'x9cao@eng.ucsd.edu'
     }
-  }
-  let header = 'Dear user,\n\n'
-  let footer = '\n\nThe EpiAlignment Team from Zhong Lab @ UC San Diego\n' +
-    '--\nDepartment of Bioengineering, Mail Code 0412\n' +
-    'University of California, San Diego\n' +
-    '9500 Gilman Dr.\nLa Jolla, CA 92122-0412\nUnited States'
+    let header = 'Dear user,\n\n'
+    let footer = '\n\nThe EpiAlignment Team from Zhong Lab @ UC San Diego\n' +
+      '--\nDepartment of Bioengineering, Mail Code 0412\n' +
+      'University of California, San Diego\n' +
+      '9500 Gilman Dr.\nLa Jolla, CA 92122-0412\nUnited States'
 
-  console.log('[' + runid + '] Process quit with code : ' + code)
-  if (errorMsg) {
-    console.log(errorMsg)
-    runInfo.addProperty('errMessage', errorMsg)
-  }
-  (writePromise || Promise.resolve()).then(() =>
-    writeFilePromise(runInfoPath, JSON.stringify(runInfo, null, 2))
-  )
-  if (message) {
+    let runid = runInfo.getDisplayValue('runid')
+    let code = runInfo.status
+    let hostName = runInfo.getDisplayValue('hostName') || fallbackHostName
     // needs to write an email
     let transporter = nodemailer.createTransport({
       sendmail: true,
       newline: 'unix',
       path: '/usr/sbin/sendmail'
     })
-    runIdDict[runid] = code
     if (code) {
       // some kind of error has happened
       message.subject = 'Error when computing your EpiAlignment data'
@@ -180,6 +171,27 @@ function postJobRun (code, runInfo, errorMsg, writePromise) {
         'Thank you for using EpiAlignment!' + footer
     }
     transporter.sendMail(message)
+  }
+}
+
+function postJobRun (code, runInfo, errorMsg, runInfoWritePromise) {
+  let runid = runInfo.getDisplayValue('runid')
+  runInfo.status = code
+
+  let runInfoPath = getRunIdInfoPath(runid)
+
+  console.log('[' + runid + '] Process quit with code : ' + code)
+  if (errorMsg) {
+    console.log(errorMsg)
+    runInfo.addProperty('errMessage', errorMsg)
+  }
+  runInfoWritePromise = (runInfoWritePromise || Promise.resolve()).then(() =>
+    writeFilePromise(runInfoPath, JSON.stringify(runInfo, null, 2))
+  )
+  let updateResultPromise = updateExpression(runInfo)
+  Promise.all([runInfoWritePromise, updateResultPromise]).then(() => {
+    runIdDict[runid] = code
+    sendEmail(runInfo)
   }
 }
 
@@ -219,7 +231,7 @@ app.post('/form_upload', cpUpload, function (req, res) {
     runInfoObject.addProperty('hostName', req.headers.host)
   }
 
-  let writePromise = writeFilePromise(
+  let runInfoWritePromise = writeFilePromise(
     runInfoPath, JSON.stringify(runInfoObject, null, 2))
 
   // execute python code on the server.
@@ -238,7 +250,7 @@ app.post('/form_upload', cpUpload, function (req, res) {
         errLine = errLine.replace('[EpiAlignment]', '').trim()
         stdErrData += (stdErrData ? '\n' : '') + errLine
         runInfoObject.addProperty('errMessage', stdErrData, true)
-        writePromise = writePromise.then(() => writeFilePromise(
+        runInfoWritePromise = runInfoWritePromise.then(() => writeFilePromise(
           runInfoPath, JSON.stringify(runInfoObject, null, 2)
         ))
       } else {
@@ -248,7 +260,7 @@ app.post('/form_upload', cpUpload, function (req, res) {
   })
 
   scriptExecution.on('exit',
-    code => postJobRun(code, runInfoObject, stdErrData, writePromise))
+    code => postJobRun(code, runInfoObject, stdErrData, runInfoWritePromise))
   // console.log(JSON.stringify(pyMessenger))
   // python input
   scriptExecution.stdin.write(JSON.stringify(pyMessenger))
@@ -281,7 +293,7 @@ app.get('/results/:runid', function (req, res) {
           } else {
             postJobRun(PROCESS_TERMINATED_SERVER_REBOOT, infoObj,
               'Server rebooted during job run. ' +
-              'Please re-submit your job again.')
+              'Please submit your job again.')
             res.status(500)
             res.json(infoObj)
           }
@@ -307,7 +319,6 @@ app.get('/results/:runid', function (req, res) {
         } else {
           // python exited with error.
           res.json(Object.assign({
-            // TODO: find a way to insert error code and msg here
             errMessage: 'EpiAlignment exited with an error.'
           }, infoObj.toJSON()))
         }

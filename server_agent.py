@@ -750,6 +750,8 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
     seq_bg = SeqBg(s, mu)
     if seq_stat:
       fseqScore = open(seqScore_fname, "r")
+  else:
+    seq_bg = {}
 
   with open(epi_fname, "r") as fepi, open(out_name, "w") as fout:
     i = 1

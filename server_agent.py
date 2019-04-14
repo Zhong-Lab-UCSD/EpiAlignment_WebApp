@@ -807,8 +807,8 @@ def Main():
   out_folder = allres_path + "/tmp_" + web_json["runid"] + "/"
 
   sys.stdout.flush()
-  # Move all uploaded files to the output folder.
-  MoveUploadFiles(out_folder, web_json["files"])
+  # Move all uploaded files to the output folder. (this is done in server.js now)
+  # MoveUploadFiles(out_folder, web_json["files"])
 
   # Generate input data
   # Parse peak files.

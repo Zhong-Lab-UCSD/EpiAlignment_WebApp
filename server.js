@@ -15,25 +15,40 @@ const path = require('path')
 const readFilePromise = util.promisify(fs.readFile)
 const writeFilePromise = util.promisify(fs.writeFile)
 const readDirPromise = util.promisify(fs.readdir)
+const renamePromise = util.promisify(fs.rename)
 
-const E_CANNOT_READ_RESULTS = 401
+const loadSpeciesGeneAnno = require('./annoParser').loadSpeciesGeneAnno
 
 const ClusterProcesser = require('./clusterProcessing')
 
+const expKeyIndex = {
+  'pme_TPM': 9,
+  'pme_FPKM': 10,
+  'TPM': 5,
+  'FPKM': 6
+}
+
+const species = [
+  {
+    name: 'human',
+    latin: 'Homo_sapiens',
+    reference: 'hg38',
+    encode_reference: 'GRCh38'
+  }, {
+    name: 'mouse',
+    latin: 'Mus_musculus',
+    reference: 'mm10',
+    encode_reference: 'mm10'
+  }
+]
+
+species._map = species.reduce((prevMap, curr) => {
+  prevMap[curr.reference] = curr
+  return prevMap
+}, {})
+
 var clusterProc = new ClusterProcesser(
-  [
-    {
-      name: 'human',
-      latin: 'Homo_sapiens',
-      reference: 'hg38',
-      encode_reference: 'GRCh38'
-    }, {
-      name: 'mouse',
-      latin: 'Mus_musculus',
-      reference: 'mm10',
-      encode_reference: 'mm10'
-    }
-  ],
+  species,
   {
     rawFilePath: 'Annotation/AnnotationFiles',
     clusterSuffix: '_clusters'
@@ -49,8 +64,27 @@ const mailDomainSuffix = 'givengine.org'
 
 var runIdDict = {}
 
+const htmlAssetPath = 'html/assets'
+const expDictFileName = 'experimentDict.json'
+const expDictPath = path.format({
+  dir: htmlAssetPath,
+  base: expDictFileName
+})
+
+const ID_LENGTH = 10
+
 const RUNNING_CODE = -1
 const PROCESS_TERMINATED_SERVER_REBOOT = 500
+const E_CANNOT_READ_RESULTS = 401
+
+const readExpDictPromise = readFilePromise(expDictPath, 'utf8')
+  .then(resultText => JSON.parse(resultText))
+
+const annotationMapPromise = species.reduce((prev, current) => {
+  prev[current.reference] =
+    loadSpeciesGeneAnno(current, ['symbol', 'ensemblId'], true)
+  return prev
+}, {})
 
 function getMailDomain (isBeta) {
   return mailDomainPrefex + '.' + (isBeta ? 'beta.' : '') + mailDomainSuffix
@@ -63,7 +97,7 @@ function makeid () {
   let text = ''
   let possible = 'abcdefghijklmnopqrstuvwxyz0123456789'
 
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < ID_LENGTH; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length))
   }
 
@@ -108,18 +142,212 @@ function getRunIdImagePath (runid, index) {
   })
 }
 
-function updateExpression (runInfo) {
-  // update gene expression value if needed
+/**
+ * Attach the previously built additional results to Python-returned results
+ * @param {string} runid
+ * @param {object} [preprocessRes] the result from the preprocessing, can be
+ *    `null` (in which case nothing will be added).
+ * @returns {Promise<void>} returns a promise that resolves to `void`
+ *    when the updated data has been written to a file
+ */
+function updateExpression (runid, preprocessRes) {
+  // Procedures:
+  // * Determine if the run is many to many
+  // * Determine if there are expression files available
+  // * Find all the genes' Ensembl IDs involved in the run
+  // * Build an object of all expression values and attach to the result
+  if (preprocessRes) {
+    let resultFilePath = getRunIdResultPath(runid)
+    return readFilePromise(resultFilePath, 'utf8')
+      .then(result => {
+        let resDataObj = JSON.parse(result)
+        if (resDataObj.hasOwnProperty('expression')) {
+          console.log('Warning: existing expression property detected. ' +
+            'Will be overwritten.')
+        }
+        resDataObj.expression = preprocessRes
+        return writeFilePromise(resultFilePath, JSON.stringify(resDataObj))
+      })
+      .catch(ignore => { })
+  }
+  return null
+}
 
+/**
+ * Get value from the textarea element, the uploaded file, or from cluster ID.
+ * The later parameters will take precedence.
+ * @param {RunInfo} runInfo text from textarea element
+ * @param {object} files file object from multer
+ * @param {string} textareaKey key value for textarea values in `runInfo`
+ * @param {string} [filesKey] key value for file object
+ * @param {string} [clusterId] the ID of the cluster
+ * @param {string} [speciesName] the name of the species, must be provided
+ *    to use `clusterId`
+ * @returns {Promise<string>} a promise resolving to the content
+ * @async
+ */
+async function getValueFromFileOrTextArea (
+  runInfo, files, textareaKey, filesKey, clusterId, speciesName
+) {
+  if (clusterId) {
+    await clusterProc.clusterTableReadyPromise
+    let result = clusterProc.getClusterById(clusterId)
+    if (result) {
+      return result.getGeneListBySpecies(speciesName).map(gene => gene.symbol)
+    }
+  }
+  if (files && files[filesKey] && files[filesKey][0]) {
+    return readFilePromise(files[filesKey][0].filename, 'utf8')
+  }
+  return runInfo.getRawPropertyValue(textareaKey)
+}
+
+/**
+ * Get the gene id list from submitted forms
+ * @param {RunInfo} runInfo run info object
+ * @param {object} files file object returned from multer
+ */
+async function getGeneIdList (runInfo, files) {
+  let queryTextPromise = getValueFromFileOrTextArea(
+    runInfo, files, 'queryInput', 'speciesInput1')
+  let targetTextPromise = getValueFromFileOrTextArea(
+    runInfo, files, 'targetInput', 'speciesInput2',
+    runInfo.getRawPropertyValue('clusters'),
+    species._map[runInfo.getRawPropertyValue('targetGenomeAssembly')].name
+  )
+  let queryContent = await queryTextPromise
+  let targetContent = await targetTextPromise
+  let getIdFromLine = line => {
+    let tokens = line.trim().split(/\t| +/)
+    if (tokens.length > 1) {
+      // Maybe BED files
+      return tokens[4] // name part
+    }
+    return tokens[0]
+  }
+  return {
+    query: queryContent
+      ? (Array.isArray(queryContent)
+        ? queryContent
+        : (queryContent.split('\n').map(line => getIdFromLine(line))
+          .filter(entry => !!entry)
+        ))
+      : null,
+    target: targetContent
+      ? (Array.isArray(targetContent)
+        ? targetContent
+        : (targetContent.split('\n').map(line => getIdFromLine(line))
+          .filter(entry => !!entry)
+        ))
+      : null
+  }
+}
+
+function buildExpDicts (expFiles) {
+  return expFiles.reduce((prevDict, expFile, fileIndex) => {
+    expFile.split('\n').forEach(currLine => {
+      let tokens = currLine.split('\t')
+      let key = tokens[0].split('.', 1)[0]
+      if (!prevDict.hasOwnProperty(key)) {
+        prevDict[key] = Array(expFiles.length).fill({
+          'pme_TPM': 0,
+          'pme_FPKM': 0,
+          'TPM': 0,
+          'FPKM': 0
+        })
+      }
+      for (let expKey in prevDict[key][fileIndex]) {
+        prevDict[key][fileIndex][expKey] =
+          parseFloat(tokens[expKeyIndex[expKey]])
+      }
+    })
+    return prevDict
+  }, {})
+}
+
+function buildExpObjFromFiles (list, expDicts, annotationMap) {
+  return list.reduce((prev, curr) => {
+    curr = curr.toLowerCase()
+    if (annotationMap.has(curr)) {
+      let expKey = annotationMap.get(curr).ensemblId
+      let symbolKey = annotationMap.get(curr).symbol
+      if (!prev.hasOwnProperty(symbolKey)) {
+        prev[symbolKey] = expDicts[expKey]
+      }
+    }
+    return prev
+  }, {})
+}
+
+async function preJobRun (runInfo, files) {
+  if (!runInfo ||
+    runInfo.getDisplayValue('alignMode') !== 'Many-vs-many mode'
+  ) {
+    return null
+  }
+  // Determine if there are expression files available
+  // If there are, resolve the promise to the loaded expression files
+  let queryPeakId = runInfo.getDisplayValue('queryPeak')
+  let targetPeakId = runInfo.getDisplayValue('targetPeak')
+  let expDict = await readExpDictPromise
+  // read expression files
+  let queryExpFilesPromise = null
+  if (expDict.hasOwnProperty(queryPeakId) &&
+    expDict[queryPeakId].expression_files
+  ) {
+    queryExpFilesPromise = Promise.all(
+      expDict[queryPeakId].expression_files.map(
+        fileName => readFilePromise(fileName, 'utf8')
+      )
+    )
+  }
+  let targetExpFilesPromise = null
+  if (expDict.hasOwnProperty(targetPeakId) &&
+    expDict[targetPeakId].expression_files
+  ) {
+    targetExpFilesPromise = Promise.all(
+      expDict[targetPeakId].expression_files.map(
+        fileName => readFilePromise(fileName, 'utf8')
+      )
+    )
+  }
+
+  // get gene identifiers
+  let geneIdentifiers = await getGeneIdList(runInfo, files)
+
+  let result = {
+    queryExpObj: null,
+    targetExpObj: null
+  }
+  if (queryExpFilesPromise && geneIdentifiers.query) {
+    let queryExpDicts =
+      buildExpDicts(await queryExpFilesPromise)
+    result.queryExpObj =
+      buildExpObjFromFiles(geneIdentifiers.query, queryExpDicts,
+        await annotationMapPromise[runInfo.getRawPropertyValue('queryGenomeAssembly')])
+  }
+  if (targetExpFilesPromise && geneIdentifiers.target) {
+    let targetExpDicts =
+      buildExpDicts(await targetExpFilesPromise)
+    result.targetExpObj =
+      buildExpObjFromFiles(geneIdentifiers.target, targetExpDicts,
+        await annotationMapPromise[runInfo.getRawPropertyValue('targetGenomeAssembly')])
+  }
+  // Find all the genes' Ensembl IDs involved in the run
+  // Build an object of all expression values
+  if (!result.queryExpObj && !result.targetExpObj) {
+    return null
+  }
+  return result
 }
 
 function sendEmail (runInfo) {
   let email = runInfo.getDisplayValue('email')
   if (email) {
+    let hostName = runInfo.getDisplayValue('hostName') || fallbackHostName
     let message = {
-      from: 'EpiAlignment Notification <messenger@' + getMailDomain(
-        hostName.includes('beta')
-      ) + '>',
+      from: 'EpiAlignment Notification <messenger@' +
+        getMailDomain(hostName.includes('beta')) + '>',
       to: email,
       replyTo: 'x9cao@eng.ucsd.edu'
     }
@@ -131,7 +359,6 @@ function sendEmail (runInfo) {
 
     let runid = runInfo.getDisplayValue('runid')
     let code = runInfo.status
-    let hostName = runInfo.getDisplayValue('hostName') || fallbackHostName
     // needs to write an email
     let transporter = nodemailer.createTransport({
       sendmail: true,
@@ -174,7 +401,9 @@ function sendEmail (runInfo) {
   }
 }
 
-function postJobRun (code, runInfo, errorMsg, runInfoWritePromise) {
+function postJobRun (
+  code, runInfo, errorMsg, runInfoWritePromise, runInfoPreprocessPromise
+) {
   let runid = runInfo.getDisplayValue('runid')
   runInfo.status = code
 
@@ -188,52 +417,22 @@ function postJobRun (code, runInfo, errorMsg, runInfoWritePromise) {
   runInfoWritePromise = (runInfoWritePromise || Promise.resolve()).then(() =>
     writeFilePromise(runInfoPath, JSON.stringify(runInfo, null, 2))
   )
-  let updateResultPromise = updateExpression(runInfo)
+  let updateResultPromise = null
+  if (runInfoPreprocessPromise) {
+    updateResultPromise = runInfoPreprocessPromise.then(
+      preprocessRes => updateExpression(runid, preprocessRes)
+    )
+  }
   Promise.all([runInfoWritePromise, updateResultPromise]).then(() => {
     runIdDict[runid] = code
     sendEmail(runInfo)
-  }
+  })
 }
 
-app.post('/form_upload', cpUpload, function (req, res) {
-  // req.files is an object (String -> Array) where fieldname is the key,
-  //    and the value is array of files
-  //
-  // e.g.
-  //  req.files['avatar'][0] -> File
-  //  req.files['gallery'] -> Array
-  //
-  // req.body will contain the text fields, if there were any
-
-  // Make new folder for results
-
-  let runid = makeid()
-  let tmpPath = getRunIdTempPath(runid)
-  while (fs.existsSync(tmpPath)) {
-    runid = makeid()
-    tmpPath = getRunIdTempPath(runid)
-  }
-  fs.mkdirSync(tmpPath)
-  runIdDict[runid] = RUNNING_CODE
-
-  // construct an object for python input
-  let pyMessenger = {
-    'body': req.body,
-    'files': req.files,
-    'runid': runid,
-    'path': resultFolder
-  }
-  let runInfoPath = getRunIdInfoPath(runid)
-
-  let runInfoObject = new RunInfo(req.body, req.files, runid)
-
-  if (req.headers.host) {
-    runInfoObject.addProperty('hostName', req.headers.host)
-  }
-
-  let runInfoWritePromise = writeFilePromise(
-    runInfoPath, JSON.stringify(runInfoObject, null, 2))
-
+function runPythonScript (
+  pyMessenger, runInfoObject, runInfoPreprocessPromise,
+  runInfoWritePromise, runInfoPath
+) {
   // execute python code on the server.
   let scriptExecution = spawn('python', [pythonScript])
 
@@ -260,12 +459,76 @@ app.post('/form_upload', cpUpload, function (req, res) {
   })
 
   scriptExecution.on('exit',
-    code => postJobRun(code, runInfoObject, stdErrData, runInfoWritePromise))
+    code => postJobRun(
+      code, runInfoObject, stdErrData,
+      runInfoWritePromise, runInfoPreprocessPromise
+    )
+  )
   // console.log(JSON.stringify(pyMessenger))
   // python input
   scriptExecution.stdin.write(JSON.stringify(pyMessenger))
   // tell the node that sending inputs to python is done.
   scriptExecution.stdin.end()
+}
+
+app.post('/form_upload', cpUpload, function (req, res) {
+  // req.files is an object (String -> Array) where fieldname is the key,
+  //    and the value is array of files
+  //
+  // e.g.
+  //  req.files['avatar'][0] -> File
+  //  req.files['gallery'] -> Array
+  //
+  // req.body will contain the text fields, if there were any
+
+  // Make new folder for results
+
+  let runid = makeid()
+  let tmpPath = getRunIdTempPath(runid)
+  while (fs.existsSync(tmpPath)) {
+    runid = makeid()
+    tmpPath = getRunIdTempPath(runid)
+  }
+  fs.mkdirSync(tmpPath)
+
+  // Move uploaded files
+  let moveFilePromises = []
+  for (let fileKey in req.files) {
+    req.files[fileKey].forEach(file => {
+      moveFilePromises.push(
+        renamePromise(file.path, path.format({
+          dir: getRunIdTempPath(runid),
+          base: file.filename
+        }))
+      )
+    })
+  }
+
+  // Add entry in `runIdDict`
+  runIdDict[runid] = RUNNING_CODE
+
+  // construct an object for python input
+  let pyMessenger = {
+    'body': req.body,
+    'files': req.files,
+    'runid': runid,
+    'path': resultFolder
+  }
+  let runInfoPath = getRunIdInfoPath(runid)
+  let runInfoObject = new RunInfo(req.body, req.files, runid)
+
+  if (req.headers.host) {
+    runInfoObject.addProperty('hostName', req.headers.host)
+  }
+
+  let runInfoWritePromise = writeFilePromise(
+    runInfoPath, JSON.stringify(runInfoObject, null, 2))
+
+  Promise.all(moveFilePromises).then(() => {
+    let runInfoPreprocessPromise = preJobRun(runInfoObject, req.files)
+    return runPythonScript(pyMessenger, runInfoObject,
+      runInfoPreprocessPromise, runInfoWritePromise, runInfoPath)
+  })
 
   res.json({ runid: runid })
 })

@@ -89,14 +89,14 @@ const runInfoArray = [
       {
         key: 'speciesPeak1[]',
         index: 0,
-        property: 'originalname',
-        transformFunc: (value, runInfoResults) => (
-          value.length > MAX_INPUT_LENGTH
-            ? value.slice(0, MAX_INPUT_LENGTH) + ' ...'
-            : value
-        )
+        property: 'originalname'
       }
-    ]
+    ],
+    displayFunc: (entry, runInfoResults) => (
+      entry.length > MAX_INPUT_LENGTH
+        ? entry.slice(0, MAX_INPUT_LENGTH) + ' ...'
+        : entry
+    )
   },
   {
     key: 'queryInput',
@@ -106,22 +106,19 @@ const runInfoArray = [
       {
         key: 'speciesInput1',
         index: 0,
-        property: 'originalname',
-        transformFunc: (value, runInfoResults) => (
-          value.length > MAX_INPUT_LENGTH
-            ? value.slice(0, MAX_INPUT_LENGTH) + ' ...'
-            : value
-        )
+        property: 'originalname'
       },
       {
         key: 'speciesText',
-        index: 0,
-        transformFunc: (value, runInfoResults) => (
-          (value || '').split(/\r?\n/, 1)[0].slice(0, MAX_INPUT_LENGTH) +
-          ' ...'
-        )
+        index: 0
       }
-    ]
+    ],
+    displayFunc: (entry, runInfoResults) => (
+      (entry.length > MAX_INPUT_LENGTH ||
+        (entry || '').split(/\r?\n/, 1).length > 1
+      ) ? (entry || '').split(/\r?\n/, 1)[0].slice(0, MAX_INPUT_LENGTH) + ' ...'
+        : entry
+    )
   },
   {
     key: 'targetGenomeAssembly',
@@ -146,14 +143,14 @@ const runInfoArray = [
       {
         key: 'speciesPeak2[]',
         index: 0,
-        property: 'originalname',
-        transformFunc: (value, runInfoResults) => (
-          value.length > MAX_INPUT_LENGTH
-            ? value.slice(0, MAX_INPUT_LENGTH) + ' ...'
-            : value
-        )
+        property: 'originalname'
       }
-    ]
+    ],
+    displayFunc: (entry, runInfoResults) => (
+      entry.length > MAX_INPUT_LENGTH
+        ? entry.slice(0, MAX_INPUT_LENGTH) + ' ...'
+        : entry
+    )
   },
   {
     key: 'targetInput',
@@ -163,22 +160,19 @@ const runInfoArray = [
       {
         key: 'speciesInput2',
         index: 0,
-        property: 'originalname',
-        transformFunc: (value, runInfoResults) => (
-          value.length > MAX_INPUT_LENGTH
-            ? value.slice(0, MAX_INPUT_LENGTH) + ' ...'
-            : value
-        )
+        property: 'originalname'
       },
       {
         key: 'speciesText',
-        index: 1,
-        transformFunc: (value, runInfoResults) => (
-          (value || '').split(/\r?\n/, 1)[0].slice(0, MAX_INPUT_LENGTH) +
-          ' ...'
-        )
+        index: 1
       }
     ],
+    displayFunc: (entry, runInfoResults) => (
+      (entry.length > MAX_INPUT_LENGTH ||
+        (entry || '').split(/\r?\n/, 1).length > 1
+      ) ? (entry || '').split(/\r?\n/, 1)[0].slice(0, MAX_INPUT_LENGTH) + ' ...'
+        : entry
+    ),
     depends: {
       key: 'subMode',
       value: 'genomeregion'
@@ -423,68 +417,77 @@ class RunInfo {
       let formData = Object.assign({}, formBody, formFiles, { runid: runid })
       this._resultFormatted = {}
       this._result = {}
-      runInfoArray.forEach(infoEntry => {
-        let key = infoEntry.key
-        if (infoEntry.generatorFunc) {
-          this._result[key] = infoEntry.generatorFunc(this._result)
-        } else {
-          // no generator, needs to parse from formData
-          let valueToWrite = null
+      runInfoArray.forEach(
+        infoEntry => this._loadInfoEntry(formData, infoEntry))
+    }
+  }
 
-          // check entry dependency
-          if (!infoEntry.depends || (
-            this._result.hasOwnProperty(infoEntry.depends.key) &&
-            this._result[infoEntry.depends.key] === infoEntry.depends.value
-          )) {
-            if (infoEntry.formFields) {
-              infoEntry.formFields.some(field => {
-                if (formData.hasOwnProperty(field.key)) {
-                  let fieldValue = formData[field.key]
-                  if (fieldValue && field.index !== undefined) {
-                    fieldValue = fieldValue[field.index]
-                  }
-                  if (fieldValue && field.property !== undefined) {
-                    fieldValue = fieldValue[field.property]
-                  }
-                  if (fieldValue && field.transformFunc) {
-                    fieldValue = field.transformFunc(fieldValue)
-                  }
-                  if (fieldValue) {
-                    valueToWrite = fieldValue
-                    return true
-                  }
-                  return false
-                }
-              })
-            } else if (formData[key] !== undefined && formData[key] !== '') {
-              valueToWrite = formData[key]
-            }
-            if (infoEntry.values) {
-              // needs to verify if values are part of available values, and
-              // their dependency (if any ) have been met
-              let valueCandidate = valueToWrite
-              valueToWrite = null
-              infoEntry.values.some(listedCandidate => {
-                if (valueCandidate === listedCandidate.key) {
-                  if (!listedCandidate.depends || (
-                    this._result.hasOwnProperty(listedCandidate.depends.key) &&
-                    this._result[listedCandidate.depends.key] ===
-                      listedCandidate.depends.value
-                  )) {
-                    valueToWrite = valueCandidate
-                  }
-                  return true
-                }
-                return false
-              })
-            }
-          }
+  _checkEntryDependency (dependentEntry) {
+    return !dependentEntry.depends || (
+      this._result.hasOwnProperty(dependentEntry.depends.key) &&
+      this._result[dependentEntry.depends.key] === dependentEntry.depends.value
+    )
+  }
 
-          if (valueToWrite !== null) {
-            this._result[key] = valueToWrite
+  _getInfoEntryValue (formData, infoEntry) {
+    let key = infoEntry.key
+    let result = null
+    if (infoEntry.formFields) {
+      infoEntry.formFields.some(field => {
+        if (formData.hasOwnProperty(field.key)) {
+          let fieldValue = formData[field.key]
+          if (fieldValue && field.index !== undefined) {
+            fieldValue = fieldValue[field.index]
           }
+          if (fieldValue && field.property !== undefined) {
+            fieldValue = fieldValue[field.property]
+          }
+          if (fieldValue && field.transformFunc) {
+            fieldValue = field.transformFunc(fieldValue)
+          }
+          if (fieldValue) {
+            result = fieldValue
+            return true
+          }
+          return false
         }
       })
+    } else if (formData[key] !== undefined && formData[key] !== '') {
+      result = formData[key]
+    }
+    return result
+  }
+
+  _loadInfoEntry (formData, infoEntry) {
+    let key = infoEntry.key
+    if (infoEntry.generatorFunc) {
+      this._result[key] = infoEntry.generatorFunc(this._result)
+    } else {
+      // no generator, needs to parse from formData
+      let valueToWrite = this._getInfoEntryValue(formData, infoEntry)
+
+      // check entry dependency
+      if (this._checkEntryDependency(infoEntry)) {
+        if (infoEntry.values) {
+          // needs to verify if values are part of available values, and
+          // their dependency (if any) have been met
+          let valueCandidate = valueToWrite
+          valueToWrite = null
+          infoEntry.values.some(listedCandidate => {
+            if (valueCandidate === listedCandidate.key) {
+              if (this._checkEntryDependency(listedCandidate)) {
+                valueToWrite = valueCandidate
+              }
+              return true
+            }
+            return false
+          })
+        }
+      }
+
+      if (valueToWrite !== null) {
+        this._result[key] = valueToWrite
+      }
     }
   }
 
@@ -557,6 +560,13 @@ class RunInfo {
       }
       return dispResult
     }
+  }
+
+  getRawPropertyValue (property) {
+    if (this._result.hasOwnProperty(property)) {
+      return this._result[property]
+    }
+    return null
   }
 
   getPropertyLine (property) {

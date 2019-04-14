@@ -562,6 +562,13 @@ class RunInfo {
     }
   }
 
+  getRawPropertyValue (property) {
+    if (this._result.hasOwnProperty(property)) {
+      return this._result[property]
+    }
+    return null
+  }
+
   getPropertyLine (property) {
     if (
       (

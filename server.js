@@ -42,9 +42,9 @@ const species = [
   }
 ]
 
-const speciesMap = species.reduce((prev, current) => {
-  prev[current.reference] = current
-  return prev
+species._map = species.reduce((prevMap, curr) => {
+  prevMap[curr.reference] = curr
+  return prevMap
 }, {})
 
 var clusterProc = new ClusterProcesser(
@@ -144,25 +144,103 @@ function getRunIdImagePath (runid, index) {
 
 /**
  * Attach the previously built additional results to Python-returned results
- * @param {RunInfoObject} runInfo the object storing run info
+ * @param {string} runid
  * @param {object} [preprocessRes] the result from the preprocessing, can be
  *    `null` (in which case nothing will be added).
  * @returns {Promise<void>} returns a promise that resolves to `void`
  *    when the updated data has been written to a file
  */
-function updateExpression (runInfo, preprocessRes) {
+function updateExpression (runid, preprocessRes) {
   // Procedures:
   // * Determine if the run is many to many
   // * Determine if there are expression files available
   // * Find all the genes' Ensembl IDs involved in the run
   // * Build an object of all expression values and attach to the result
   if (preprocessRes) {
-
+    let resultFilePath = getRunIdResultPath(runid)
+    return readFilePromise(resultFilePath, 'utf8')
+      .then(result => {
+        let resDataObj = JSON.parse(result)
+        if (resDataObj.hasOwnProperty('expression')) {
+          console.log('Warning: existing expression property detected. ' +
+            'Will be overwritten.')
+        }
+        resDataObj.expression = preprocessRes
+        return writeFilePromise(resultFilePath, JSON.stringify(resDataObj))
+      })
+      .catch(ignore => { })
   }
+  return null
 }
 
-async function getGeneIdList (runInfo, files) {
+/**
+ * Get value from the textarea element, the uploaded file, or from cluster ID.
+ * The later parameters will take precedence.
+ * @param {RunInfo} runInfo text from textarea element
+ * @param {object} files file object from multer
+ * @param {string} textareaKey key value for textarea values in `runInfo`
+ * @param {string} [filesKey] key value for file object
+ * @param {string} [clusterId] the ID of the cluster
+ * @param {string} [speciesName] the name of the species, must be provided
+ *    to use `clusterId`
+ * @returns {Promise<string>} a promise resolving to the content
+ * @async
+ */
+async function getValueFromFileOrTextArea (
+  runInfo, files, textareaKey, filesKey, clusterId, speciesName
+) {
+  if (clusterId) {
+    await clusterProc.clusterTableReadyPromise
+    let result = clusterProc.getClusterById(clusterId)
+    if (result) {
+      return result.getGeneListBySpecies(speciesName).map(gene => gene.symbol)
+    }
+  }
+  if (files && files[filesKey] && files[filesKey][0]) {
+    return readFilePromise(files[filesKey][0].filename, 'utf8')
+  }
+  return runInfo.getRawPropertyValue(textareaKey)
+}
 
+/**
+ * Get the gene id list from submitted forms
+ * @param {RunInfo} runInfo run info object
+ * @param {object} files file object returned from multer
+ */
+async function getGeneIdList (runInfo, files) {
+  let queryTextPromise = getValueFromFileOrTextArea(
+    runInfo, files, 'queryInput', 'speciesInput1')
+  let targetTextPromise = getValueFromFileOrTextArea(
+    runInfo, files, 'targetInput', 'speciesInput2',
+    runInfo.getRawPropertyValue('clusters'),
+    species._map[runInfo.getRawPropertyValue('targetGenomeAssembly')].name
+  )
+  let queryContent = await queryTextPromise
+  let targetContent = await targetTextPromise
+  let getIdFromLine = line => {
+    let tokens = line.trim().split(/\t| +/)
+    if (tokens.length > 1) {
+      // Maybe BED files
+      return tokens[4] // name part
+    }
+    return tokens[0]
+  }
+  return {
+    query: queryContent
+      ? (Array.isArray(queryContent)
+        ? queryContent
+        : (queryContent.split('\n').map(line => getIdFromLine(line))
+          .filter(entry => !!entry)
+        ))
+      : null,
+    target: targetContent
+      ? (Array.isArray(targetContent)
+        ? targetContent
+        : (targetContent.split('\n').map(line => getIdFromLine(line))
+          .filter(entry => !!entry)
+        ))
+      : null
+  }
 }
 
 function buildExpDicts (expFiles) {
@@ -187,8 +265,18 @@ function buildExpDicts (expFiles) {
   }, {})
 }
 
-function buildExpListFromFiles (list, expDicts, annotationMap) {
-
+function buildExpObjFromFiles (list, expDicts, annotationMap) {
+  return list.reduce((prev, curr) => {
+    curr = curr.toLowerCase()
+    if (annotationMap.has(curr)) {
+      let expKey = annotationMap.get(curr).ensemblId
+      let symbolKey = annotationMap.get(curr).symbol
+      if (!prev.hasOwnProperty(symbolKey)) {
+        prev[symbolKey] = expDicts[expKey]
+      }
+    }
+    return prev
+  }, {})
 }
 
 async function preJobRun (runInfo, files) {
@@ -203,48 +291,51 @@ async function preJobRun (runInfo, files) {
   let targetPeakId = runInfo.getDisplayValue('targetPeak')
   let expDict = await readExpDictPromise
   // read expression files
-  let queryExpFilesPromises = null
+  let queryExpFilesPromise = null
   if (expDict.hasOwnProperty(queryPeakId) &&
     expDict[queryPeakId].expression_files
   ) {
-    queryExpFilesPromises = expDict[queryPeakId].expression_files.map(
-      fileName => readFilePromise(fileName, 'utf8')
+    queryExpFilesPromise = Promise.all(
+      expDict[queryPeakId].expression_files.map(
+        fileName => readFilePromise(fileName, 'utf8')
+      )
     )
   }
-  let targetExpFilesPromises = null
+  let targetExpFilesPromise = null
   if (expDict.hasOwnProperty(targetPeakId) &&
     expDict[targetPeakId].expression_files
   ) {
-    targetExpFilesPromises = expDict[targetPeakId].expression_files.map(
-      fileName => readFilePromise(fileName, 'utf8')
+    targetExpFilesPromise = Promise.all(
+      expDict[targetPeakId].expression_files.map(
+        fileName => readFilePromise(fileName, 'utf8')
+      )
     )
   }
 
   // get gene identifiers
   let geneIdentifiers = await getGeneIdList(runInfo, files)
 
-  // get annotation
-  let annotationMap = await annotationMapPromise
-
   let result = {
-    queryList: null,
-    targetList: null
+    queryExpObj: null,
+    targetExpObj: null
   }
-  if (queryExpFilesPromises && geneIdentifiers.query) {
-    let queryExpDicts = buildExpDicts(await queryExpFilesPromises)
-    result.queryList =
-      buildExpListFromFiles(geneIdentifiers.query, queryExpDicts,
-        annotationMap[runInfo.queryGenomeAssembly])
+  if (queryExpFilesPromise && geneIdentifiers.query) {
+    let queryExpDicts =
+      buildExpDicts(await queryExpFilesPromise)
+    result.queryExpObj =
+      buildExpObjFromFiles(geneIdentifiers.query, queryExpDicts,
+        await annotationMapPromise[runInfo.getRawPropertyValue('queryGenomeAssembly')])
   }
-  if (targetExpFilesPromises && geneIdentifiers.target) {
-    let targetExpDicts = buildExpDicts(await targetExpFilesPromises)
-    result.targetList =
-      buildExpListFromFiles(geneIdentifiers.target, targetExpDicts,
-        annotationMap[runInfo.targetGenomeAssembly])
+  if (targetExpFilesPromise && geneIdentifiers.target) {
+    let targetExpDicts =
+      buildExpDicts(await targetExpFilesPromise)
+    result.targetExpObj =
+      buildExpObjFromFiles(geneIdentifiers.target, targetExpDicts,
+        await annotationMapPromise[runInfo.getRawPropertyValue('targetGenomeAssembly')])
   }
   // Find all the genes' Ensembl IDs involved in the run
   // Build an object of all expression values
-  if (!result.queryList && !result.targetList) {
+  if (!result.queryExpObj && !result.targetExpObj) {
     return null
   }
   return result
@@ -329,7 +420,7 @@ function postJobRun (
   let updateResultPromise = null
   if (runInfoPreprocessPromise) {
     updateResultPromise = runInfoPreprocessPromise.then(
-      preprocessRes => updateExpression(runInfo, preprocessRes)
+      preprocessRes => updateExpression(runid, preprocessRes)
     )
   }
   Promise.all([runInfoWritePromise, updateResultPromise]).then(() => {

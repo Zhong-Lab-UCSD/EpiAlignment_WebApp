@@ -100,7 +100,7 @@ async function loadGeneAnnoFromGzipBuffer (buffer, keys, caseInSensitive) {
       keys.forEach(key => {
         if (newGene.hasOwnProperty(key) && newGene[key]) {
           speciesGeneMap.set(
-            caseInSensitive ? newGene[key].toLowerCase() : newGene[key],
+            (caseInSensitive ? newGene[key].toLowerCase() : newGene[key]),
             newGene)
         }
       })

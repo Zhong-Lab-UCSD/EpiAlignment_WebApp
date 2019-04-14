@@ -78,6 +78,10 @@ class Cluster {
   static getIdFromLine (line) {
     return line.split('\t')[2]
   }
+
+  getGeneListBySpecies (speciesName) {
+    return this.genesBySpecies[speciesName].slice()
+  }
 }
 
 async function loadClustersFromFile (clusters, species, settings, geneMap) {
@@ -171,6 +175,10 @@ class ClusterProcesser {
         }
       }
     })).then(() => console.log('===== Cluster table built ====='))
+  }
+
+  getClusterById (id) {
+    return this.clusters._map.get(id)
   }
 
   getClusters (partialAlias, maxMatchEntries) {

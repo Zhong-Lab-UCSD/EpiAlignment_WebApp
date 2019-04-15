@@ -101,13 +101,15 @@ def fetchHistModSeq(qr, dbi):
   if qr.strand=="-":
     hseq=hseq[::-1]
 
-  return hseq
+  one_num = hseq.count("1")
+  return hseq, one_num
 
 def Generate_output_str(bed_pair):
   bed1=bed_pair[0]
   bed2=bed_pair[1]
 
   output_list=[]
+  i = 0
   for s,sp,qrs in zip(args.species, [sp1,sp2], [bed1,bed2]):
     output_list.append("@"+s+"_"+"|".join(args.histone)+"_"+bed1.id)
 
@@ -116,13 +118,22 @@ def Generate_output_str(bed_pair):
       output_list=[]
       return
     output_list.append(seq)
+    if i == 0 :
+      one_numbers = []
     for fsp_name in sp:
       output_list.append("+")
-      hseq=fetchHistModSeq(qrs, fsp_name)
+      hseq, one_num = fetchHistModSeq(qrs, fsp_name)
+      if i == 0:
+        one_numbers.append(one_num)
       if len(hseq)!=len(seq):
         # print >> sys.stderr, "In region pair " + bed1.id + " the sequence and epigenomic state strings have different lengths."
         raise Exception(203, "In region pair " + bed1.id + " the sequence and epigenomic state strings have different lengths.")
       output_list.append(str(hseq))
+
+    i += 1
+  one_name = "$$$" + "$".join([str(f) for f in one_numbers])
+  output_list[0] += one_name
+  output_list[4] += one_name
 
   if len(output_list)!=0:
     return "\n".join(output_list)
@@ -170,7 +181,7 @@ def Main():
     p.join()
   except Exception as e:
     p.terminate()
-    print >> sys.stderr, e.args[1]
+    print >> sys.stderr, e.args
     sys.exit(e.args[0])
 
   # t1 = time()

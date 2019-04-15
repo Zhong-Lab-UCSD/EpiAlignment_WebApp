@@ -574,7 +574,7 @@ def TargetRegion(bed_list, hit_start, hit_stop):
 def ConcateBed(coor_list):
   return coor_list[0] + ":" + str(coor_list[1]) + "-" + str(coor_list[2]) + "(" + coor_list[3] + ")"
 
-def InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, line_epi, line_seq):
+def InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, line_epi, line_seq, one_num):
   '''
   Initialize a json object: index; all locations including
   region1, region2, queryLength,
@@ -585,7 +585,7 @@ def InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, line_epi, line_seq):
   json_obj = {"index":ind, "region1": ConcateBed(bed_dict1[pair_name]), "region2": ConcateBed(bed_dict2[pair_name]),\
     "queryLength":query_len, \
     "scoreE": float(line_epi[1]) * 1000 / query_len, "targetE": TargetRegion(bed_dict2[pair_name], line_epi[5], line_epi[6]), \
-    "scoreS": ".", "targetS": ".", "shifted": "."}
+    "scoreS": ".", "targetS": ".", "shifted": ".", "oneNum": one_num}
 
   if line_seq:
     json_obj["scoreS"] = float(line_seq[1]) * 1000 / query_len
@@ -765,11 +765,12 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
       # ALignment scores.
       if len(line_epi) == 0:
         break
-      pair_name = line_epi[0].split("_", 2)[-1]
+      pair_name_raw = line_epi[0].split("_", 2)[-1]
+      pair_name, one_num = pair_name_raw.split("$$$")
 
       try:
         #Initialize json_obj
-        json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi, line_seq)
+        json_obj = InitJsonObj(i, pair_name, bed_dict1, bed_dict2, line_epi, line_seq, one_num)
         # Add region names.
         RegionName(json_obj, pair_name, intype1, intype2, alignMode)
         # The following steps are only for enhancer mode.

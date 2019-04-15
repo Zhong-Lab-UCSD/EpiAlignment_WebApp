@@ -451,12 +451,12 @@ div.stepright h3 {
 	margin-top: 0.2em;
 }
 
-div.stepright div.help {
+div.help {
 	opacity: 0.75;
 	cursor: pointer;
 }
 
-div.stepright div.help:hover {
+div.help:hover {
 	opacity: 1;
 }
 
@@ -978,17 +978,28 @@ span.keyboard {
 
 .resultHeader {
 	margin: 1.5rem 0 1rem 0;
-	font-size: 18px;
-	font-weight: bold;
 }
 
 .resultHeader > * {
-	margin-right: 2rem;
 	margin-bottom: 0.5rem;
+}
+
+.resultHeader > *:not(:last-child) {
+	margin-right: 2.5rem;
 }
 
 .resultHeader:first-child {
 	margin-top: 0.5rem;
+}
+
+.resultHeader > .headerText {
+	font-size: 18px;
+	font-weight: bold;
+}
+
+.resultHeader > .descText {
+	font-size: 0.9em;
+	font-style: italic;
 }
 
 .resultHolder {
@@ -1035,6 +1046,10 @@ a.buttonLink {
 .dataTableCellNoGap {
 	padding: 0 !important;
 	vertical-align: middle;
+}
+
+.dataTableCell:not(.btnWithAnno) > i.material-icons {
+	font-size: 1.75em;
 }
 
 tr.expandable {
@@ -1272,21 +1287,6 @@ div.enhancerCardContainer {
 	padding: 1rem;
 }
 
-div.enhancerScoreContainer {
-	background: #EEEEEE;
-	padding: 0.3rem 1rem;
-	margin-bottom: 1rem;
-}
-
-div.enhancerScoreContainer > div {
-	padding: 0.3em 0.5em;
-}
-
-div.enhancerScoreContainer > div > div:first-child {
-	width: 8em;
-	font-weight: bold;
-}
-
 div.resultImgHolder {
 	min-width: 30rem;
 	flex: 0 1 38rem;
@@ -1306,6 +1306,69 @@ div.resultImgHolder > img {
 
 div.resultDesc {
 	flex-basis: 45rem;
+}
+
+div.resultDesc > div.dataPart {
+	border: 2px solid #CCCCCC;
+	padding-bottom: 0.3em;
+}
+
+div.resultDesc > div.dataPart > :not(.sectionHeader) {
+	padding: 0.3em 0.75em;
+}
+
+div.resultDesc div.dataEntry {
+	width: 16rem;
+}
+
+div.resultDesc span.anno {
+	font-weight: 500;
+	margin-right: 1em;
+}
+
+div.resultDesc > div:not(:last-child) {
+	margin-bottom: 0.75em;
+}
+
+div.resultDesc div.sectionHeader {
+	font-size: 1.2rem;
+	font-weight: bold;
+	line-height: 1.7rem;
+	background: #EEEEEE;
+	padding: 0.3em 0.5em;
+}
+
+div.resultDesc div.subHeader {
+	font-size: 1.1rem;
+	font-weight: bold;
+	margin-right: 1rem;
+	min-width: 15rem;
+}
+
+div.resultDesc span.shiftedLabel {
+	background: #EEEEEE;
+	padding: 0.3em 0.5em;
+	border-radius: 0.75em;
+}
+
+div.resultDesc span.shiftedLabel > i.material-icons {
+	font-size: 1.5rem;
+	margin-right: 0.25em;
+}
+
+div.enhancerScoreContainer {
+	background: #EEEEEE;
+	padding: 0.3rem 1rem;
+	margin-bottom: 1rem;
+}
+
+div.enhancerScoreContainer > div {
+	padding: 0.3em 0.5em;
+}
+
+div.enhancerScoreContainer > div > div:first-child {
+	width: 8em;
+	font-weight: bold;
 }
 
 /* ***** Manual related styles ***** */

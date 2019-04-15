@@ -172,6 +172,16 @@ var app = new Vue({
         sortable: true,
         class: 'dataTableCell',
         width: 'auto'
+      },
+      {
+        text: '',
+        html: '<i class="material-icons">swap_horiz</i>',
+        value: 'shifted',
+        align: 'left',
+        sortable: true,
+        class: ['dataTableCell', 'dataTableCellNoGap'],
+        width: 'auto',
+        tooltip: 'Whether the EpiAlignment hit is different from the sequence-only hit.'
       }
     ],
     dataEntries: []
@@ -526,9 +536,11 @@ var app = new Vue({
     },
     processEnhancerData: function (data) {
       // reformat table header
+      // remove target name
       this.headers.splice(4, 1)
-      this.headers.splice(-2, 2)
-      this.headers.push({
+      // remove epi score and seq score
+      this.headers.splice(5, 2)
+      this.headers.splice(5, 0, {
         text: 'EpiAlign hit coordinate',
         value: 'scoreE',
         align: 'left',
@@ -550,7 +562,7 @@ var app = new Vue({
         ucscRefToSession[assembly] +
         '&position=' + region
     },
-    getGiveLink: function (refs, regions) {
+    getGiveLink: function (refs, regions, highlight) {
       let trackPart = ''
       if (this.displayDataSets) {
         trackPart = '&track=' +
@@ -559,6 +571,8 @@ var app = new Vue({
       return GIVE_TARGET +
         'ref=' + window.encodeURIComponent(JSON.stringify(refs)) +
         '&coordinate=' + window.encodeURIComponent(JSON.stringify(regions)) +
+        '&highlight=' +
+        window.encodeURIComponent(JSON.stringify(highlight)) +
         trackPart
     }
   }

@@ -7,12 +7,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EpiAlignment - Result</title>
   <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
-  <link href="https://cdn.jsdelivr.net/npm/vuetify@1.3.15/dist/vuetify.min.css" rel="stylesheet" type="text/css">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@1.5.11/dist/vuetify.min.css" rel="stylesheet" type="text/css">
   <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-78231712-3"></script>
   <script src="js/googleAnalytics.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/vuetify@1.3.15/dist/vuetify.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/vuetify@1.5.11/dist/vuetify.min.js"></script>
   <script defer src="js/lib/moment.min.js"></script>
   <script defer src="js/lib/moment-timezone-with-data.min.js"></script>
   <script defer src="js/result.js" type="module"></script>
@@ -271,24 +271,24 @@
       </div>
       <div class="resultHolder flexColumn flexStretch flex flexNoGap">
         <div class="resultHeader flexRow flexWrap flexCenter flexNoGap">
-          <span>Result data table</span>
+          <span class="headerText">Result data table</span>
+          <div class="flex descText" v-if="alignMode === 'enhancer'">
+            Click on table rows for detailed results.
+          </div>
           <a class="buttonLink" :href="downloadLink" download="results.txt" target="_blank"><i class="material-icons">
               save_alt
             </i>
             Download results</a>
         </div>
         <div class="enhancerHint tooltipPanel flexRow flexNoGap flexWrap justifyEnd" v-if="showResultHint">
-          <div class="hintContent flex">You may click on the
+          <div class="hintContent flex">You may click 
             <div class="btnWithAnno"><i class="material-icons">open_in_new</i>
               <div class="annotation">GIVE</div>
-            </div> icon at the beginning of each row to show a side-by-side
+            </div> in the front of each row to show a side-by-side
             view of the query and the target region in a browser powered by
             GIVE, or click on the
             <div class="btnWithAnno"><i class="material-icons">open_in_new</i><div class="annotation">UCSC</div></div>
             icon after each coordinate to open the region in UCSC Genome Browser.
-            <span v-if="alignMode === 'enhancer'">
-              You may also click on individual table rows to see detailed results.
-            </span>
           </div>
           <div class="closeHint nobr noFlex flexRow flexCenter flexNoGap">
             <input type="checkbox" v-model="doNotShowHintAgain" id="doNotShow">
@@ -300,11 +300,34 @@
           :rows-per-page-items="rowsPerPageItems" sort-icon="keyboard_arrow_up">
           <template slot="no-data">
           </template>
+          <template slot="headerCell" slot-scope="props">
+            <v-tooltip bottom v-if="props.header.tooltip">
+              <template v-slot:activator="{ on }">
+                <span v-on="on">
+                  <span v-if="props.header.html" v-html="props.header.html">
+                  </span>
+                  <span v-if="!props.header.html">
+                    {{ props.header.text }}
+                  </span>
+                </span>
+              </template>
+              <span>
+                {{ props.header.tooltip }}
+              </span>
+            </v-tooltip>
+            <span v-if="!props.header.tooltip">
+              <span v-if="props.header.html" v-html="props.header.html">
+              </span>
+              <span v-if="!props.header.html">
+                {{ props.header.text }}
+              </span>
+            </span>
+          </template>
           <template slot="items" slot-scope="row">
             <tr @click="toggleRow(row)" :class=" { expandable: alignMode === 'enhancer' } ">
               <td class="dataTableCell">{{ row.item.index }}</td>
               <td class="dataTableCell dataTableCellNoGap"><a @click.stop class="noFlex btnWithAnno" target="_blank" title="Open region in GIVE Browser"
-                :href="getGiveLink([queryGenomeAssembly, targetGenomeAssembly], [row.item.region1, row.item.region2])"><i class="material-icons">
+                :href="getGiveLink([queryGenomeAssembly, targetGenomeAssembly], [row.item.region1, row.item.region2], [[row.item.region1], [row.item.targetE, row.item.targetS]])"><i class="material-icons">
                   open_in_new
                 </i><div class="annotation">GIVE</div>
               </a></td>
@@ -331,6 +354,16 @@
                 {{ alignMode === 'promoter' ? (row.item.scoreS !== '.'
                   ? Number.parseFloat(row.item.scoreS).toFixed(3) : '---')
                 : row.item.targetS !== '.' ? row.item.targetS : '---' }}</td>
+              <td class="dataTableCell dataTableCellNoGap text-xs-left">
+                <v-tooltip bottom v-if="row.item.shifted === 'Y'">
+                  <template v-slot:activator="{ on }">
+                    <i class="material-icons" v-on="on">swap_horizontal_circle</i>
+                  </template>
+                  <span>
+                    The EpiAlignment hit is different from the sequence-only hit.
+                  </span>
+                </v-tooltip>
+              </td>
             </tr>
           </template>
           <template slot="expand" slot-scope="entry">
@@ -346,37 +379,74 @@
                   </div>
                 </div>
                 <div class="flex resultDesc">
-                  <div class="resultHeader">Result description</div>
-                  <p>
-                    The alignment score along the entire target region is
-                    plotted in the figure to the left. The hit regions are the
-                    locations with the highest alignment score.
-                  </p>
-                  <p>
-                    A sequence-only alignment result is provided below
-                    ("SeqOnly") for comparative purposes.
-                  </p>
-                  <p>
-                    The EpiAlignment scores for the hit region is shown below:
-                  </p>
-                  <div class="enhancerScoreContainer flexColumn flexNoWrap flexNoGap">
-                    <div class="flexRow flexNoWrap">
-                      <div>EpiAlign:</div>
-                      <div>{{ Number.parseFloat(entry.item.scoreE).toFixed(3) }}</div>
+                  <div id="dataHelp" class="help flexRow flexCenter flexNoWrap">
+                    <i class="material-icons iconAtLeft">help</i>
+                    <div>What do all these results mean?</div>
+                  </div>
+                  <div class="flexColumn dataPart flexNoGap">
+                    <div class="sectionHeader">Overview</div>
+                    <div class="flexRow flexWrap flexNoGap flexCenter">
+                      <div class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
+                        <span class="anno">EpiAlign best score:</span>
+                        <span>{{ Number.parseFloat(entry.item.scoreE).toFixed(3) }}</span>
+                      </div>
+                      <div v-if="entry.item.targetS !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
+                        <span class="anno">Sequence-only best score:</span>
+                        <span>{{ Number.parseFloat(entry.item.scoreS).toFixed(3) }}</span>
+                      </div>
                     </div>
-                    <div v-show="entry.item.targetS !== '.'" class="flexRow flexNoWrap">
-                      <div>Sequence-only:</div>
-                      <div>{{ Number.parseFloat(entry.item.scoreS).toFixed(3) }}</div>
+                    <div v-if="entry.item.shifted === 'Y'" class="flexRow flexWrap flexNoGap flexCenter">
+                      <span class="flexRow flexCenter shiftedLabel noFlex">
+                        <i class="material-icons">swap_horizontal_circle</i>
+                        The EpiAlignment hit is different from the sequence-only hit.
+                      </span>
                     </div>
                   </div>
-                  <p>
-                    <em>
-                      (Note: if you set epigenomic weight to zero during
-                      input, the EpiAlignment score will be the degenerated
-                      sequence-only alignment score, and no sequence-only
-                      result will be reported.)
-                    </em>
-                  </p>
+                  <div class="flexColumn dataPart flexNoGap">
+                    <div class="sectionHeader">Sequence evaluation</div>
+                    <div v-if="!!entry.item.signalToNoise" class="flexRow flexWrap flexNoGap flexStart">
+                      <div class="subHeader">Signal-to-noise ratio</div>
+                      <div class="flexRow flex flexNoGap flexWrap flexEnd">
+                        <div v-if="entry.item.signalToNoise.snE !== '.'" class="flexRow flexNoWrap noFlex flexStart flexNoGap dataEntry">
+                          <span class="anno">EpiAlign hit:</span>
+                          <span>{{ Number.parseFloat(entry.item.signalToNoise.snE).toFixed(3) }}</span>
+                        </div>
+                        <div v-if="entry.item.signalToNoise.snS !== '.'" class="flexRow flexNoWrap noFlex flexStart flexNoGap dataEntry">
+                          <span class="anno">Sequence-only hit:</span>
+                          <span>{{ Number.parseFloat(entry.item.signalToNoise.snS).toFixed(3) }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flexRow flexWrap flexNoGap flexStart">
+                      <div class="subHeader">Background p-value</div>
+                      <div class="flexRow flex flexNoGap flexWrap flexEnd">
+                        <div v-show="entry.item.bgPvalueE !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
+                          <span class="anno">EpiAlign hit:</span>
+                          <span>{{ Number.parseFloat(entry.item.bgPvalueE).toFixed(3) }}</span>
+                        </div>
+                        <div v-show="entry.item.bgPvalueS !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
+                          <span class="anno">Sequence-only hit:</span>
+                          <span>{{ Number.parseFloat(entry.item.bgPvalueS).toFixed(3) }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flexRow flexWrap flexNoGap flexStart">
+                      <div class="subHeader">Comparison vs orthologous region pairs</div>
+                    </div>
+                    <div class="flexRow flexWrap flexNoGap flexCenter">
+                      <div v-show="entry.item.bgPvalueE !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
+                        <span class="anno">EpiAlign hit:</span>
+                        <span>{{ Number.parseFloat(entry.item.bgPvalueE).toFixed(3) }}</span>
+                      </div>
+                      <div v-show="entry.item.bgPvalueS !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
+                        <span class="anno">Sequence-only hit:</span>
+                        <span>{{ Number.parseFloat(entry.item.bgPvalueS).toFixed(3) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flexColumn dataPart flexNoGap">
+                    <div class="sectionHeader">Epigenome evaluation</div>
+                  </div>
                 </div>
               </div>
             </v-card>

@@ -1,13 +1,19 @@
-## Using the python template program to access the EpiAlignment web service
+# Using the python template program to access the EpiAlignment web service
 
 We provided ``EpiAlignment_PyClient``, a python template program for users to access EpiAlignment from their own computer, submit multiple jobs and parse the output. The user may also modify the code and incorporate it into their own programs.
 
-### Python platform and dependencies
+## Python platform and dependencies
 The current verion of ``EpiAlignment_PyClient`` supports both Python 3 and Python 2. If you are using Python 2, please use ``EpiAlignment_PyClient_2.py`` instead of ``EpiAlignment_PyClient.py``.
 
-If Python 3 and ``pipenv`` are available, you may use ``pipenv install`` to automatically install all dependencies (add ``--three`` if you have ``pipenv`` installed for both Python 3 and Python 2 on your computer.). You may then use ``pipenv run python3 EpiAlignment_PyClient.py`` to run ``EpiAlignment_PyClient``. 
+If Python 3 and ``pipenv`` are available, you may use the following command to automatically install all dependencies (add ``--three`` if you have ``pipenv`` installed for both Python 3 and Python 2 on your computer.). 
 
-If ``pipenv`` is not available or you are using Python 2, you will need to install the HTTP library [``requests``](http://docs.python-requests.org/en/master/) before using ``python3 EpiAlignment_PyClient.py`` or ``python EpiAlignment_PyClient_2.py``. 
+```bash
+pipenv install
+```
+
+You may then use ``pipenv run python3 EpiAlignment_PyClient.py`` to run ``EpiAlignment_PyClient``. 
+
+If ``pipenv`` is not available or you are using Python 2, you will need to install the HTTP library [``requests``](https://docs.python-requests.org/en/master/) before using ``python3 EpiAlignment_PyClient.py`` or ``python EpiAlignment_PyClient_2.py``. 
 
 The following versions of Python and the ``requests`` library have been tested to work with ``EpiAlignment_PyClient``.
 
@@ -16,7 +22,7 @@ The following versions of Python and the ``requests`` library have been tested t
 | Python       | 2.7, >= 3.5 |
 | ``requests`` | >= 2.14.0   |
 
-### Usage
+## Usage
 The basic usage of the template program is:
 
 ```bash
@@ -49,9 +55,9 @@ pipenv run python3 EpiAlignment_PyClient.py --find_gene_cluster GNG
 pipenv run python3 EpiAlignment_PyClient.py --find_gene_cluster GNG7
 ``` 
 
-### Submitting jobs to EpiAlignment
+## Submitting jobs to EpiAlignment
 
-#### Input
+### Input
 The template program parses a sample sheet to get input data of each job. The sample sheet starts with a header, specifying the cotent that should be put in each column. There are 24 fields in the sample sheet. Typically, the user only need to fill in part of the first 11 fields, whereas the others are parameters with default values.
 
 A file named ``sampleSheet_headerOnly.txt`` with the header and default parameter values is provided in the same zip file with ``EpiAlignment_PyClient.py``.
@@ -70,7 +76,7 @@ The 24 fields are:
 
 The program will parse the information following the same order.
 
-##### ``alignMode`` and ``searchRegionMode``
+#### ``alignMode`` and ``searchRegionMode``
 These two fields specified the alignment mode and submode to be used. Valid values and their correspondences with the modes on the website is shown below:
 
 | ``alignMode`` value| ``searchRegionMode`` value| alignment mode on the website  | submode on the website |
@@ -80,10 +86,10 @@ These two fields specified the alignment mode and submode to be used. Valid valu
 | ``Many``  | ``genecluster`` | Many-vs-many |Search a gene cluster|
 | ``Many``  | ``genomeregion``| Many-vs-many |Define target regions with a BED file / a gene list|
 
-##### ``genomeAssembly``
+#### ``genomeAssembly``
 The ``genomeAssembly_query`` and ``genomeAssembly_target`` fields can be ``hg38`` or ``mm10``. 
 
-##### ``encodeData`` and ``speciesPeak``
+#### ``encodeData`` and ``speciesPeak``
 These fields specify the input peak files. If you would like to use a preset ENCODE/public data, please put the ENCODE/GEO id in the ``encodeData_query`` and ``encodeData_target`` fields and leave the ``speciesPeak_query``, ``speciesPeak_target`` blank. For example: 
 
 | ``encodeData_query`` | ``encodeData_target`` | 
@@ -92,18 +98,18 @@ These fields specify the input peak files. If you would like to use a preset ENC
 
 You may also provide your own input files. To do this, put the file names in ``speciesPeak_query``, ``speciesPeak_target`` and leave the ``encodeData_query`` and ``encodeData_target`` fields empty. Please note that if your files are not in the same folder as the program, you need to put the absolute of our files here.
 
-##### ``speciesInput_1`` and ``speciesInput_2``
+#### ``speciesInput_1`` and ``speciesInput_2``
 These fields specify the input query and target files. Please put the file names in these two fields. For One-vs-one mode, only BED6 files are acceptable. For Many-vs-many mode, the two files can be either BED6 files or gene name lists (if promoters are used as input regions).
 
 Please note that if you are using the  ``One``-``homoregion`` or ``Many``-``genecluster`` mode, only the ``speciesInput_1`` is required. You don't have to provide the second input file in this case.
 
-##### ``clusters``
+#### ``clusters``
 This field only needs to be filled when ``alignMode`` is ``Many`` and ``searchRegionMode`` is ``genecluster``. A valid gene cluster name in the format of ``Cluster_XXX`` needs to be entered.
 
-##### fields 16 to 24: parameters
+#### fields 16 to 24: parameters
 These fields specify the parameters to be used for the alignments. Default values are available in the downloaded sample sheet. You may keep them as they are unless you'd like to adjust them.  
 
-#### Output
+### Output
 One output file will be generated for one job and put in the same folder as the program. The output file is tab-delimited, containing alignment scores and region coordinates as the results provided on the website.
 
  

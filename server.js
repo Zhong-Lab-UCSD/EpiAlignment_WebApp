@@ -251,7 +251,8 @@ async function getGeneIdList (runInfo, files) {
 
 function buildExpDicts (expFiles) {
   return expFiles.reduce((prevDict, expFile, fileIndex) => {
-    expFile.split('\n').forEach(currLine => {
+    prevDict['.id'].push(expFile.id)
+    expFile.content.split('\n').forEach(currLine => {
       let tokens = currLine.split('\t')
       let expKeyIndex = null
       if (tokens.length > 10) {
@@ -263,12 +264,12 @@ function buildExpDicts (expFiles) {
       try {
         let key = tokens[expKeyIndex.ensemblGeneId].split('.', 1)[0]
         if (!prevDict.hasOwnProperty(key)) {
-          prevDict[key] = Array(expFiles.length).fill({
+          prevDict[key] = Array(expFiles.length).fill().map(() => ({
             'pme_TPM': 0,
             'pme_FPKM': 0,
             'TPM': 0,
             'FPKM': 0
-          })
+          }))
         }
         for (let expKey in prevDict[key][fileIndex]) {
           if (expKeyIndex.hasOwnProperty(expKey)) {
@@ -286,7 +287,9 @@ function buildExpDicts (expFiles) {
       } catch (ignore) { }
     })
     return prevDict
-  }, {})
+  }, {
+    '.id': []
+  })
 }
 
 function buildExpObjFromFiles (list, expDicts, annotationMap) {
@@ -309,6 +312,9 @@ async function preJobRun (runInfo, files) {
   ) {
     return null
   }
+
+  let queryRef = runInfo.getRawPropertyValue('queryGenomeAssembly')
+  let targetRef = runInfo.getRawPropertyValue('targetGenomeAssembly')
   // Determine if there are expression files available
   // If there are, resolve the promise to the loaded expression files
   let queryPeakId = runInfo.getDisplayValue('queryPeak')
@@ -319,9 +325,13 @@ async function preJobRun (runInfo, files) {
   if (expDict.hasOwnProperty(queryPeakId) &&
     expDict[queryPeakId].expression_files
   ) {
+    console.error('expDict[query]: ' + JSON.stringify(expDict[queryPeakId].expression_files))
     queryExpFilesPromise = Promise.all(
-      expDict[queryPeakId].expression_files.map(
-        fileName => readFilePromise(fileName, 'utf8')
+      expDict[queryPeakId].expression_files.map(fileName =>
+        readFilePromise(fileName, 'utf8').then(fileContent => ({
+          id: path.basename(path.dirname(fileName)),
+          content: fileContent
+        }))
       )
     )
   }
@@ -329,9 +339,13 @@ async function preJobRun (runInfo, files) {
   if (expDict.hasOwnProperty(targetPeakId) &&
     expDict[targetPeakId].expression_files
   ) {
+    console.error('expDict[target]: ' + JSON.stringify(expDict[targetPeakId].expression_files))
     targetExpFilesPromise = Promise.all(
-      expDict[targetPeakId].expression_files.map(
-        fileName => readFilePromise(fileName, 'utf8')
+      expDict[targetPeakId].expression_files.map(fileName =>
+        readFilePromise(fileName, 'utf8').then(fileContent => ({
+          id: path.basename(path.dirname(fileName)),
+          content: fileContent
+        }))
       )
     )
   }
@@ -339,27 +353,30 @@ async function preJobRun (runInfo, files) {
   // get gene identifiers
   let geneIdentifiers = await getGeneIdList(runInfo, files)
 
-  let result = {
-    queryExpObj: null,
-    targetExpObj: null
-  }
+  let result = []
   if (queryExpFilesPromise && geneIdentifiers.query) {
     let queryExpDicts =
       buildExpDicts(await queryExpFilesPromise)
-    result.queryExpObj =
-      buildExpObjFromFiles(geneIdentifiers.query, queryExpDicts,
-        await annotationMapPromise[runInfo.getRawPropertyValue('queryGenomeAssembly')])
+    result.push({
+      refName: species._map[queryRef].name,
+      expIds: queryExpDicts['.id'].slice(),
+      expValues: buildExpObjFromFiles(geneIdentifiers.query, queryExpDicts,
+        await annotationMapPromise[queryRef])
+    })
   }
   if (targetExpFilesPromise && geneIdentifiers.target) {
     let targetExpDicts =
       buildExpDicts(await targetExpFilesPromise)
-    result.targetExpObj =
-      buildExpObjFromFiles(geneIdentifiers.target, targetExpDicts,
-        await annotationMapPromise[runInfo.getRawPropertyValue('targetGenomeAssembly')])
+    result.push({
+      refName: species._map[targetRef].name,
+      expIds: targetExpDicts['.id'].slice(),
+      expValues: buildExpObjFromFiles(geneIdentifiers.target, targetExpDicts,
+        await annotationMapPromise[targetRef])
+    })
   }
   // Find all the genes' Ensembl IDs involved in the run
   // Build an object of all expression values
-  if (!result.queryExpObj && !result.targetExpObj) {
+  if (!result.length) {
     return null
   }
   return result

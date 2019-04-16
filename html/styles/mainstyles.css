@@ -1078,7 +1078,7 @@ tr.expandable {
 	flex-basis: auto;
 }
 
-div#heatmap {
+#heatmapPanel .borderedPanel {
 	overflow: auto;
 	margin: 0.5rem;
 	box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.35);
@@ -1185,8 +1185,11 @@ div.heatmapBorder.epiMax.insignificant {
 
 #heatmapLegend {
 	font-size: 14px;
-	padding: 0.5em 0.75em;
 	margin-top: 0.3em;
+}
+
+.figureLegend {
+	padding: 0.5em 0.75em;
 	border: 1px solid #666666;
 }
 
@@ -1249,8 +1252,8 @@ div.legendIcon.heatmapObj.plain {
 
 #heatmapDesc {
 	padding: 0.5rem 1rem;
-	min-width: 20rem;
-	flex-basis: 20rem;
+	min-width: 25rem;
+	flex-basis: 25rem;
 	font-size: 14px;
 }
 
@@ -1261,6 +1264,30 @@ div.legendIcon.heatmapObj.plain {
 
 #heatmapDesc ul {
 	margin: -1em 1em 0 1em;
+}
+
+#expressionBar {
+	padding: 0.5rem 0.75rem 0.75rem 0.75rem;
+}
+
+#expressionBar .flexShrink {
+	flex: 0 1 auto;
+	overflow-y: auto;
+}
+
+#expressionBar .figureLegend {
+	max-width: 350px;
+}
+
+#expressionBar .expColorSquare {
+	width: 1.2em;
+	height: 1.2em;
+	margin-right: 0.5em;
+}
+
+#expressionBar .expLegendEntry {
+	min-width: 10em;
+	margin-right: 1.5em;
 }
 
 /* ***** Enhancer image related ***** */

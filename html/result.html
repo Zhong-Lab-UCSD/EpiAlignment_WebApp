@@ -105,7 +105,7 @@
       </div>
       <div v-show="alignMode === 'enhancer' && !email">
         Due to the many processing steps and larger search regions
-        involved, enhancer mode may take minutes to run. Therefore,
+        involved, one-to-one mode may take minutes to run. Therefore,
         <strong>bookmarking this page is highly recommended</strong>.
       </div>
       <div v-show="email">
@@ -118,9 +118,9 @@
     </div>
     <div id="pageContainer" class="flexRow flexStart flexWrap flexNoGap" v-if="!loading && !error">
       <div id="heatmapPanel" class="flexRow flexStart flex flexWrap" v-if="alignMode === 'promoter'">
-        <div id="heatmap">
+        <div id="heatmap" class="borderedPanel">
           <div class="flexColumn flexStart">
-            <div class="selfAlignStretch resultHeader">EpiAlign Score</div>
+            <div class="selfAlignStretch resultHeader"><span class="headerText">EpiAlign score</span></div>
             <table>
               <thead>
                 <tr>
@@ -137,9 +137,11 @@
                   <th>{{ rowEntry.geneId }}</th>
                   <td class="heatmapCell" v-for="value in rowEntry.values">
                     <div class="heatmapObj">
-                      <div class="heatmapBorder" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax, insignificant: value.insignificant }">
+                      <div class="heatmapBorder"
+                        :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax, insignificant: value.insignificant }">
                       </div>
-                      <div class="heatmapValueCell" :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
+                      <div class="heatmapValueCell"
+                        :style="{ opacity: (Number.isNaN(parseFloat(value.epiScoreNorm)) ? 1 : value.epiScoreNorm) }">
                       </div>
                       <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.epiMax">H</div>
                     </div>
@@ -147,7 +149,7 @@
                 </tr>
               </tbody>
             </table>
-            <div v-if="hasSequence" class="selfAlignStretch resultHeader">Sequence-only Score</div>
+            <div v-if="hasSequence" class="selfAlignStretch resultHeader"><span class="headerText">SeqOnly score</span></div>
             <table v-if="hasSequence">
               <thead>
                 <tr>
@@ -162,9 +164,11 @@
                   <th>{{ rowEntry.geneId }}</th>
                   <td class="heatmapCell" v-for="value in rowEntry.values">
                     <div class="heatmapObj">
-                      <div class="heatmapBorder" :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax, insignificant: value.insignificant }">
+                      <div class="heatmapBorder"
+                        :class="{ seqMax: value.seqMax && rowEntry.labelMax, epiMax: value.epiMax && rowEntry.labelMax, insignificant: value.insignificant }">
                       </div>
-                      <div class="heatmapValueCell" :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
+                      <div class="heatmapValueCell"
+                        :style="{ opacity:  (Number.isNaN(parseFloat(value.seqScoreNorm)) ? 1 : value.seqScoreNorm) }">
                       </div>
                       <div class="overlay flexRow flexNoWrap flexCenter justifyCenter" v-show="value.seqMax">H</div>
                     </div>
@@ -172,14 +176,15 @@
                 </tr>
               </tbody>
             </table>
-            <div id="heatmapLegend" class="selfAlignStretch flexColumn flexStretch flexNoGap flexNoWrap">
+            <div id="heatmapLegend" class="selfAlignStretch flexColumn flexStretch flexNoGap flexNoWrap figureLegend">
               <!-- Scale bar -->
               <div class="flexRow flexCenter flexNoWrap">
                 <div class="flexRow flexEnd flexNoGap noFlex" id="colorScaleGroup">
                   {{ Number.parseFloat(heatmapDesc.min).toFixed(2) }}
                   <div id="colorScaleContainer">
                     <!-- 95th percentile indicator -->
-                    <div id="percentile95" v-if="heatmapDesc.showPercentile" :style="{ 'margin-left': (heatmapDesc.percentileValue - heatmapDesc.min) / heatmapDesc.span * 100 + '%' }">
+                    <div id="percentile95" v-if="heatmapDesc.showPercentile"
+                      :style="{ 'margin-left': (heatmapDesc.percentileValue - heatmapDesc.min) / heatmapDesc.span * 100 + '%' }">
                       <span>{{ Number.parseFloat(heatmapDesc.percentileValue).toFixed(2) }}</span>
                     </div>
                     <div id="colorScale"></div>
@@ -215,8 +220,73 @@
             </div>
           </div>
         </div>
+        <div id="expressionBar" class="borderedPanel">
+          <div class="flexColumn flexNoGap">
+            <div class="selfAlignStretch resultHeader"><span class="headerText">Gene expression values</span></div>
+            <div class="flexShrink flexColumn">
+              <!-- SVG bar content -->
+              <svg :width="expFigProp.width" :height="getExpressionHeight(expList)">
+                <svg v-for="(expInRef, refIndex) in expList" :width="expFigProp.width"
+                  :height="getExpInRefHeight(expInRef)" x="0" :y="getExpInRefY(expList, refIndex)">
+                  <text :x="expFigProp.textAreaWidth - expFigProp.textMargin" :y="(expFigProp.refHeight + expFigProp.textSize - expFigProp.gap) / 2"
+                    :style="{ fontSize: expFigProp.axisLabelSize, fontWeight: 'bold' }" text-anchor="end">{{ capitalize(expInRef.refName) }}</text>
+                  <svg v-for="(geneEntry, geneName, geneIndex) in expInRef.expValues" :width="expFigProp.width"
+                    :height="expFigProp.geneHeight" x="0" :y="geneIndex * (expFigProp.geneHeight + expFigProp.gap) + expFigProp.refHeight">
+                    <text :x="expFigProp.textAreaWidth - expFigProp.textMargin" :y="(expFigProp.geneHeight + expFigProp.textSize - expFigProp.gap) / 2"
+                      :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="end">{{ geneName }}</text>
+                    <rect v-for="(expValue, index) in geneEntry"
+                      :x="expFigProp.textAreaWidth" :y="index * expFigProp.geneHeight / geneEntry.length"
+                      :width="getXExpression(expList, expValue.FPKM) - expFigProp.textAreaWidth" :height="expFigProp.geneHeight / geneEntry.length"
+                      :style="{ fontSize: figProp.axisLabelSize, fill: '#' + getColorString(expList, refIndex, index) }"/>
+                  </svg>
+                </svg>
+                <line :x1="expFigProp.textAreaWidth" :y1="expFigProp.gap - 0.5" :x2="expFigProp.textAreaWidth"
+                  :y2="getExpressionHeight(expList)" class="seqCompAxis" />
+              </svg>
+            </div>
+            <div class="noFlex flexNoWrap">
+              <!-- SVG bottom axis -->
+              <svg :width="expFigProp.width" :height="expFigProp.axisHeight">
+                <defs>
+                  <marker id="arrowHead" markerWidth="10" markerHeight="10" refx="2" refy="5" orient="auto">
+                    <path d="M0 2 L2 5 L0 8 L10 5 L0 2" />
+                  </marker>
+                </defs>
+                <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth"
+                  :y2="expFigProp.gap - 0.5" class="seqCompAxis" />
+                <line :x1="expFigProp.textAreaWidth" :y1="expFigProp.gap - 0.5" :x2="expFigProp.width - expFigProp.horizMargin"
+                  :y2="expFigProp.gap - 0.5" class="seqCompAxis" marker-end="url(#arrowHead)" />
+                <!-- Draw all the tick marks -->
+                <g v-for="tick in getTickList(0, getExpressionMax(expList), expFigProp.maxNumOfTicks)">
+                  <line :x1="getXExpression(expList, tick)" :y1="expFigProp.gap - 0.5" :x2="getXExpression(expList, tick)"
+                    :y2="expFigProp.gap + expFigProp.tickSize - 0.5" class="seqCompAxis" />
+                  <text :x="getXExpression(expList, tick)" :y="expFigProp.gap + expFigProp.tickSize + expFigProp.axisLabelSize - 0.5"
+                    :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="middle">{{ tick }}</text>
+                </g>
+                <text :x="(expFigProp.width + expFigProp.textAreaWidth - expFigProp.horizMargin) / 2"
+                  :y="expFigProp.gap * 2 + expFigProp.tickSize + expFigProp.axisLabelSize + expFigProp.textSize - 0.5"
+                  :style="{ fontSize: expFigProp.textSize, fontWeight: 'bold' }" text-anchor="middle">FPKM</text>
+              </svg>
+            </div>
+            <div class="noFlex flexRow flexWrap flexNoGap figureLegend">
+              <!-- Legend for expression, populate from expInRef.expIds -->
+              <template v-for="(expInRef, refIndex) in expList">
+                <div v-for="(expId, expIndex) in expInRef.expIds"
+                  class="flexRow flexCenter flexNoWrap flexNoGap noFlex expLegendEntry">
+                  <div class="expColorSquare"
+                    :style="{ background: '#' + getColorString(expList, refIndex, expIndex) }">
+                  </div>
+                  <a v-if="buildLinkFromExpressionId(expId)"
+                    :href="buildLinkFromExpressionId(expId)"
+                    target="_blank">{{ expId }}</a>
+                  <span v-else>{{ expId }}</span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
         <div id="heatmapDesc" class="flex">
-          <div class="resultHeader">Result description</div>
+          <div class="resultHeader"><span class="headerText">Result description</span></div>
           <p>
             EpiAlignment score are plotted in the heatmap to show scores of
             all given target region(s) (column) against any query region (row).
@@ -306,7 +376,7 @@
                 <span v-on="on">
                   <span v-if="props.header.html" v-html="props.header.html">
                   </span>
-                  <span v-if="!props.header.html">
+                  <span v-else>
                     {{ props.header.text }}
                   </span>
                 </span>
@@ -318,7 +388,7 @@
             <span v-if="!props.header.tooltip">
               <span v-if="props.header.html" v-html="props.header.html">
               </span>
-              <span v-if="!props.header.html">
+              <span v-else>
                 {{ props.header.text }}
               </span>
             </span>
@@ -434,7 +504,7 @@
                       <div class="subHeader">Context of sequence-only alignment scores</div>
                       <div class="svgGraphHolder flexColumn">
                         <svg id="seqScoreCompareSvg" :height="figProp.lineHeight * 4"
-                          :width="figProp.width" :viewBox="getViewBoxValue(4)" class="svgGraph">
+                          :width="figProp.width" class="svgGraph">
                           <defs>
                             <marker id="arrowHead" markerWidth="10" markerHeight="10" refx="2" refy="5" orient="auto">
                               <path d="M0 2 L2 5 L0 8 L10 5 L0 2" />
@@ -445,7 +515,7 @@
                             </g>
                           </defs>
                           <svg :width="figProp.width" :height="figProp.lineHeight"
-                            x="0" :y="getLineY(0)" :viewBox="lineViewBoxValue">
+                            x="0" :y="getLineY(0)">
                             <!-- Draw the two box plots -->
                             <rect :x="getXSeqScore(entry.item, seqBg.backgroundQ25)" :y="figProp.vertMargin"
                               :width="getXSeqScore(entry.item, seqBg.backgroundQ75) - getXSeqScore(entry.item, seqBg.backgroundQ25)"
@@ -465,12 +535,12 @@
                               :x="getXSeqScore(entry.item, entry.item.scoreS2)" :y="figProp.lineHeight / 2" />
                           </svg>
                           <!-- Draw the horizontal axis -->
-                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(1)" :viewBox="lineViewBoxValue">
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(1)">
                             <line :x1="figProp.horizMargin / 2" :y1="figProp.vertMargin + 0.5"
                               :x2="figProp.width - figProp.horizMargin / 2" :y2="figProp.vertMargin + 0.5"
                               class="seqCompAxis" marker-end="url(#arrowHead)" />
                             <!-- Draw all the tick marks -->
-                            <g v-for="tick in getTickList(entry.item)">
+                            <g v-for="tick in getTickList(getSeqScoreMin(entry.item), getSeqScoreMax(entry.item), figProp.maxNumOfTicks)">
                               <line :x1="getXSeqScore(entry.item, tick)" :y1="figProp.vertMargin + 0.5"
                                 :x2="getXSeqScore(entry.item, tick)" :y2="figProp.vertMargin + figProp.tickSize + 0.5"
                                 class="seqCompAxis" />
@@ -484,7 +554,7 @@
                           <rect :x="0.5" :y="getLineY(2) - 0.5" :width="figProp.width - 1"
                             :height="figProp.lineHeight * 2" class="seqCompLegendBox" />
                           <!-- Draw the two box plots -->
-                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(2)" :viewBox="lineViewBoxValue">
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(2)">
                             <rect :x="figProp.legendLeftX" :y="figProp.vertMargin * 1.5"
                               :width="figProp.legendBoxWidth"
                               :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompBackgroundBox" />
@@ -508,7 +578,7 @@
                               :y="(figProp.lineHeight + figProp.textSize) / 2"
                               :style="{fontSize: figProp.textSize}">Orthologous region pairs</text>
                           </svg>
-                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(3)" :viewBox="lineViewBoxValue">
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(3)">
                             <!-- Draw the two cross marks -->
                             <use class="seqCompCrossEpiMark" :x="figProp.legendLeftX + figProp.legendBoxWidth / 2"
                               xlink:href="#crossMarker" href="#crossMarker"
@@ -531,8 +601,7 @@
                     <div class="flexRow flexWrap flexNoGap flexStart">
                       <div class="subHeader">Epigenome contribution range</div>
                       <div class="svgGraphHolder flexColumn">
-                        <svg id="epiContribSvg" :height="figProp.lineHeight * 2" :width="figProp.width"
-                          :viewBox="getViewBoxValue(2)" class="svgGraph">
+                        <svg id="epiContribSvg" :height="figProp.lineHeight * 2" :width="figProp.width" class="svgGraph">
                           <defs>
                             <g id="crossMarker">
                               <line :x1="-figProp.crossSize" :y1="-figProp.crossSize" :x2="figProp.crossSize"
@@ -541,13 +610,13 @@
                                 :y2="-figProp.crossSize" />
                             </g>
                           </defs>
-                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(0)" :viewBox="lineViewBoxValue">
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(0)">
                             <!-- Draw the number labels -->
                             <text :x="getXEpiScore(entry.item, getEpiContribEpiHit(entry.item))" :y="figProp.axisLabelSize"
                               :style="{fontSize: figProp.axisLabelSize}" text-anchor="middle">
                               EpiAlign hit ({{ Number.parseFloat(getEpiContribEpiHit(entry.item)).toFixed(3) }})</text>
                           </svg>
-                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(0.5)" :viewBox="lineViewBoxValue">
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(0.5)">
                             <!-- Draw the two box plots -->
                             <rect :x="figProp.horizMargin + figProp.epiContribLabelSize" :y="figProp.vertMargin"
                               :width="figProp.width - 2 * (figProp.horizMargin + figProp.epiContribLabelSize)"
@@ -569,7 +638,7 @@
                             <use class="seqCompCrossEpiMark" xlink:href="#crossMarker" href="#crossMarker" v-if="entry.item.shifted === 'Y'"
                               :x="getXEpiScore(entry.item, getEpiContribEpiHit(entry.item))" :y="figProp.lineHeight / 2" />
                           </svg>
-                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(1.5)" :viewBox="lineViewBoxValue">
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(1.5)">
                             <!-- Draw the number labels -->
                             <text :x="getXEpiScore(entry.item, getEpiContribSeqHit(entry.item))"
                               :y="figProp.axisLabelSize" :style="{fontSize: figProp.axisLabelSize}"

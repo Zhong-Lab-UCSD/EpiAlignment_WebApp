@@ -185,6 +185,7 @@ var app = new Vue({
       }
     ],
     dataEntries: [],
+    expList: null,
     seqBg: null,
     figProp: {
       crossSize: 4,
@@ -201,16 +202,29 @@ var app = new Vue({
       maxNumOfTicks: 10,
       epiContribLabelSize: 50
     },
+    expFigProp: {
+      geneHeight: 30,
+      refHeight: 20,
+      axisHeight: 45,
+      gap: 5,
+      textAreaWidth: 80,
+      textMargin: 5,
+      textSize: 14,
+      tickSize: 5,
+      axisLabelSize: 12,
+      maxNumOfTicks: 10,
+      width: 350,
+      horizMargin: 10
+    },
     params: {
       kappa: null,
       pi1: null,
       epiWeight: null
-    }
-  },
-  computed: {
-    lineViewBoxValue: function () {
-      return '0 0 ' + this.figProp.width + ' ' + this.figProp.lineHeight
-    }
+    },
+    palette: [
+      0x4477AA, 0xEE6677, 0x228833,
+      0xCCBB44, 0x66CCEE, 0xAA3377
+    ]
   },
   created: function () {
     const urlParams = new window.URLSearchParams(window.location.search)
@@ -330,6 +344,10 @@ var app = new Vue({
       this.params.kappa = parseFloat(response.paraK)
       this.params.pi1 = parseFloat(response.pi1)
       this.params.epiWeight = parseFloat(response.epiWeight)
+
+      if (response.expression) {
+        this.expList = response.expression
+      }
       if (refresh || !this.expandedRunInfoList.length) {
         // Add run info to expandedRunInfoList and collapsedRunInfoList
         this.populateInfoList(
@@ -606,13 +624,13 @@ var app = new Vue({
         trackPart
     },
     getXSeqScore: function (item, xValue) {
-      let xMin = this.getMinValue(item)
-      let xMax = this.getMaxValue(item)
+      let xMin = this.getSeqScoreMin(item)
+      let xMax = this.getSeqScoreMax(item)
       let xScale = (this.figProp.width - 2 * this.figProp.horizMargin) /
         (xMax - xMin)
       return (parseFloat(xValue) - xMin) * xScale + this.figProp.horizMargin
     },
-    getMaxValue: function (item) {
+    getSeqScoreMax: function (item) {
       let xMax
       xMax = Math.max(parseFloat(this.seqBg.backgroundQ75),
         parseFloat(this.seqBg.orthoQ75))
@@ -624,7 +642,7 @@ var app = new Vue({
       }
       return xMax
     },
-    getMinValue: function (item) {
+    getSeqScoreMin: function (item) {
       let xMin = Math.min(parseFloat(this.seqBg.backgroundQ25),
         parseFloat(this.seqBg.orthoQ25))
       if (typeof item.scoreS2 === 'number') {
@@ -635,11 +653,8 @@ var app = new Vue({
       }
       return xMin
     },
-    getTickList: function (item) {
-      let xMin = this.getMinValue(item)
-      let xMax = this.getMaxValue(item)
+    getTickList: function (xMin, xMax, maxNumOfTicks) {
       let length = xMax - xMin
-      let maxNumOfTicks = this.figProp.maxNumOfTicks
       let span = length / maxNumOfTicks
       if (Math.ceil(span) > 0) {
         // round up to closest [1,2,5] * 10^x
@@ -671,10 +686,6 @@ var app = new Vue({
     },
     getLineY: function (lineNum) {
       return this.figProp.lineHeight * lineNum
-    },
-    getViewBoxValue: function (lines) {
-      return '0 0 ' + this.figProp.width + ' ' +
-        (this.figProp.lineHeight * lines)
     },
     getOneNum: function (item) {
       let oneNum = parseInt(item.oneNum)
@@ -721,6 +732,73 @@ var app = new Vue({
         return item.scoreE2 - item.scoreS
       }
       return item.scoreE - item.scoreS
+    },
+    getXExpression: function (expList, expValue) {
+      let xLength = this.expFigProp.width -
+        (this.expFigProp.horizMargin + this.expFigProp.textAreaWidth)
+      let xMin = 0
+      let xMax = this.getExpressionMax(expList)
+      let xScale = xLength / (xMax - xMin)
+      return (expValue - xMin) * xScale + this.expFigProp.textAreaWidth
+    },
+    getExpressionMax: function (expList) {
+      return expList.reduce((prevInRefMax, expInRef) => {
+        for (let key in expInRef.expValues) {
+          let geneExpMax =
+            Math.max(...expInRef.expValues[key].map(expVal => expVal.FPKM))
+          if (prevInRefMax < geneExpMax) {
+            prevInRefMax = geneExpMax
+          }
+        }
+        return prevInRefMax
+      }, 0)
+    },
+    getExpressionHeight: function (expList) {
+      return expList.reduce((prev, expInRef) => {
+        return prev + this.getExpInRefHeight(expInRef)
+      }, 0)
+    },
+    getExpInRefHeight: function (expInRef) {
+      return Object.keys(expInRef.expValues).length *
+        (this.expFigProp.geneHeight + this.expFigProp.gap) +
+        this.expFigProp.refHeight
+    },
+    getExpInRefY: function (expList, refIndex) {
+      let currY = 0
+      for (let i = 0; i < refIndex; i++) {
+        currY += this.getExpInRefHeight(expList[i])
+      }
+      return currY
+    },
+    capitalize: function (str) {
+      if (typeof str !== 'string') {
+        return ''
+      }
+      return str.charAt(0).toUpperCase() + str.slice(1)
+    },
+    getColorString: function (expList, refIndex, expIndex) {
+      let colorIndex = 0
+      for (let i = 0; i < refIndex; i++) {
+        colorIndex += expList[i].expIds.length
+      }
+      return this.palette[(colorIndex + expIndex) % this.palette.length]
+        .toString(16)
+    },
+    buildLinkFromExpressionId: function (id) {
+      if (id.startsWith('ENC')) {
+        // ENCODE id
+        if (id.startsWith('ENCFF')) {
+          return 'https://www.encodeproject.org/files/' + id + '/'
+        } else if (id.startsWith('ENCSR')) {
+          return 'https://www.encodeproject.org/experiments/' + id + '/'
+        } else {
+          return 'https://www.encodeproject.org/search/?searchTerm=' + id
+        }
+      } else if (id.startsWith('GSM')) {
+        // GEO id
+        return 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=' + id
+      }
+      return null
     }
   }
 })

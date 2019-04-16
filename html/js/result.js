@@ -181,10 +181,36 @@ var app = new Vue({
         sortable: true,
         class: ['dataTableCell', 'dataTableCellNoGap'],
         width: 'auto',
-        tooltip: 'Whether the EpiAlignment hit is different from the sequence-only hit.'
+        tooltip: 'Whether the EpiAlign hit is different from the SeqOnly hit.'
       }
     ],
-    dataEntries: []
+    dataEntries: [],
+    seqBg: null,
+    figProp: {
+      crossSize: 4,
+      vertMargin: 8,
+      lineHeight: 36,
+      legendLeftX: 10.5,
+      legendRightX: 240.5,
+      legendBoxWidth: 30,
+      width: 500,
+      horizMargin: 20,
+      textSize: 14,
+      tickSize: 5,
+      axisLabelSize: 12,
+      maxNumOfTicks: 10,
+      epiContribLabelSize: 50
+    },
+    params: {
+      kappa: null,
+      pi1: null,
+      epiWeight: null
+    }
+  },
+  computed: {
+    lineViewBoxValue: function () {
+      return '0 0 ' + this.figProp.width + ' ' + this.figProp.lineHeight
+    }
   },
   created: function () {
     const urlParams = new window.URLSearchParams(window.location.search)
@@ -300,6 +326,10 @@ var app = new Vue({
 
       this.queryGenomeAssembly = response.queryGenomeAssembly
       this.targetGenomeAssembly = response.targetGenomeAssembly
+      this.seqBg = response.seqBg
+      this.params.kappa = parseFloat(response.paraK)
+      this.params.pi1 = parseFloat(response.pi1)
+      this.params.epiWeight = parseFloat(response.epiWeight)
       if (refresh || !this.expandedRunInfoList.length) {
         // Add run info to expandedRunInfoList and collapsedRunInfoList
         this.populateInfoList(
@@ -548,7 +578,7 @@ var app = new Vue({
         class: 'dataTableCell',
         width: 'auto'
       }, {
-        text: 'Sequence-only hit coordinate',
+        text: 'SeqOnly hit coordinate',
         value: 'scoreS',
         align: 'left',
         sortable: true,
@@ -574,6 +604,123 @@ var app = new Vue({
         '&highlight=' +
         window.encodeURIComponent(JSON.stringify(highlight)) +
         trackPart
+    },
+    getXSeqScore: function (item, xValue) {
+      let xMin = this.getMinValue(item)
+      let xMax = this.getMaxValue(item)
+      let xScale = (this.figProp.width - 2 * this.figProp.horizMargin) /
+        (xMax - xMin)
+      return (parseFloat(xValue) - xMin) * xScale + this.figProp.horizMargin
+    },
+    getMaxValue: function (item) {
+      let xMax
+      xMax = Math.max(parseFloat(this.seqBg.backgroundQ75),
+        parseFloat(this.seqBg.orthoQ75))
+      if (typeof item.scoreS2 === 'number') {
+        xMax = Math.max(item.scoreS2, xMax)
+      }
+      if (typeof item.scoreS === 'number') {
+        xMax = Math.max(item.scoreS, xMax)
+      }
+      return xMax
+    },
+    getMinValue: function (item) {
+      let xMin = Math.min(parseFloat(this.seqBg.backgroundQ25),
+        parseFloat(this.seqBg.orthoQ25))
+      if (typeof item.scoreS2 === 'number') {
+        xMin = Math.min(item.scoreS2, xMin)
+      }
+      if (typeof item.scoreS === 'number') {
+        xMin = Math.min(item.scoreS, xMin)
+      }
+      return xMin
+    },
+    getTickList: function (item) {
+      let xMin = this.getMinValue(item)
+      let xMax = this.getMaxValue(item)
+      let length = xMax - xMin
+      let maxNumOfTicks = this.figProp.maxNumOfTicks
+      let span = length / maxNumOfTicks
+      if (Math.ceil(span) > 0) {
+        // round up to closest [1,2,5] * 10^x
+        let spanExp = parseInt(Math.log(span) / Math.LN10)
+        let spanHeader = span / Math.pow(10, spanExp)
+        if (spanHeader > 5) {
+          spanExp++
+          spanHeader = 1
+        } else if (spanHeader > 2) {
+          spanHeader = 5
+        } else if (spanHeader > 1) {
+          spanHeader = 2
+        }
+        span = spanHeader * Math.pow(10, spanExp)
+      }
+      span = Math.ceil(span)
+      if (span <= 0) {
+        span = 1
+      }
+
+      let currValue = Math.ceil(xMin / span) * span
+      let result = [currValue]
+      currValue += span
+      while (currValue < xMax) {
+        result.push(currValue)
+        currValue += span
+      }
+      return result
+    },
+    getLineY: function (lineNum) {
+      return this.figProp.lineHeight * lineNum
+    },
+    getViewBoxValue: function (lines) {
+      return '0 0 ' + this.figProp.width + ' ' +
+        (this.figProp.lineHeight * lines)
+    },
+    getOneNum: function (item) {
+      let oneNum = parseInt(item.oneNum)
+      if (oneNum > parseInt(item.queryLength)) {
+        oneNum = parseInt(item.queryLength)
+      } else if (oneNum < 0) {
+        oneNum = 0
+      }
+      return oneNum
+    },
+    getEpiContribMin: function (item) {
+      return Math.log(1 - Math.exp(-this.params.kappa)) *
+        1000 * this.params.epiWeight
+    },
+    getEpiContribMax: function (item) {
+      let oneNum = this.getOneNum(item)
+      let zeroNum = parseInt(item.queryLength) - oneNum
+      let kappa = this.params.kappa
+      let pi1 = this.params.pi1
+      let pi0 = 1 - pi1
+      return (oneNum * Math.log(
+        (Math.exp(-kappa) + (1 - Math.exp(-kappa) * pi1)) / pi1
+      ) + zeroNum * Math.log(
+        (Math.exp(-kappa) + (1 - Math.exp(-kappa) * pi0)) / pi0
+      )) / item.queryLength * 1000 * this.params.epiWeight
+    },
+    getXEpiScore: function (item, epiScore) {
+      let xLength = this.figProp.width -
+        2 * (this.figProp.horizMargin + this.figProp.epiContribLabelSize)
+      let xMin = this.getEpiContribMin(item)
+      let xMax = this.getEpiContribMax(item)
+      let xScale = xLength / (xMax - xMin)
+      return (epiScore - xMin) * xScale +
+        (this.figProp.horizMargin + this.figProp.epiContribLabelSize)
+    },
+    getEpiContribEpiHit (item) {
+      if (item.shifted === 'Y') {
+        return item.scoreE - item.scoreS2
+      }
+      return item.scoreE - item.scoreS
+    },
+    getEpiContribSeqHit (item) {
+      if (item.shifted === 'Y') {
+        return item.scoreE2 - item.scoreS
+      }
+      return item.scoreE - item.scoreS
     }
   }
 })

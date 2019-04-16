@@ -360,7 +360,7 @@
                     <i class="material-icons" v-on="on">swap_horizontal_circle</i>
                   </template>
                   <span>
-                    The EpiAlignment hit is different from the sequence-only hit.
+                    The EpiAlign hit is different from the SeqOnly hit.
                   </span>
                 </v-tooltip>
               </td>
@@ -387,18 +387,18 @@
                     <div class="sectionHeader">Overview</div>
                     <div class="flexRow flexWrap flexNoGap flexCenter">
                       <div class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
-                        <span class="anno">EpiAlign best score:</span>
+                        <span class="anno">EpiAlign hit score:</span>
                         <span>{{ Number.parseFloat(entry.item.scoreE).toFixed(3) }}</span>
                       </div>
                       <div v-if="entry.item.targetS !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
-                        <span class="anno">Sequence-only best score:</span>
+                        <span class="anno">SeqOnly hit score:</span>
                         <span>{{ Number.parseFloat(entry.item.scoreS).toFixed(3) }}</span>
                       </div>
                     </div>
                     <div v-if="entry.item.shifted === 'Y'" class="flexRow flexWrap flexNoGap flexCenter">
                       <span class="flexRow flexCenter shiftedLabel noFlex">
                         <i class="material-icons">swap_horizontal_circle</i>
-                        The EpiAlignment hit is different from the sequence-only hit.
+                        The EpiAlign hit is different from the SeqOnly hit.
                       </span>
                     </div>
                   </div>
@@ -412,7 +412,7 @@
                           <span>{{ Number.parseFloat(entry.item.signalToNoise.snE).toFixed(3) }}</span>
                         </div>
                         <div v-if="entry.item.signalToNoise.snS !== '.'" class="flexRow flexNoWrap noFlex flexStart flexNoGap dataEntry">
-                          <span class="anno">Sequence-only hit:</span>
+                          <span class="anno">SeqOnly hit:</span>
                           <span>{{ Number.parseFloat(entry.item.signalToNoise.snS).toFixed(3) }}</span>
                         </div>
                       </div>
@@ -420,32 +420,165 @@
                     <div class="flexRow flexWrap flexNoGap flexStart">
                       <div class="subHeader">Background p-value</div>
                       <div class="flexRow flex flexNoGap flexWrap flexEnd">
-                        <div v-show="entry.item.bgPvalueE !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
+                        <div v-if="entry.item.bgPvalueE !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
                           <span class="anno">EpiAlign hit:</span>
                           <span>{{ Number.parseFloat(entry.item.bgPvalueE).toFixed(3) }}</span>
                         </div>
-                        <div v-show="entry.item.bgPvalueS !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
-                          <span class="anno">Sequence-only hit:</span>
+                        <div v-if="entry.item.bgPvalueS !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
+                          <span class="anno">SeqOnly hit:</span>
                           <span>{{ Number.parseFloat(entry.item.bgPvalueS).toFixed(3) }}</span>
                         </div>
                       </div>
                     </div>
                     <div class="flexRow flexWrap flexNoGap flexStart">
-                      <div class="subHeader">Comparison vs orthologous region pairs</div>
-                    </div>
-                    <div class="flexRow flexWrap flexNoGap flexCenter">
-                      <div v-show="entry.item.bgPvalueE !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
-                        <span class="anno">EpiAlign hit:</span>
-                        <span>{{ Number.parseFloat(entry.item.bgPvalueE).toFixed(3) }}</span>
-                      </div>
-                      <div v-show="entry.item.bgPvalueS !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
-                        <span class="anno">Sequence-only hit:</span>
-                        <span>{{ Number.parseFloat(entry.item.bgPvalueS).toFixed(3) }}</span>
+                      <div class="subHeader">Context of sequence-only alignment scores</div>
+                      <div class="svgGraphHolder flexColumn">
+                        <svg id="seqScoreCompareSvg" :height="figProp.lineHeight * 4"
+                          :width="figProp.width" :viewBox="getViewBoxValue(4)" class="svgGraph">
+                          <defs>
+                            <marker id="arrowHead" markerWidth="10" markerHeight="10" refx="2" refy="5" orient="auto">
+                              <path d="M0 2 L2 5 L0 8 L10 5 L0 2" />
+                            </marker>
+                            <g id="crossMarker">
+                              <line :x1="-figProp.crossSize" :y1="-figProp.crossSize" :x2="figProp.crossSize" :y2="figProp.crossSize" />
+                              <line :x1="-figProp.crossSize" :y1="figProp.crossSize" :x2="figProp.crossSize" :y2="-figProp.crossSize" />
+                            </g>
+                          </defs>
+                          <svg :width="figProp.width" :height="figProp.lineHeight"
+                            x="0" :y="getLineY(0)" :viewBox="lineViewBoxValue">
+                            <!-- Draw the two box plots -->
+                            <rect :x="getXSeqScore(entry.item, seqBg.backgroundQ25)" :y="figProp.vertMargin"
+                              :width="getXSeqScore(entry.item, seqBg.backgroundQ75) - getXSeqScore(entry.item, seqBg.backgroundQ25)"
+                              :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompBackgroundBox" />
+                            <line :x1="getXSeqScore(entry.item, seqBg.backgroundMedian)" :y1="figProp.vertMargin"
+                              :x2="getXSeqScore(entry.item, seqBg.backgroundMedian)" :y2="figProp.lineHeight - figProp.vertMargin"
+                              class="seqCompBackgroundMedian" />
+                            <rect :x="getXSeqScore(entry.item, seqBg.orthoQ25)" :y="figProp.vertMargin"
+                              :width="getXSeqScore(entry.item, seqBg.orthoQ75) - getXSeqScore(entry.item, seqBg.orthoQ25)"
+                              :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompOrthoBox" />
+                            <line :x1="getXSeqScore(entry.item, seqBg.orthoMedian)" :y1="figProp.vertMargin" :x2="getXSeqScore(entry.item, seqBg.orthoMedian)"
+                              :y2="figProp.lineHeight - figProp.vertMargin" class="seqCompOrthoMedian" />
+                            <!-- Draw the two cross marks -->
+                            <use class="seqCompCrossSeqMark" xlink:href="#crossMarker" href="#crossMarker" :x="getXSeqScore(entry.item, entry.item.scoreS)"
+                              :y="figProp.lineHeight / 2" />
+                            <use class="seqCompCrossEpiMark" xlink:href="#crossMarker" href="#crossMarker" v-if="entry.item.shifted === 'Y'"
+                              :x="getXSeqScore(entry.item, entry.item.scoreS2)" :y="figProp.lineHeight / 2" />
+                          </svg>
+                          <!-- Draw the horizontal axis -->
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(1)" :viewBox="lineViewBoxValue">
+                            <line :x1="figProp.horizMargin / 2" :y1="figProp.vertMargin + 0.5"
+                              :x2="figProp.width - figProp.horizMargin / 2" :y2="figProp.vertMargin + 0.5"
+                              class="seqCompAxis" marker-end="url(#arrowHead)" />
+                            <!-- Draw all the tick marks -->
+                            <g v-for="tick in getTickList(entry.item)">
+                              <line :x1="getXSeqScore(entry.item, tick)" :y1="figProp.vertMargin + 0.5"
+                                :x2="getXSeqScore(entry.item, tick)" :y2="figProp.vertMargin + figProp.tickSize + 0.5"
+                                class="seqCompAxis" />
+                              <text :x="getXSeqScore(entry.item, tick)"
+                                :y="figProp.vertMargin + figProp.tickSize + figProp.axisLabelSize + 0.5"
+                                :style="{ fontSize: figProp.axisLabelSize }"
+                                text-anchor="middle">{{ tick }}</text>
+                            </g>
+                          </svg>
+                          <!-- Draw the legends -->
+                          <rect :x="0.5" :y="getLineY(2) - 0.5" :width="figProp.width - 1"
+                            :height="figProp.lineHeight * 2" class="seqCompLegendBox" />
+                          <!-- Draw the two box plots -->
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(2)" :viewBox="lineViewBoxValue">
+                            <rect :x="figProp.legendLeftX" :y="figProp.vertMargin * 1.5"
+                              :width="figProp.legendBoxWidth"
+                              :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompBackgroundBox" />
+                            <line :x1="figProp.legendLeftX + figProp.legendBoxWidth / 2"
+                              :y1="figProp.vertMargin * 1.5"
+                              :x2="figProp.legendLeftX + figProp.legendBoxWidth / 2"
+                              :y2="figProp.lineHeight - figProp.vertMargin * .5"
+                              class="seqCompBackgroundMedian" />
+                            <text :x="figProp.legendLeftX + figProp.legendBoxWidth + figProp.horizMargin / 2"
+                              :y="(figProp.lineHeight + figProp.textSize) / 2"
+                              :style="{fontSize: figProp.textSize}">Background</text>
+                            <rect :x="figProp.legendRightX" :y="figProp.vertMargin * 1.5"
+                              :width="figProp.legendBoxWidth"
+                              :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompOrthoBox" />
+                            <line :x1="figProp.legendRightX + figProp.legendBoxWidth / 2"
+                              :y1="figProp.vertMargin * 1.5"
+                              :x2="figProp.legendRightX + figProp.legendBoxWidth / 2"
+                              :y2="figProp.lineHeight - figProp.vertMargin * .5"
+                              class="seqCompOrthoMedian" />
+                            <text :x="figProp.legendRightX + figProp.legendBoxWidth + figProp.horizMargin / 2"
+                              :y="(figProp.lineHeight + figProp.textSize) / 2"
+                              :style="{fontSize: figProp.textSize}">Orthologous region pairs</text>
+                          </svg>
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(3)" :viewBox="lineViewBoxValue">
+                            <!-- Draw the two cross marks -->
+                            <use class="seqCompCrossEpiMark" :x="figProp.legendLeftX + figProp.legendBoxWidth / 2"
+                              xlink:href="#crossMarker" href="#crossMarker"
+                              :y="figProp.lineHeight / 2" />
+                            <text :x="figProp.legendLeftX + figProp.legendBoxWidth + figProp.horizMargin / 2"
+                              :y="(figProp.lineHeight + figProp.textSize - figProp.vertMargin) / 2"
+                              :style="{fontSize: figProp.textSize}">EpiAlign hit</text>
+                            <use class="seqCompCrossSeqMark" v-if="entry.item.shifted === 'Y'" xlink:href="#crossMarker" href="#crossMarker"
+                              :x="figProp.legendRightX + figProp.legendBoxWidth / 2" :y="figProp.lineHeight / 2" />
+                            <text :x="figProp.legendRightX + figProp.legendBoxWidth + figProp.horizMargin / 2"
+                              :y="(figProp.lineHeight + figProp.textSize - figProp.vertMargin) / 2"
+                              :style="{fontSize: figProp.textSize}">SeqOnly hit</text>
+                          </svg>
+                        </svg>
                       </div>
                     </div>
                   </div>
                   <div class="flexColumn dataPart flexNoGap">
                     <div class="sectionHeader">Epigenome evaluation</div>
+                    <div class="flexRow flexWrap flexNoGap flexStart">
+                      <div class="subHeader">Epigenome contribution range</div>
+                      <div class="svgGraphHolder flexColumn">
+                        <svg id="epiContribSvg" :height="figProp.lineHeight * 2" :width="figProp.width"
+                          :viewBox="getViewBoxValue(2)" class="svgGraph">
+                          <defs>
+                            <g id="crossMarker">
+                              <line :x1="-figProp.crossSize" :y1="-figProp.crossSize" :x2="figProp.crossSize"
+                                :y2="figProp.crossSize" />
+                              <line :x1="-figProp.crossSize" :y1="figProp.crossSize" :x2="figProp.crossSize"
+                                :y2="-figProp.crossSize" />
+                            </g>
+                          </defs>
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(0)" :viewBox="lineViewBoxValue">
+                            <!-- Draw the number labels -->
+                            <text :x="getXEpiScore(entry.item, getEpiContribEpiHit(entry.item))" :y="figProp.axisLabelSize"
+                              :style="{fontSize: figProp.axisLabelSize}" text-anchor="middle">
+                              EpiAlign hit ({{ Number.parseFloat(getEpiContribEpiHit(entry.item)).toFixed(3) }})</text>
+                          </svg>
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(0.5)" :viewBox="lineViewBoxValue">
+                            <!-- Draw the two box plots -->
+                            <rect :x="figProp.horizMargin + figProp.epiContribLabelSize" :y="figProp.vertMargin"
+                              :width="figProp.width - 2 * (figProp.horizMargin + figProp.epiContribLabelSize)"
+                              :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompOrthoBox" />
+                            <line :x1="getXEpiScore(entry.item, 0)" :y1="figProp.vertMargin"
+                              :x2="getXEpiScore(entry.item, 0)" :y2="figProp.lineHeight - figProp.vertMargin"
+                              class="seqCompAxis" />
+                            <text :x="figProp.epiContribLabelSize + figProp.horizMargin / 2"
+                              :y="(figProp.lineHeight + figProp.textSize - figProp.vertMargin) / 2"
+                              :style="{fontSize: figProp.axisLabelSize}" text-anchor="end">
+                              {{ Number.parseFloat(getEpiContribMin(entry.item)).toFixed(3) }}</text>
+                            <text :x="figProp.width - figProp.epiContribLabelSize - figProp.horizMargin / 2"
+                              :y="(figProp.lineHeight + figProp.textSize - figProp.vertMargin) / 2"
+                              :style="{fontSize: figProp.axisLabelSize}">
+                              {{ Number.parseFloat(getEpiContribMax(entry.item)).toFixed(3) }}</text>
+                            <!-- Draw the two cross marks -->
+                            <use class="seqCompCrossSeqMark" xlink:href="#crossMarker" href="#crossMarker"
+                              :x="getXEpiScore(entry.item, getEpiContribSeqHit(entry.item))" :y="figProp.lineHeight / 2" />
+                            <use class="seqCompCrossEpiMark" xlink:href="#crossMarker" href="#crossMarker" v-if="entry.item.shifted === 'Y'"
+                              :x="getXEpiScore(entry.item, getEpiContribEpiHit(entry.item))" :y="figProp.lineHeight / 2" />
+                          </svg>
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(1.5)" :viewBox="lineViewBoxValue">
+                            <!-- Draw the number labels -->
+                            <text :x="getXEpiScore(entry.item, getEpiContribSeqHit(entry.item))"
+                              :y="figProp.axisLabelSize" :style="{fontSize: figProp.axisLabelSize}"
+                              text-anchor="middle">
+                              SeqOnly hit ({{ Number.parseFloat(getEpiContribSeqHit(entry.item)).toFixed(3) }})</text>
+                          </svg>
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

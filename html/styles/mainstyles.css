@@ -1304,6 +1304,8 @@ div.resultImgHolder > img {
 	max-height: 100%;
 }
 
+/* ***** Result description related ***** */
+
 div.resultDesc {
 	flex-basis: 45rem;
 }
@@ -1321,7 +1323,7 @@ div.resultDesc div.dataEntry {
 	width: 16rem;
 }
 
-div.resultDesc span.anno {
+div.resultDesc .anno {
 	font-weight: 500;
 	margin-right: 1em;
 }
@@ -1369,6 +1371,61 @@ div.enhancerScoreContainer > div {
 div.enhancerScoreContainer > div > div:first-child {
 	width: 8em;
 	font-weight: bold;
+}
+
+/* ***** Result description SVG related ***** */
+
+div.svgGraphHolder {
+	background: #EEEEEE;
+	padding: 0.5em;
+}
+
+svg .seqCompBackgroundBox {
+	fill: #FFFFFF;
+	fill-opacity: 0.7;
+	stroke: #666666;
+	stroke-width: 1px;
+	stroke-dasharray: 1.5,1.5;
+}
+
+svg .seqCompBackgroundMedian {
+	stroke: #666666;
+	stroke-width: 1px;
+	stroke-dasharray: 2,2;
+}
+
+svg .seqCompOrthoBox {
+	fill: #FFFFFF;
+	fill-opacity: 0.7;
+	stroke: #666666;
+	stroke-width: 1px;
+}
+
+svg .seqCompOrthoMedian {
+	stroke: #666666;
+	stroke-width: 1px;
+	stroke-dasharray: 2,2;
+}
+
+svg .seqCompCrossEpiMark {
+	stroke: #c82500;
+	stroke-width: 2px;
+}
+
+svg .seqCompCrossSeqMark {
+	stroke: #666666;
+	stroke-width: 2px;
+}
+
+svg .seqCompLegendBox {
+	fill: #FFFFFF;
+	stroke: #666666;
+	stroke-width: 1px;
+}
+
+svg .seqCompAxis {
+	stroke: #666666;
+	stroke-width: 1px;
 }
 
 /* ***** Manual related styles ***** */

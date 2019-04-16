@@ -873,6 +873,14 @@ Promise.all([readTissuePromise, readFilterPromise])
               experimentDictEntry.bigwig_file = path.join(
                 scriptPath, publicBasePath, experimentDictEntry.bigwig_file
               )
+              if (experimentDictEntry.expression_files) {
+                experimentDictEntry.expression_files =
+                  experimentDictEntry.expression_files.map(
+                    expFile => path.join(
+                      scriptPath, publicBasePath, expFile
+                    )
+                  )
+              }
             })
           }
         }

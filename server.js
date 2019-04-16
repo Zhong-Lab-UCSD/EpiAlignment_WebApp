@@ -21,11 +21,17 @@ const loadSpeciesGeneAnno = require('./annoParser').loadSpeciesGeneAnno
 
 const ClusterProcesser = require('./clusterProcessing')
 
-const expKeyIndex = {
+const expKeyIndexEncode = {
+  'ensemblGeneId': 0,
   'pme_TPM': 9,
   'pme_FPKM': 10,
   'TPM': 5,
   'FPKM': 6
+}
+
+const expKeyIndexGeo = {
+  'ensemblGeneId': 1,
+  'FPKM': 2
 }
 
 const species = [
@@ -247,19 +253,37 @@ function buildExpDicts (expFiles) {
   return expFiles.reduce((prevDict, expFile, fileIndex) => {
     expFile.split('\n').forEach(currLine => {
       let tokens = currLine.split('\t')
-      let key = tokens[0].split('.', 1)[0]
-      if (!prevDict.hasOwnProperty(key)) {
-        prevDict[key] = Array(expFiles.length).fill({
-          'pme_TPM': 0,
-          'pme_FPKM': 0,
-          'TPM': 0,
-          'FPKM': 0
-        })
+      let expKeyIndex = null
+      if (tokens.length > 10) {
+        // ENCODE format
+        expKeyIndex = expKeyIndexEncode
+      } else {
+        expKeyIndex = expKeyIndexGeo
       }
-      for (let expKey in prevDict[key][fileIndex]) {
-        prevDict[key][fileIndex][expKey] =
-          parseFloat(tokens[expKeyIndex[expKey]])
-      }
+      try {
+        let key = tokens[expKeyIndex.ensemblGeneId].split('.', 1)[0]
+        if (!prevDict.hasOwnProperty(key)) {
+          prevDict[key] = Array(expFiles.length).fill({
+            'pme_TPM': 0,
+            'pme_FPKM': 0,
+            'TPM': 0,
+            'FPKM': 0
+          })
+        }
+        for (let expKey in prevDict[key][fileIndex]) {
+          if (expKeyIndex.hasOwnProperty(expKey)) {
+            if (!prevDict[key][fileIndex][expKey] ||
+              prevDict[key][fileIndex][expKey] <
+              parseFloat(tokens[expKeyIndex[expKey]])
+            ) {
+              prevDict[key][fileIndex][expKey] =
+                parseFloat(tokens[expKeyIndex[expKey]])
+            }
+          } else {
+            prevDict[key][fileIndex][expKey] = null
+          }
+        }
+      } catch (ignore) { }
     })
     return prevDict
   }, {})

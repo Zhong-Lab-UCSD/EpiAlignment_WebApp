@@ -648,7 +648,8 @@ def snCalculater(signal, mid_point, half_noise):
   return "."
 
 def SeqBg(s, mu):
-  seq_dict = {"backgroundMean": ".", "backgroundSd": ".", "orthoMean": ".", "orthoSd": "."}
+  seq_dict = {"backgroundMean": ".", "backgroundSd":".", "backgroundMedian": ".", "backgroundQ75": ".", \
+    "backgroundQ25":".", "orthoMedian": ".", "orthoQ75": ".", "orthoQ25": "."}
   s = str(round(float(s), 2))
   mu = str(round(float(mu), 2))
   bg_anno = "Annotation/AnnotationFiles/seqBackground.txt"
@@ -658,8 +659,12 @@ def SeqBg(s, mu):
       if line[0] == s and line[1] == mu:
         seq_dict["backgroundMean"] = float(line[2])
         seq_dict["backgroundSd"] = float(line[3])
-        seq_dict["orthoMean"] = float(line[4])
-        seq_dict["orthoSd"] = float(line[5])
+        seq_dict["backgroundMedian"] = float(line[4])
+        seq_dict["backgroundQ25"] = float(line[5])
+        seq_dict["backgroundQ75"] = float(line[6])
+        seq_dict["orthoMedian"] = float(line[7])
+        seq_dict["orthoQ25"] = float(line[8])
+        seq_dict["orthoQ75"] = float(line[9])
         break
   return seq_dict
 

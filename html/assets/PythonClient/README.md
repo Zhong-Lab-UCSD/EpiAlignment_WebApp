@@ -5,7 +5,7 @@ We provided ``EpiAlignment_PyClient``, a python template program for users to ac
 ## Python platform and dependencies
 The current verion of ``EpiAlignment_PyClient`` supports both Python 3 and Python 2. If you are using Python 2, please use ``EpiAlignment_PyClient_2.py`` instead of ``EpiAlignment_PyClient.py``.
 
-If Python 3 and ``pipenv`` are available, you may use the following command to automatically install all dependencies (add ``--three`` if you have ``pipenv`` installed for both Python 3 and Python 2 on your computer.). 
+If Python 3 and [``pipenv``](https://pipenv.readthedocs.io/en/latest/) are available, you may use the following command to automatically install all dependencies (add ``--three`` if you have ``pipenv`` installed for both Python 3 and Python 2 on your computer.). 
 
 ```bash
 pipenv install

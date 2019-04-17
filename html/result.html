@@ -220,7 +220,7 @@
             </div>
           </div>
         </div>
-        <div id="expressionBar" class="borderedPanel">
+        <div id="expressionBar" v-if="!!expList" class="borderedPanel">
           <div class="flexColumn flexNoGap">
             <div class="selfAlignStretch resultHeader"><span class="headerText">Gene expression values</span></div>
             <div class="flexShrink flexColumn">

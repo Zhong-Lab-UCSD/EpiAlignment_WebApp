@@ -200,7 +200,7 @@ var app = new Vue({
       tickSize: 5,
       axisLabelSize: 12,
       maxNumOfTicks: 10,
-      epiContribLabelSize: 50
+      epiContribLabelSize: 20
     },
     expFigProp: {
       geneHeight: 30,

@@ -488,19 +488,6 @@
                       </div>
                     </div>
                     <div class="flexRow flexWrap flexNoGap flexStart">
-                      <div class="subHeader">Background p-value</div>
-                      <div class="flexRow flex flexNoGap flexWrap flexEnd">
-                        <div v-if="entry.item.bgPvalueE !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
-                          <span class="anno">EpiAlign hit:</span>
-                          <span>{{ Number.parseFloat(entry.item.bgPvalueE).toFixed(3) }}</span>
-                        </div>
-                        <div v-if="entry.item.bgPvalueS !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
-                          <span class="anno">SeqOnly hit:</span>
-                          <span>{{ Number.parseFloat(entry.item.bgPvalueS).toFixed(3) }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="flexRow flexWrap flexNoGap flexStart">
                       <div class="subHeader">Context of sequence-only alignment scores</div>
                       <div class="svgGraphHolder flexColumn">
                         <svg id="seqScoreCompareSvg" :height="figProp.lineHeight * 4"
@@ -564,8 +551,11 @@
                               :y2="figProp.lineHeight - figProp.vertMargin * .5"
                               class="seqCompBackgroundMedian" />
                             <text :x="figProp.legendLeftX + figProp.legendBoxWidth + figProp.horizMargin / 2"
-                              :y="(figProp.lineHeight + figProp.textSize) / 2"
+                              :y="(figProp.lineHeight + figProp.textSize) / 2 - figProp.vertMargin * 0.75"
                               :style="{fontSize: figProp.textSize}">Background</text>
+                            <text :x="figProp.legendLeftX + figProp.legendBoxWidth + figProp.horizMargin / 2"
+                              :y="(figProp.lineHeight + figProp.textSize * 3) / 2 - figProp.vertMargin * 0.75"
+                              :style="{fontSize: figProp.axisLabelSize}">(25th, 50th, 75th percentile)</text>
                             <rect :x="figProp.legendRightX" :y="figProp.vertMargin * 1.5"
                               :width="figProp.legendBoxWidth"
                               :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompOrthoBox" />
@@ -575,8 +565,11 @@
                               :y2="figProp.lineHeight - figProp.vertMargin * .5"
                               class="seqCompOrthoMedian" />
                             <text :x="figProp.legendRightX + figProp.legendBoxWidth + figProp.horizMargin / 2"
-                              :y="(figProp.lineHeight + figProp.textSize) / 2"
-                              :style="{fontSize: figProp.textSize}">Orthologous region pairs</text>
+                              :y="(figProp.lineHeight + figProp.textSize) / 2 - figProp.vertMargin * 0.75"
+                              :style="{fontSize: figProp.textSize}">Conserved cis-regulatory elements</text>
+                            <text :x="figProp.legendRightX + figProp.legendBoxWidth + figProp.horizMargin / 2"
+                              :y="(figProp.lineHeight + figProp.textSize * 3) / 2 - figProp.vertMargin * 0.75"
+                              :style="{fontSize: figProp.axisLabelSize}">(25th, 50th, 75th percentile)</text>
                           </svg>
                           <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(3)">
                             <!-- Draw the two cross marks -->
@@ -601,7 +594,7 @@
                     <div class="flexRow flexWrap flexNoGap flexStart">
                       <div class="subHeader">Epigenome contribution range</div>
                       <div class="svgGraphHolder flexColumn">
-                        <svg id="epiContribSvg" :height="figProp.lineHeight * 2" :width="figProp.width" class="svgGraph">
+                        <svg id="epiContribSvg" :height="figProp.lineHeight * 3" :width="figProp.width" class="svgGraph">
                           <defs>
                             <g id="crossMarker">
                               <line :x1="-figProp.crossSize" :y1="-figProp.crossSize" :x2="figProp.crossSize"
@@ -614,24 +607,13 @@
                             <!-- Draw the number labels -->
                             <text :x="getXEpiScore(entry.item, getEpiContribEpiHit(entry.item))" :y="figProp.axisLabelSize"
                               :style="{fontSize: figProp.axisLabelSize}" text-anchor="middle">
-                              EpiAlign hit ({{ Number.parseFloat(getEpiContribEpiHit(entry.item)).toFixed(3) }})</text>
+                              EpiAlign hit</text>
                           </svg>
                           <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(0.5)">
                             <!-- Draw the two box plots -->
                             <rect :x="figProp.horizMargin + figProp.epiContribLabelSize" :y="figProp.vertMargin"
                               :width="figProp.width - 2 * (figProp.horizMargin + figProp.epiContribLabelSize)"
                               :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompOrthoBox" />
-                            <line :x1="getXEpiScore(entry.item, 0)" :y1="figProp.vertMargin"
-                              :x2="getXEpiScore(entry.item, 0)" :y2="figProp.lineHeight - figProp.vertMargin"
-                              class="seqCompAxis" />
-                            <text :x="figProp.epiContribLabelSize + figProp.horizMargin / 2"
-                              :y="(figProp.lineHeight + figProp.textSize - figProp.vertMargin) / 2"
-                              :style="{fontSize: figProp.axisLabelSize}" text-anchor="end">
-                              {{ Number.parseFloat(getEpiContribMin(entry.item)).toFixed(3) }}</text>
-                            <text :x="figProp.width - figProp.epiContribLabelSize - figProp.horizMargin / 2"
-                              :y="(figProp.lineHeight + figProp.textSize - figProp.vertMargin) / 2"
-                              :style="{fontSize: figProp.axisLabelSize}">
-                              {{ Number.parseFloat(getEpiContribMax(entry.item)).toFixed(3) }}</text>
                             <!-- Draw the two cross marks -->
                             <use class="seqCompCrossSeqMark" xlink:href="#crossMarker" href="#crossMarker"
                               :x="getXEpiScore(entry.item, getEpiContribSeqHit(entry.item))" :y="figProp.lineHeight / 2" />
@@ -643,8 +625,18 @@
                             <text :x="getXEpiScore(entry.item, getEpiContribSeqHit(entry.item))"
                               :y="figProp.axisLabelSize" :style="{fontSize: figProp.axisLabelSize}"
                               text-anchor="middle">
-                              SeqOnly hit ({{ Number.parseFloat(getEpiContribSeqHit(entry.item)).toFixed(3) }})</text>
+                              SeqOnly hit</text>
                           </svg>
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(2)">
+                            <line :x1="figProp.horizMargin / 2" :y1="figProp.vertMargin + 0.5" :x2="figProp.width - figProp.horizMargin / 2"
+                              :y2="figProp.vertMargin + 0.5" class="seqCompAxis" marker-end="url(#arrowHead)" />
+                            <!-- Draw all the tick marks -->
+                            <g v-for="tick in getTickList(getEpiContribMin(entry.item), getEpiContribMax(entry.item), figProp.maxNumOfTicks)">
+                              <line :x1="getXEpiScore(entry.item, tick)" :y1="figProp.vertMargin + 0.5" :x2="getXEpiScore(entry.item, tick)"
+                                :y2="figProp.vertMargin + figProp.tickSize + 0.5" class="seqCompAxis" />
+                              <text :x="getXEpiScore(entry.item, tick)" :y="figProp.vertMargin + figProp.tickSize + figProp.axisLabelSize + 0.5"
+                                :style="{ fontSize: figProp.axisLabelSize }" text-anchor="middle">{{ tick }}</text>
+                            </g>
                         </svg>
                       </div>
                     </div>

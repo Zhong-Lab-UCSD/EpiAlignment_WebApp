@@ -2,6 +2,7 @@ import subprocess
 from subprocess import Popen, PIPE
 from numpy import percentile, mean
 from scipy.stats import norm
+from itertools import izip
 from GeneAnno import *
 import json
 import shutil
@@ -42,27 +43,20 @@ def CheckFileLength(file1, file2):
       sys.exit(202)
 
 
-def CheckLineType(line, align_mode, oldType = None):
-  if len(line) == 6:
-    if oldType != "name":
-      return "bed"
-    else:
-      print >> sys.stderr, "[EpiAlignment]The format of your input file is not consistent. Please use all gene names or all BED6 format."
-      sys.exit(201)
+def CheckLineType(line, oldType = None):
+  line_len = len(line)
+  if (line_len == 6 and oldType != "name"):
+    # the line has 6 fields.
+    return "bed"
+  elif (line_len == 1 and oldType != "bed"):
+    # the line has 1 fields
+    return "name"
   else:
-    if align_mode == "enhancer":
-      print >> sys.stderr, "[EpiAlignment]Your input file doesn't have 6 fields. Genomic coordinates have to be provided in the bed6 format."
-      sys.exit(201)
-    elif align_mode == "promoter":
-      if len(line) == 1:
-        if oldType != "bed":
-          return "name"
-        else:
-          print >> sys.stderr, "[EpiAlignment]The format of your input file is not consistent. Please use all gene names or all BED6 format."
-          sys.exit(201)
-      else:
-        print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files (6 columns) or genelists (1 columns)."
-        sys.exit(201)
+    if line_len == 1 or line_len == 6:
+      print >> sys.stderr, "[EpiAlignment]The format of your input file is not consistent. Please use all gene names or all BED6 format."
+    else:
+      print >> sys.stderr, "[EpiAlignment]Input files have to be bed6 files (6 columns) or genelists (1 columns)."
+    sys.exit(201)
 
 def StripDigits(qstr):
   '''
@@ -123,7 +117,7 @@ def parseBedStrand(bedFields, warningSize=None, strandIndex=5):
     raise Exception('Not a BED6 format.')
       
 
-def FileOrTextarea(textarea_input, json_files, key, align_mode, of_name, runid, warningSize = None):
+def FileOrTextarea(textarea_input, json_files, key, of_name, runid, warningSize = None):
   '''
   Determine if input was pasted into the textarea or uploaded as a file.
   textarea_input: a string. Text in textarea.
@@ -145,7 +139,7 @@ def FileOrTextarea(textarea_input, json_files, key, align_mode, of_name, runid, 
         try:
           lineNum += 1
           line = line.strip().split()
-          lineType = CheckLineType(line, align_mode, lineType)
+          lineType = CheckLineType(line, lineType)
           if lineType == 'bed':
             parseBedStrand(line, warningSize)
           print >> fOut, '\t'.join(line)
@@ -162,7 +156,7 @@ def FileOrTextarea(textarea_input, json_files, key, align_mode, of_name, runid, 
         try:
           lineNum += 1
           line = line.strip().split()
-          lineType = CheckLineType(line, align_mode, lineType)
+          lineType = CheckLineType(line, lineType)
           if lineType == 'bed':
             parseBedStrand(line, warningSize)
           print >> fOut, '\t'.join(line)
@@ -178,7 +172,7 @@ def FileOrTextarea(textarea_input, json_files, key, align_mode, of_name, runid, 
 ########################
 ## Mode 1: genelist   ##
 ########################
-def Cons_transDict(gene_name, sp_name, of_name):
+def Cons_transDict(gene_name, sp_name):
   if re.match(ensembl_regexp, gene_name):
     transDict = Construct_ensDict("Annotation/AnnotationFiles/" + sp_name + "_transcript.clean")
   else:
@@ -186,7 +180,7 @@ def Cons_transDict(gene_name, sp_name, of_name):
   return transDict
 
 
-def Cons_transList(input1, intype1, promoterUp, promoterDown, sp, of_name):
+def Cons_transList(input1, intype1, promoterUp, promoterDown, sp):
   trans_list1 = []
   with open(input1, "r") as fin1:
     if intype1 == "bed":
@@ -196,7 +190,7 @@ def Cons_transList(input1, intype1, promoterUp, promoterDown, sp, of_name):
       for line in fin1:
         line = line.strip()
         if i == 0:
-          transDict1 = Cons_transDict(line, sp, of_name)
+          transDict1 = Cons_transDict(line, sp)
           i += 1
         if line in transDict1:
           trans_list1 += PromoterMerge(line, transDict1, promoterUp, promoterDown)
@@ -205,9 +199,9 @@ def Cons_transList(input1, intype1, promoterUp, promoterDown, sp, of_name):
   return trans_list1
 
 
-def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem, of_name):
-  trans_list1 = Cons_transList(input1, intype1, promoterUp, promoterDown, genAssem[0], of_name)
-  trans_list2 = Cons_transList(input2, intype2, promoterUp, promoterDown, gsenAssem[1], of_name)
+def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem):
+  trans_list1 = Cons_transList(input1, intype1, promoterUp, promoterDown, genAssem[0])
+  trans_list2 = Cons_transList(input2, intype2, promoterUp, promoterDown, gsenAssem[1])
 
   with open(input1 + ".bed", "w") as fout1, open(input2 + ".bed", "w") as fout2:
     i = 0
@@ -224,6 +218,31 @@ def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, 
 
   return input1 + ".bed", input2 + ".bed"
 
+def PairCutEnhancer(input1, input2, promoterUp, promoterDown, genAssem):
+  '''
+  Pair promoters (multiple) and bed regions in the enhancer mode when
+  query regions are provided by gene names and target regions are provided as bed regions.
+  '''
+  i = 0
+  with open(input1, "r") as fin1, open(input2, "r") as fin2, \
+    open(input1 + ".bed", "w") as fout1, open(input2 + ".bed", "w") as fout2:
+    for name, bed in izip(fin1, fin2):
+      name = name.strip()
+      bed = bed.strip().split()
+      if i == 0:
+        transDict = Cons_transDict(name, genAssem[0])
+        i += 1
+      if name in transDict:
+        trans_list = PromoterMerge(name, transDict, promoterUp, promoterDown)
+      else:
+        print >> sys.stderr, "[EpiAlignment]Gene %s is not found and skipped."%(name)
+      for region in trans_list:
+        region_name = region[3] + "Vs" + bed[3]
+        print >> fout1, "\t".join(region[0:3] + [region_name] + region[4:])
+        print >> fout2, "\t".join(bed[0:3] + [region_name] + bed[4:])
+  return input1 + ".bed", input2 + ".bed"
+      
+    
 #######################
 ## Mode 3: cluster   ##
 #######################
@@ -291,6 +310,27 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
 #######################
 ## Mode 4: liftOver  ##
 #######################
+def GeneNameToBed(input1, promoterUp, promoterDown, genAssem):
+  '''
+  This function convert gene names to promoter beds tn the one-vs-one mode
+  when the query regions are provided by gene names.
+  '''
+  i = 0
+  with open(input1, "r") as fin1, open(input1 + ".bed", "w") as fout1:
+    for name in fin1:
+      name = name.strip()
+      if i == 0:
+        transDict = Cons_transDict(name, genAssem[0])
+        i += 1
+      if name in transDict:
+        trans_list = PromoterMerge(name, transDict, promoterUp, promoterDown)
+      else:
+        print >> sys.stderr, "[EpiAlignment]Gene %s is not found and skipped."%(name)
+      for region in trans_list:
+        print >> fout1, "\t".join(region)
+  return input1 + ".bed"
+
+
 def ExtendBed(fname, enhUp, enhDown):
   '''
   Extend the input bed file for liftOver.
@@ -377,7 +417,7 @@ def CreateInputBeds(of_name, json_dict, runid):
   enhancerDown = CheckNumber("enhancerDown", json_dict["body"])
 
   # Is input1 a file or a pasted text?
-  input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", alignMode, of_name, runid, WARNING_SIZE)
+  input1, intype1 = FileOrTextarea(json_dict["body"]["speciesText"][0], json_dict["files"], "speciesInput1", of_name, runid, WARNING_SIZE)
   if input1 == "" and (not json_dict["body"]["searchRegionMode"] == "genecluster"):
     print >> sys.stderr, "[EpiAlignment]No input regions provided."
     sys.exit(200)
@@ -385,12 +425,20 @@ def CreateInputBeds(of_name, json_dict, runid):
   if searchMode == "genomeregion":
     # Mode 1: define search regions with bed files or gene lists.
     # Is input2 a file or a pasted text?
-    input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", alignMode, of_name, runid)
+    input2, intype2 = FileOrTextarea(json_dict["body"]["speciesText"][1], json_dict["files"], "speciesInput2", of_name, runid)
     if alignMode == "enhancer":
       if CheckFileLength(input1, input2):
-        return input1, input2, intype1, intype2
+        if intype2 == "name":
+          print >> sys.stderr, "[EpiAlignment]In one-vs-one mode, only query regions can be defined with gene names. \
+            Target regions need to be provided in BED6 format."
+          sys.exit(201)
+        else:
+          if intype1 == "bed":
+            return input1, input2, intype1, intype2
+          elif intype1 == "name":
+            bed1, bed2 = PairCutEnhancer(input1, input2, promoterUp, promoterDown, genAssem)
     else:
-      bed1, bed2 = PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem, of_name)
+      bed1, bed2 = PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem)
     return bed1, bed2, intype1, intype2
 
   else:    
@@ -407,17 +455,20 @@ def CreateInputBeds(of_name, json_dict, runid):
     elif searchMode == "homoregion" and alignMode == "enhancer":
       # Mode 4 (enhancer mode 2): use homologous regions. 
       # species must be different!
+      ori_input = input1
+      if intype1 == "name":
+        ori_input = GeneNameToBed(input1, promoterUp, promoterDown, genAssem)
       if StripDigits(genAssem[0]) == StripDigits(genAssem[1]):
         print >> sys.stderr, "[EpiAlignment]The two species must be different to use this mode."
         sys.exit(208)
       # Extend the input bed file1. extbed: extended bed file name.
-      extbed = ExtendBed(input1, enhancerUp, enhancerDown)
+      extbed = ExtendBed(ori_input, enhancerUp, enhancerDown)
       # LiftOver
       liftbed = LiftOver(extbed, genAssem)
       # Remove non-remappable regions. Return a pair of bed file names.
-      cleanbed = RemoveNonlift(input1, liftbed)
-      os.remove(extbed)
-      os.remove(extbed + ".unlift")
+      cleanbed = RemoveNonlift(ori_input, liftbed)
+      #os.remove(extbed)
+      #os.remove(extbed + ".unlift")
       bed1 = cleanbed
       bed2 = liftbed
 
@@ -498,7 +549,7 @@ def InputParas(of_name, json_body, runid):
       print >> fseq_para, "1" + "\t" + "0"
 
 
-def ExeEpiAlignment(alignMode, searchRegionMode, of_name, runid):
+def ExeEpiAlignment(alignMode, searchRegionMode, bed1, bed2, genAssem, of_name, runid):
   '''
   Execute EpiAlignment
   '''
@@ -512,6 +563,19 @@ def ExeEpiAlignment(alignMode, searchRegionMode, of_name, runid):
     ["-e", of_name + "parameters_seq_" + runid] +\
     ["-p", "140"] +\
     ["-o", of_name + "seqalign_res_" + runid]
+
+  # Fetch gene Ids.
+  cmd_list_gene1 = ["python", "EnhancerOverlappingGenes.py", bed1] + \
+    ["-a", "Annotation/AnnotationFiles/genes/" + genAssem[0] + ".genes.ensembl.sorted.txt" ] + \
+    ["-e", "50000"] + \
+    ["-n", "5"] + \
+    ["-o", of_name + "QueryRNA_" + runid]
+  
+  cmd_list_gene2 = ["python", "EnhancerOverlappingGenes.py", bed2] + \
+    ["-a", "Annotation/AnnotationFiles/genes/" + genAssem[1] + ".genes.ensembl.sorted.txt" ] + \
+    ["-e", "50000"] + \
+    ["-n", "5"] + \
+    ["-o", of_name + "TargetRNA_" + runid]
 
   if alignMode == "promoter":
     p_epi = Popen(cmd_list, stderr=PIPE)

@@ -424,7 +424,7 @@
                 {{ alignMode === 'promoter' ? (row.item.scoreS !== '.'
                   ? Number.parseFloat(row.item.scoreS).toFixed(3) : '---')
                 : row.item.targetS !== '.' ? row.item.targetS : '---' }}</td>
-              <td class="dataTableCell dataTableCellNoGap text-xs-left">
+              <td class="dataTableCell dataTableCellNoGap text-xs-left" v-if="alignMode === 'promoter'">
                 <v-tooltip bottom v-if="row.item.shifted === 'Y'">
                   <template v-slot:activator="{ on }">
                     <i class="material-icons" v-on="on">swap_horizontal_circle</i>

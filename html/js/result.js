@@ -386,6 +386,8 @@ var app = new Vue({
           this.verifyNameSource(dataEntries[0])
         }
         if (this.alignMode === 'promoter') {
+          // remove the last column
+          this.headers.splice(-1, 1)
           this.processPromoterData(dataEntries)
         } else {
           this.processEnhancerData(dataEntries)

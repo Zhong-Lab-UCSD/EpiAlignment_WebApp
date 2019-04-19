@@ -187,7 +187,7 @@ var app = new Vue({
     dataEntries: [],
     expList: null,
     seqBg: null,
-    figProp: {
+    figPropEnhancer: {
       crossSize: 4,
       vertMargin: 8,
       lineHeight: 36,
@@ -200,7 +200,24 @@ var app = new Vue({
       tickSize: 5,
       axisLabelSize: 12,
       maxNumOfTicks: 10,
-      epiContribLabelSize: 20
+      epiContribLabelSize: 20,
+      legendBoxOffset: 4
+    },
+    figPropPromoter: {
+      crossSize: 4,
+      vertMargin: 8,
+      lineHeight: 36,
+      legendLeftX: 10.5,
+      legendRightX: 240.5,
+      legendBoxWidth: 30,
+      width: 600,
+      horizMargin: 20,
+      textSize: 14,
+      tickSize: 5,
+      axisLabelSize: 12,
+      maxNumOfTicks: 10,
+      epiContribLabelSize: 20,
+      legendBoxOffset: 0
     },
     expFigProp: {
       geneHeight: 30,
@@ -225,6 +242,13 @@ var app = new Vue({
       0x4477AA, 0xEE6677, 0x228833,
       0xCCBB44, 0x66CCEE, 0xAA3377
     ]
+  },
+  computed: {
+    figProp: function () {
+      return this.alignMode === 'enhancer'
+        ? this.figPropEnhancer
+        : this.figPropPromoter
+    }
   },
   created: function () {
     const urlParams = new window.URLSearchParams(window.location.search)
@@ -395,8 +419,8 @@ var app = new Vue({
       }
     },
     toggleRow: function (row) {
+      row.expanded = !row.expanded
       if (this.alignMode === 'enhancer') {
-        row.expanded = !row.expanded
         Vue.set(row.item, 'image', null)
         Vue.set(row.item, 'imageError', false)
         if (row.expanded) {
@@ -744,16 +768,15 @@ var app = new Vue({
       return (expValue - xMin) * xScale + this.expFigProp.textAreaWidth
     },
     getExpressionMax: function (expList) {
-      return expList.reduce((prevInRefMax, expInRef) => {
-        for (let key in expInRef.expValues) {
+      return expList.reduce((prevInRefMax, expInRef) =>
+        expInRef.expValues.reduce((inRefMax, geneEntry) => {
           let geneExpMax =
-            Math.max(...expInRef.expValues[key].map(expVal => expVal.FPKM))
-          if (prevInRefMax < geneExpMax) {
-            prevInRefMax = geneExpMax
+            Math.max(...geneEntry.indExpValues.map(expVal => expVal.FPKM))
+          if (inRefMax < geneExpMax) {
+            return geneExpMax
           }
-        }
-        return prevInRefMax
-      }, 0)
+          return inRefMax
+        }, prevInRefMax), 0)
     },
     getExpressionHeight: function (expList) {
       return expList.reduce((prev, expInRef) => {
@@ -761,7 +784,7 @@ var app = new Vue({
       }, 0)
     },
     getExpInRefHeight: function (expInRef) {
-      return Object.keys(expInRef.expValues).length *
+      return expInRef.expValues.length *
         (this.expFigProp.geneHeight + this.expFigProp.gap) +
         this.expFigProp.refHeight
     },

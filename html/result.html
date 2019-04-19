@@ -230,13 +230,13 @@
                   :height="getExpInRefHeight(expInRef)" x="0" :y="getExpInRefY(expList, refIndex)">
                   <text :x="expFigProp.textAreaWidth - expFigProp.textMargin" :y="(expFigProp.refHeight + expFigProp.textSize - expFigProp.gap) / 2"
                     :style="{ fontSize: expFigProp.axisLabelSize, fontWeight: 'bold' }" text-anchor="end">{{ capitalize(expInRef.refName) }}</text>
-                  <svg v-for="(geneEntry, geneName, geneIndex) in expInRef.expValues" :width="expFigProp.width"
+                  <svg v-for="(geneEntry, geneIndex) in expInRef.expValues" :width="expFigProp.width"
                     :height="expFigProp.geneHeight" x="0" :y="geneIndex * (expFigProp.geneHeight + expFigProp.gap) + expFigProp.refHeight">
                     <text :x="expFigProp.textAreaWidth - expFigProp.textMargin" :y="(expFigProp.geneHeight + expFigProp.textSize - expFigProp.gap) / 2"
-                      :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="end">{{ geneName }}</text>
-                    <rect v-for="(expValue, index) in geneEntry"
-                      :x="expFigProp.textAreaWidth" :y="index * expFigProp.geneHeight / geneEntry.length"
-                      :width="getXExpression(expList, expValue.FPKM) - expFigProp.textAreaWidth" :height="expFigProp.geneHeight / geneEntry.length"
+                      :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="end">{{ geneEntry.symbol }}</text>
+                    <rect v-for="(expValue, index) in geneEntry.indExpValues"
+                      :x="expFigProp.textAreaWidth" :y="index * expFigProp.geneHeight / geneEntry.indExpValues.length"
+                      :width="getXExpression(expList, expValue.FPKM) - expFigProp.textAreaWidth" :height="expFigProp.geneHeight / geneEntry.indExpValues.length"
                       :style="{ fontSize: figProp.axisLabelSize, fill: '#' + getColorString(expList, refIndex, index) }"/>
                   </svg>
                 </svg>
@@ -342,7 +342,7 @@
       <div class="resultHolder flexColumn flexStretch flex flexNoGap">
         <div class="resultHeader flexRow flexWrap flexCenter flexNoGap">
           <span class="headerText">Result data table</span>
-          <div class="flex descText" v-if="alignMode === 'enhancer'">
+          <div class="flex descText">
             Click on table rows for detailed results.
           </div>
           <a class="buttonLink" :href="downloadLink" download="results.txt" target="_blank"><i class="material-icons">
@@ -394,7 +394,7 @@
             </span>
           </template>
           <template slot="items" slot-scope="row">
-            <tr @click="toggleRow(row)" :class=" { expandable: alignMode === 'enhancer' } ">
+            <tr @click="toggleRow(row)" class="expandable">
               <td class="dataTableCell">{{ row.item.index }}</td>
               <td class="dataTableCell dataTableCellNoGap"><a @click.stop class="noFlex btnWithAnno" target="_blank" title="Open region in GIVE Browser"
                 :href="getGiveLink([queryGenomeAssembly, targetGenomeAssembly], [row.item.region1, row.item.region2], [[row.item.region1], [row.item.targetE, row.item.targetS]])"><i class="material-icons">
@@ -424,7 +424,7 @@
                 {{ alignMode === 'promoter' ? (row.item.scoreS !== '.'
                   ? Number.parseFloat(row.item.scoreS).toFixed(3) : '---')
                 : row.item.targetS !== '.' ? row.item.targetS : '---' }}</td>
-              <td class="dataTableCell dataTableCellNoGap text-xs-left" v-if="alignMode === 'promoter'">
+              <td class="dataTableCell dataTableCellNoGap text-xs-left" v-if="alignMode === 'enhancer'">
                 <v-tooltip bottom v-if="row.item.shifted === 'Y'">
                   <template v-slot:activator="{ on }">
                     <i class="material-icons" v-on="on">swap_horizontal_circle</i>
@@ -439,10 +439,9 @@
           <template slot="expand" slot-scope="entry">
             <v-card flat>
               <div class="flexRow flexStretch enhancerCardContainer">
-                <div
-                  class="resultImgHolder flexColumn flexCenter flexNoWrap flexNoGap noFlex justifyCenter"
-                  :class="{ 'loading': !entry.item.imageError && !entry.item.image }"
-                  >
+                <div class="resultImgHolder flexColumn flexCenter flexNoWrap flexNoGap noFlex justifyCenter"
+                  v-if="alignMode === 'enhancer'"
+                  :class="{ 'loading': !entry.item.imageError && !entry.item.image }">
                   <img v-show="entry.item.image && !entry.item.imageError" :src="entry.item.image">
                   <div v-show="entry.item.imageError">
                     {{ entry.item.imageError }}
@@ -453,7 +452,7 @@
                     <i class="material-icons iconAtLeft">help</i>
                     <div>What do all these results mean?</div>
                   </div>
-                  <div class="flexColumn dataPart flexNoGap">
+                  <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer'">
                     <div class="sectionHeader">Overview</div>
                     <div class="flexRow flexWrap flexNoGap flexCenter">
                       <div class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
@@ -490,7 +489,7 @@
                     <div class="flexRow flexWrap flexNoGap flexStart">
                       <div class="subHeader">Context of sequence-only alignment scores</div>
                       <div class="svgGraphHolder flexColumn">
-                        <svg id="seqScoreCompareSvg" :height="figProp.lineHeight * 4"
+                        <svg id="seqScoreCompareSvg" :height="figProp.lineHeight * (alignMode === 'enhancer' ? 4 : 3)"
                           :width="figProp.width" class="svgGraph">
                           <defs>
                             <marker id="arrowHead" markerWidth="10" markerHeight="10" refx="2" refy="5" orient="auto">
@@ -516,7 +515,9 @@
                             <line :x1="getXSeqScore(entry.item, seqBg.orthoMedian)" :y1="figProp.vertMargin" :x2="getXSeqScore(entry.item, seqBg.orthoMedian)"
                               :y2="figProp.lineHeight - figProp.vertMargin" class="seqCompOrthoMedian" />
                             <!-- Draw the two cross marks -->
-                            <use class="seqCompCrossSeqMark" xlink:href="#crossMarker" href="#crossMarker" :x="getXSeqScore(entry.item, entry.item.scoreS)"
+                            <use :class="{ seqCompCrossSeqMark: entry.item.shifted === 'Y', seqCompCrossEpiMark: entry.item.shifted !== 'Y' }"
+                              xlink:href="#crossMarker" href="#crossMarker"
+                              :x="getXSeqScore(entry.item, entry.item.scoreS)"
                               :y="figProp.lineHeight / 2" />
                             <use class="seqCompCrossEpiMark" xlink:href="#crossMarker" href="#crossMarker" v-if="entry.item.shifted === 'Y'"
                               :x="getXSeqScore(entry.item, entry.item.scoreS2)" :y="figProp.lineHeight / 2" />
@@ -539,39 +540,39 @@
                           </svg>
                           <!-- Draw the legends -->
                           <rect :x="0.5" :y="getLineY(2) - 0.5" :width="figProp.width - 1"
-                            :height="figProp.lineHeight * 2" class="seqCompLegendBox" />
+                            :height="figProp.lineHeight * (alignMode === 'enhancer' ? 2 : 1)" class="seqCompLegendBox" />
                           <!-- Draw the two box plots -->
                           <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(2)">
-                            <rect :x="figProp.legendLeftX" :y="figProp.vertMargin * 1.5"
+                            <rect :x="figProp.legendLeftX" :y="figProp.vertMargin + figProp.legendBoxOffset"
                               :width="figProp.legendBoxWidth"
                               :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompBackgroundBox" />
                             <line :x1="figProp.legendLeftX + figProp.legendBoxWidth / 2"
-                              :y1="figProp.vertMargin * 1.5"
+                              :y1="figProp.vertMargin + figProp.legendBoxOffset"
                               :x2="figProp.legendLeftX + figProp.legendBoxWidth / 2"
-                              :y2="figProp.lineHeight - figProp.vertMargin * .5"
+                              :y2="figProp.lineHeight - figProp.vertMargin + figProp.legendBoxOffset"
                               class="seqCompBackgroundMedian" />
                             <text :x="figProp.legendLeftX + figProp.legendBoxWidth + figProp.horizMargin / 2"
-                              :y="(figProp.lineHeight + figProp.textSize) / 2 - figProp.vertMargin * 0.75"
+                              :y="(figProp.lineHeight + figProp.textSize) / 2 - figProp.vertMargin * 1.2 + figProp.legendBoxOffset"
                               :style="{fontSize: figProp.textSize}">Background</text>
                             <text :x="figProp.legendLeftX + figProp.legendBoxWidth + figProp.horizMargin / 2"
-                              :y="(figProp.lineHeight + figProp.textSize * 3) / 2 - figProp.vertMargin * 0.75"
+                              :y="(figProp.lineHeight + figProp.textSize * 3) / 2 - figProp.vertMargin * 1.2 + figProp.legendBoxOffset"
                               :style="{fontSize: figProp.axisLabelSize}">(25th, 50th, 75th percentile)</text>
-                            <rect :x="figProp.legendRightX" :y="figProp.vertMargin * 1.5"
+                            <rect :x="figProp.legendRightX" :y="figProp.vertMargin + figProp.legendBoxOffset"
                               :width="figProp.legendBoxWidth"
                               :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompOrthoBox" />
                             <line :x1="figProp.legendRightX + figProp.legendBoxWidth / 2"
-                              :y1="figProp.vertMargin * 1.5"
+                              :y1="figProp.vertMargin + figProp.legendBoxOffset"
                               :x2="figProp.legendRightX + figProp.legendBoxWidth / 2"
-                              :y2="figProp.lineHeight - figProp.vertMargin * .5"
+                              :y2="figProp.lineHeight - figProp.vertMargin  + figProp.legendBoxOffset"
                               class="seqCompOrthoMedian" />
                             <text :x="figProp.legendRightX + figProp.legendBoxWidth + figProp.horizMargin / 2"
-                              :y="(figProp.lineHeight + figProp.textSize) / 2 - figProp.vertMargin * 0.75"
-                              :style="{fontSize: figProp.textSize}">Conserved cis-regulatory elements</text>
+                              :y="(figProp.lineHeight + figProp.textSize) / 2 - figProp.vertMargin * 1.2 + figProp.legendBoxOffset"
+                              :style="{fontSize: figProp.textSize}">{{ alignMode === 'enhancer' ? 'Conserved cis-regulatory elements' : 'Promoters of genes with unique orthologues' }}</text>
                             <text :x="figProp.legendRightX + figProp.legendBoxWidth + figProp.horizMargin / 2"
-                              :y="(figProp.lineHeight + figProp.textSize * 3) / 2 - figProp.vertMargin * 0.75"
+                              :y="(figProp.lineHeight + figProp.textSize * 3) / 2 - figProp.vertMargin * 1.2 + figProp.legendBoxOffset"
                               :style="{fontSize: figProp.axisLabelSize}">(25th, 50th, 75th percentile)</text>
                           </svg>
-                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(3)">
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(3)" v-if="alignMode === 'enhancer'">
                             <!-- Draw the two cross marks -->
                             <use class="seqCompCrossEpiMark" :x="figProp.legendLeftX + figProp.legendBoxWidth / 2"
                               xlink:href="#crossMarker" href="#crossMarker"
@@ -583,18 +584,18 @@
                               :x="figProp.legendRightX + figProp.legendBoxWidth / 2" :y="figProp.lineHeight / 2" />
                             <text :x="figProp.legendRightX + figProp.legendBoxWidth + figProp.horizMargin / 2"
                               :y="(figProp.lineHeight + figProp.textSize - figProp.vertMargin) / 2"
-                              :style="{fontSize: figProp.textSize}">SeqOnly hit</text>
+                              :style="{fontSize: figProp.textSize}" v-if="entry.item.shifted === 'Y'">SeqOnly hit</text>
                           </svg>
                         </svg>
                       </div>
                     </div>
                   </div>
-                  <div class="flexColumn dataPart flexNoGap">
+                  <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer'">
                     <div class="sectionHeader">Epigenome evaluation</div>
                     <div class="flexRow flexWrap flexNoGap flexStart">
                       <div class="subHeader">Epigenome contribution range</div>
                       <div class="svgGraphHolder flexColumn">
-                        <svg id="epiContribSvg" :height="figProp.lineHeight * 3" :width="figProp.width" class="svgGraph">
+                        <svg id="epiContribSvg" :height="figProp.lineHeight * (entry.item.shifted === 'Y' ? 3 : 2.5)" :width="figProp.width" class="svgGraph">
                           <defs>
                             <g id="crossMarker">
                               <line :x1="-figProp.crossSize" :y1="-figProp.crossSize" :x2="figProp.crossSize"
@@ -615,19 +616,20 @@
                               :width="figProp.width - 2 * (figProp.horizMargin + figProp.epiContribLabelSize)"
                               :height="figProp.lineHeight - 2 * figProp.vertMargin" class="seqCompOrthoBox" />
                             <!-- Draw the two cross marks -->
-                            <use class="seqCompCrossSeqMark" xlink:href="#crossMarker" href="#crossMarker"
+                            <use :class="{ seqCompCrossSeqMark: entry.item.shifted === 'Y', seqCompCrossEpiMark: entry.item.shifted !== 'Y' }"
+                              xlink:href="#crossMarker" href="#crossMarker"
                               :x="getXEpiScore(entry.item, getEpiContribSeqHit(entry.item))" :y="figProp.lineHeight / 2" />
                             <use class="seqCompCrossEpiMark" xlink:href="#crossMarker" href="#crossMarker" v-if="entry.item.shifted === 'Y'"
                               :x="getXEpiScore(entry.item, getEpiContribEpiHit(entry.item))" :y="figProp.lineHeight / 2" />
                           </svg>
-                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(1.5)">
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(1.5)" v-if="entry.item.shifted === 'Y'">
                             <!-- Draw the number labels -->
                             <text :x="getXEpiScore(entry.item, getEpiContribSeqHit(entry.item))"
                               :y="figProp.axisLabelSize" :style="{fontSize: figProp.axisLabelSize}"
                               text-anchor="middle">
                               SeqOnly hit</text>
                           </svg>
-                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(2)">
+                          <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(entry.item.shifted === 'Y' ? 2 : 1.5)">
                             <line :x1="figProp.horizMargin / 2" :y1="figProp.vertMargin + 0.5" :x2="figProp.width - figProp.horizMargin / 2"
                               :y2="figProp.vertMargin + 0.5" class="seqCompAxis" marker-end="url(#arrowHead)" />
                             <!-- Draw all the tick marks -->
@@ -637,7 +639,52 @@
                               <text :x="getXEpiScore(entry.item, tick)" :y="figProp.vertMargin + figProp.tickSize + figProp.axisLabelSize + 0.5"
                                 :style="{ fontSize: figProp.axisLabelSize }" text-anchor="middle">{{ tick }}</text>
                             </g>
+                          </svg>
                         </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer'">
+                    <div class="sectionHeader">Expression value of surrounding genes</div>
+                    <div class="flexRow flexCenter flexWrap">
+                      <table class="expressionTable">
+                        <thead>
+                          <tr>
+                            <th>Gene symbol</th>
+                            <th>Distance to query / target region</th>
+                            <th>FPKM value(s)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <template v-for="(expInRef, refIndex) in entry.item.expression">
+                            <tr>
+                              <th colspan="3">{{ expInRef.refName }}</th>
+                            </tr>
+                            <tr v-for="geneEntry in expInRef.expValues">
+                              <td>{{ geneEntry.symbol }}</td>
+                              <td class="rightAlign">{{ geneEntry.distance }}</td>
+                              <td class="flexColumn flexEnd">
+                                <div v-for="(expEntry, expIndex) in geneEntry.indExpValues" class="flexRow flexNoGap flexCenter">
+                                  <div class="expColorSquare" :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">
+                                  </div>
+                                  {{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}
+                                </div>
+                              </td>
+                            </tr>
+                          </template>
+                        </tbody>
+                      </table>
+                      <div class="flexColumn flexWrap figureLegend">
+                        <!-- Legend for expression, populate from expInRef.expIds -->
+                        <template v-for="(expInRef, refIndex) in entry.item.expression">
+                          <div v-for="(expId, expIndex) in expInRef.expIds"
+                            class="flexRow flexCenter flexNoWrap flexNoGap noFlex expLegendEntry">
+                            <div class="expColorSquare" :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">
+                            </div>
+                            <a v-if="buildLinkFromExpressionId(expId)" :href="buildLinkFromExpressionId(expId)" target="_blank">{{ expId }}</a>
+                            <span v-else>{{ expId }}</span>
+                          </div>
+                        </template>
                       </div>
                     </div>
                   </div>

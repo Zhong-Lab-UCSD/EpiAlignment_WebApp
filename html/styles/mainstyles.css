@@ -1279,7 +1279,7 @@ div.legendIcon.heatmapObj.plain {
 	max-width: 350px;
 }
 
-#expressionBar .expColorSquare {
+.expColorSquare {
 	width: 1.2em;
 	height: 1.2em;
 	margin-right: 0.5em;
@@ -1385,19 +1385,43 @@ div.resultDesc span.shiftedLabel > i.material-icons {
 	margin-right: 0.25em;
 }
 
-div.enhancerScoreContainer {
-	background: #EEEEEE;
-	padding: 0.3rem 1rem;
-	margin-bottom: 1rem;
+div.enhancerCardContainer table.expressionTable {
+	width: auto;
+	border-collapse: collapse;
+	border: 1px solid #666666;
+	margin: 1em 0.5em;
 }
 
-div.enhancerScoreContainer > div {
-	padding: 0.3em 0.5em;
+div.enhancerCardContainer table.expressionTable > * > tr {
+	padding: 0;
+	height: auto;
 }
 
-div.enhancerScoreContainer > div > div:first-child {
-	width: 8em;
+div.enhancerCardContainer table.expressionTable > thead > tr > th {
+	padding: 0.5em 1em;
+	height: auto;
 	font-weight: bold;
+}
+
+div.enhancerCardContainer table.expressionTable > tbody > tr > th {
+	padding: 0.5em 0.5em;
+	height: auto;
+	text-align: left;
+	font-weight: 500;
+	background: #EEEEEE;
+}
+
+div.enhancerCardContainer table.expressionTable > tbody > tr > td {
+	padding: 0.5em 1em;
+	height: auto;
+}
+
+div.enhancerCardContainer table.expressionTable > tbody > tr > td.rightAlign {
+	text-align: right;
+}
+
+div.enhancerCardContainer div.figureLegend {
+	margin: 0.5em;
 }
 
 /* ***** Result description SVG related ***** */

@@ -158,7 +158,7 @@ function addExpressionToResult (resDataObj, expressionObj) {
       'Will be overwritten.')
   }
   resDataObj.expression = expressionObj
-  return resDataObj
+  return true
 }
 
 async function fetchAndAddExpression (
@@ -183,20 +183,37 @@ async function fetchAndAddExpression (
           return prevMap
         }, {})
       })
-    } catch (ignore) { return null }
+    } catch (err) {
+      console.error(err.message)
+      return null
+    }
   }))
+  console.error(JSON.stringify(rnaList))
+  let annotationMapList = await Promise.all(
+    refAndExpDicts.refs.map(ref => annotationMapPromise[ref])
+  )
+  let resDataObjChanged = false
   resDataObj.data.forEach(dataEntry => {
-    let hasExpression = false
     rnaList.forEach((listEntry, qtIndex) => {
       if (refAndExpDicts.expDicts[qtIndex] &&
         listEntry.hasOwnProperty(dataEntry.region_name1)
       ) {
         // There are expression values, and there are genes
-
+        if (!dataEntry.hasOwnProperty('expression')) {
+          dataEntry.expression = []
+        }
+        resDataObjChanged = true
+        dataEntry.expression.push(buildExpObjFromFiles(
+          species._map[refAndExpDicts.refs[qtIndex]].name,
+          listEntry[dataEntry.region_name1].map(entry => entry.geneId),
+          refAndExpDicts.expDicts[qtIndex],
+          annotationMapList[qtIndex],
+          listEntry[dataEntry.region_name1]
+        ))
       }
     })
   })
-  return resDataObj
+  return resDataObjChanged
 }
 
 /**
@@ -219,14 +236,17 @@ function updateExpression (runid, runMode, preprocessRes) {
     return readFilePromise(resultFilePath, 'utf8')
       .then(async result => {
         let resDataObj = JSON.parse(result)
+        let resDataObjChanged = false
         if (runMode === MODE_MANY) {
-          resDataObj = addExpressionToResult(resDataObj, preprocessRes)
+          resDataObjChanged = addExpressionToResult(resDataObj, preprocessRes)
         } else {
-          resDataObj = await fetchAndAddExpression(
+          resDataObjChanged = await fetchAndAddExpression(
             runid, resDataObj, preprocessRes
           )
         }
-        return writeFilePromise(resultFilePath, JSON.stringify(resDataObj))
+        if (resDataObjChanged) {
+          return writeFilePromise(resultFilePath, JSON.stringify(resDataObj))
+        }
       })
       .catch(ignore => { })
   }
@@ -346,20 +366,30 @@ function buildExpDicts (expFiles) {
   })
 }
 
-function buildExpObjFromFiles (list, expDicts, annotationMap) {
-  return list.reduce((prev, curr) => {
-    curr = curr.toLowerCase()
-    if (annotationMap.has(curr)) {
-      let expKey = annotationMap.get(curr).ensemblId
-      let symbolKey = annotationMap.get(curr).symbol
-      if (expDicts.hasOwnProperty(expKey) &&
-        !prev.hasOwnProperty(symbolKey)
-      ) {
-        prev[symbolKey] = expDicts[expKey]
+function buildExpObjFromFiles (
+  refName, list, expDicts, annotationMap, additionalDataList
+) {
+  return {
+    refName: refName,
+    expIds: expDicts['.id'].slice(),
+    expValues: list.map((curr, index) => {
+      curr = curr.toLowerCase()
+      if (annotationMap.has(curr)) {
+        let expKey = annotationMap.get(curr).ensemblId
+        let symbolKey = annotationMap.get(curr).symbol
+        if (expDicts.hasOwnProperty(expKey)) {
+          let initObj = { symbol: symbolKey }
+          if (additionalDataList && additionalDataList[index]) {
+            Object.assign(initObj, additionalDataList[index])
+          }
+          return Object.assign(initObj, {
+            indExpValues: expDicts[expKey]
+          })
+        }
       }
-    }
-    return prev
-  }, {})
+      return null
+    }).filter(entry => !!entry)
+  }
 }
 
 async function getExpValues (
@@ -370,22 +400,22 @@ async function getExpValues (
   if (queryExpFilesPromise && geneIdentifiers.query) {
     let queryExpDicts =
       buildExpDicts(await queryExpFilesPromise)
-    result.push({
-      refName: species._map[queryRef].name,
-      expIds: queryExpDicts['.id'].slice(),
-      expValues: buildExpObjFromFiles(geneIdentifiers.query, queryExpDicts,
-        await annotationMapPromise[queryRef])
-    })
+    result.push(buildExpObjFromFiles(
+      species._map[queryRef].name,
+      geneIdentifiers.query,
+      queryExpDicts,
+      await annotationMapPromise[queryRef])
+    )
   }
   if (targetExpFilesPromise && geneIdentifiers.target) {
     let targetExpDicts =
       buildExpDicts(await targetExpFilesPromise)
-    result.push({
-      refName: species._map[targetRef].name,
-      expIds: targetExpDicts['.id'].slice(),
-      expValues: buildExpObjFromFiles(geneIdentifiers.target, targetExpDicts,
-        await annotationMapPromise[targetRef])
-    })
+    result.push(buildExpObjFromFiles(
+      species._map[targetRef].name,
+      geneIdentifiers.target,
+      targetExpDicts,
+      await annotationMapPromise[targetRef])
+    )
   }
   // Find all the genes' Ensembl IDs involved in the run
   // Build an object of all expression values

@@ -353,7 +353,7 @@ var app = new Vue({
     },
     setRunParameters: function (response, refresh) {
       document.title = 'EpiAlignment - Result (submitted at: ' +
-        response.completeTime + ')'
+        response.submitTime + ')'
 
       if (response.errMessage) {
         this.errorMessage = response.errMessage.trim()

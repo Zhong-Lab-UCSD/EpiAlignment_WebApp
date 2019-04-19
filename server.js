@@ -21,6 +21,9 @@ const loadSpeciesGeneAnno = require('./annoParser').loadSpeciesGeneAnno
 
 const ClusterProcesser = require('./clusterProcessing')
 
+const MODE_ONE = 'One-vs-one mode'
+const MODE_MANY = 'Many-vs-many mode'
+
 const expKeyIndexEncode = {
   'ensemblGeneId': 0,
   'pme_TPM': 9,
@@ -124,10 +127,11 @@ function getRunIdTempPath (runid) {
   })
 }
 
-function getRunIdFilePath (runid, ext) {
+function getRunIdFilePath (runid, ext, prefix) {
+  prefix = prefix || ''
   return path.format({
     dir: getRunIdTempPath(runid),
-    name: runid,
+    name: prefix + runid,
     ext: ext
   })
 }
@@ -148,15 +152,63 @@ function getRunIdImagePath (runid, index) {
   })
 }
 
+function addExpressionToResult (resDataObj, expressionObj) {
+  if (resDataObj.hasOwnProperty('expression')) {
+    console.log('Warning: existing expression property detected. ' +
+      'Will be overwritten.')
+  }
+  resDataObj.expression = expressionObj
+  return resDataObj
+}
+
+async function fetchAndAddExpression (
+  runid, resDataObj, refAndExpDicts
+) {
+  let prefixes = ['QueryRNA_', 'TargetRNA_']
+  let rnaList = await Promise.all(prefixes.map(prefix => {
+    let rnaFileName = getRunIdFilePath(runid, '', prefix)
+    try {
+      fs.statSync(rnaFileName)
+      return readFilePromise(rnaFileName, 'utf8').then(fileContent => {
+        return fileContent.split('\n').reduce((prevMap, line) => {
+          let tokens = line.split('\t')
+          if (!prevMap.hasOwnProperty(tokens[0])) {
+            prevMap[tokens[0]] = []
+          }
+          prevMap[tokens[0]].push({
+            name: tokens[0],
+            geneId: tokens[1],
+            distance: parseInt(tokens[2])
+          })
+          return prevMap
+        }, {})
+      })
+    } catch (ignore) { return null }
+  }))
+  resDataObj.data.forEach(dataEntry => {
+    let hasExpression = false
+    rnaList.forEach((listEntry, qtIndex) => {
+      if (refAndExpDicts.expDicts[qtIndex] &&
+        listEntry.hasOwnProperty(dataEntry.region_name1)
+      ) {
+        // There are expression values, and there are genes
+
+      }
+    })
+  })
+  return resDataObj
+}
+
 /**
  * Attach the previously built additional results to Python-returned results
  * @param {string} runid
+ * @param {string} runMode `One-vs-one mode` or `Many-vs-many mode`
  * @param {object} [preprocessRes] the result from the preprocessing, can be
  *    `null` (in which case nothing will be added).
  * @returns {Promise<void>} returns a promise that resolves to `void`
  *    when the updated data has been written to a file
  */
-function updateExpression (runid, preprocessRes) {
+function updateExpression (runid, runMode, preprocessRes) {
   // Procedures:
   // * Determine if the run is many to many
   // * Determine if there are expression files available
@@ -165,13 +217,15 @@ function updateExpression (runid, preprocessRes) {
   if (preprocessRes) {
     let resultFilePath = getRunIdResultPath(runid)
     return readFilePromise(resultFilePath, 'utf8')
-      .then(result => {
+      .then(async result => {
         let resDataObj = JSON.parse(result)
-        if (resDataObj.hasOwnProperty('expression')) {
-          console.log('Warning: existing expression property detected. ' +
-            'Will be overwritten.')
+        if (runMode === MODE_MANY) {
+          resDataObj = addExpressionToResult(resDataObj, preprocessRes)
+        } else {
+          resDataObj = await fetchAndAddExpression(
+            runid, resDataObj, preprocessRes
+          )
         }
-        resDataObj.expression = preprocessRes
         return writeFilePromise(resultFilePath, JSON.stringify(resDataObj))
       })
       .catch(ignore => { })
@@ -306,53 +360,10 @@ function buildExpObjFromFiles (list, expDicts, annotationMap) {
   }, {})
 }
 
-async function preJobRun (runInfo, files) {
-  if (!runInfo ||
-    runInfo.getDisplayValue('alignMode') !== 'Many-vs-many mode'
-  ) {
-    return null
-  }
-
-  let queryRef = runInfo.getRawPropertyValue('queryGenomeAssembly')
-  let targetRef = runInfo.getRawPropertyValue('targetGenomeAssembly')
-  // Determine if there are expression files available
-  // If there are, resolve the promise to the loaded expression files
-  let queryPeakId = runInfo.getDisplayValue('queryPeak')
-  let targetPeakId = runInfo.getDisplayValue('targetPeak')
-  let expDict = await readExpDictPromise
-  // read expression files
-  let queryExpFilesPromise = null
-  if (expDict.hasOwnProperty(queryPeakId) &&
-    expDict[queryPeakId].expression_files
-  ) {
-    console.error('expDict[query]: ' + JSON.stringify(expDict[queryPeakId].expression_files))
-    queryExpFilesPromise = Promise.all(
-      expDict[queryPeakId].expression_files.map(fileName =>
-        readFilePromise(fileName, 'utf8').then(fileContent => ({
-          id: path.basename(path.dirname(fileName)),
-          content: fileContent
-        }))
-      )
-    )
-  }
-  let targetExpFilesPromise = null
-  if (expDict.hasOwnProperty(targetPeakId) &&
-    expDict[targetPeakId].expression_files
-  ) {
-    console.error('expDict[target]: ' + JSON.stringify(expDict[targetPeakId].expression_files))
-    targetExpFilesPromise = Promise.all(
-      expDict[targetPeakId].expression_files.map(fileName =>
-        readFilePromise(fileName, 'utf8').then(fileContent => ({
-          id: path.basename(path.dirname(fileName)),
-          content: fileContent
-        }))
-      )
-    )
-  }
-
-  // get gene identifiers
-  let geneIdentifiers = await getGeneIdList(runInfo, files)
-
+async function getExpValues (
+  queryRef, targetRef, geneIdentifiers,
+  queryExpFilesPromise, targetExpFilesPromise
+) {
   let result = []
   if (queryExpFilesPromise && geneIdentifiers.query) {
     let queryExpDicts =
@@ -380,6 +391,66 @@ async function preJobRun (runInfo, files) {
     return null
   }
   return result
+}
+
+async function preJobRun (runInfo, files) {
+  if (!runInfo) {
+    return null
+  }
+  // Determine if there are expression files available
+  // If there are, resolve the promise to the loaded expression files
+  let queryRef = runInfo.getRawPropertyValue('queryGenomeAssembly')
+  let targetRef = runInfo.getRawPropertyValue('targetGenomeAssembly')
+
+  let queryPeakId = runInfo.getDisplayValue('queryPeak')
+  let targetPeakId = runInfo.getDisplayValue('targetPeak')
+  let expDict = await readExpDictPromise
+  // read expression files
+  let queryExpFilesPromise = null
+  if (expDict.hasOwnProperty(queryPeakId) &&
+    expDict[queryPeakId].expression_files
+  ) {
+    queryExpFilesPromise = Promise.all(
+      expDict[queryPeakId].expression_files.map(fileName =>
+        readFilePromise(fileName, 'utf8').then(fileContent => ({
+          id: path.basename(path.dirname(fileName)),
+          content: fileContent
+        }))
+      )
+    )
+  }
+  let targetExpFilesPromise = null
+  if (expDict.hasOwnProperty(targetPeakId) &&
+    expDict[targetPeakId].expression_files
+  ) {
+    targetExpFilesPromise = Promise.all(
+      expDict[targetPeakId].expression_files.map(fileName =>
+        readFilePromise(fileName, 'utf8').then(fileContent => ({
+          id: path.basename(path.dirname(fileName)),
+          content: fileContent
+        }))
+      )
+    )
+  }
+  if (!queryExpFilesPromise && !targetExpFilesPromise) {
+    return null
+  }
+  if (runInfo.getDisplayValue('alignMode') === MODE_ONE) {
+    return Promise.all([queryExpFilesPromise, targetExpFilesPromise].map(
+      expDictPromise => (
+        expDictPromise &&
+        expDictPromise.then(expDictContent => buildExpDicts(expDictContent))
+      )
+    )).then(result => ({
+      refs: [queryRef, targetRef],
+      expDicts: result
+    }))
+  } else {
+    return getExpValues(queryRef, targetRef,
+      await getGeneIdList(runInfo, files),
+      queryExpFilesPromise, targetExpFilesPromise
+    )
+  }
 }
 
 function sendEmail (runInfo) {
@@ -446,6 +517,7 @@ function postJobRun (
   code, runInfo, errorMsg, runInfoWritePromise, runInfoPreprocessPromise
 ) {
   let runid = runInfo.getDisplayValue('runid')
+  let runMode = runInfo.getDisplayValue('alignMode')
   runInfo.status = code
 
   let runInfoPath = getRunIdInfoPath(runid)
@@ -461,7 +533,7 @@ function postJobRun (
   let updateResultPromise = null
   if (runInfoPreprocessPromise) {
     updateResultPromise = runInfoPreprocessPromise.then(
-      preprocessRes => updateExpression(runid, preprocessRes)
+      preprocessRes => updateExpression(runid, runMode, preprocessRes)
     )
   }
   Promise.all([runInfoWritePromise, updateResultPromise]).then(() => {

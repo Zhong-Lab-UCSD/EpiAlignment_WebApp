@@ -352,7 +352,9 @@ function buildExpObjFromFiles (list, expDicts, annotationMap) {
     if (annotationMap.has(curr)) {
       let expKey = annotationMap.get(curr).ensemblId
       let symbolKey = annotationMap.get(curr).symbol
-      if (!prev.hasOwnProperty(symbolKey)) {
+      if (expDicts.hasOwnProperty(expKey) &&
+        !prev.hasOwnProperty(symbolKey)
+      ) {
         prev[symbolKey] = expDicts[expKey]
       }
     }

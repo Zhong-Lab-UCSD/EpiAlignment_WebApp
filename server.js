@@ -188,7 +188,6 @@ async function fetchAndAddExpression (
       return null
     }
   }))
-  console.error(JSON.stringify(rnaList))
   let annotationMapList = await Promise.all(
     refAndExpDicts.refs.map(ref => annotationMapPromise[ref])
   )

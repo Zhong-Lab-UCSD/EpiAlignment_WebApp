@@ -38,7 +38,7 @@ def findNearbyGene(bed, dbi, ori_start, ori_stop, n):
     dis_list.append(dis)
     geneId_list.append(gene.id)
   
-  gene_list_sort = sorted(zip(dis_list, geneId_list), reverse=True)[0:n]
+  gene_list_sort = sorted(zip(dis_list, geneId_list))[0:n]
   return gene_list_sort
 
 def Main():

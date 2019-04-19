@@ -662,7 +662,7 @@
                             </tr>
                             <tr v-for="geneEntry in expInRef.expValues">
                               <td>{{ geneEntry.symbol }}</td>
-                              <td class="rightAlign">{{ geneEntry.distance }}</td>
+                              <td class="rightAlign">{{ geneEntry.distance > 0 ? geneEntry.distance : 'Overlapping' }}</td>
                               <td class="flexColumn flexEnd">
                                 <div v-for="(expEntry, expIndex) in geneEntry.indExpValues" class="flexRow flexNoGap flexCenter">
                                   <div class="expColorSquare" :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">

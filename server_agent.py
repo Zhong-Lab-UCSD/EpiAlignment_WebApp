@@ -94,8 +94,15 @@ def ParsePeaks(of_name, json_dict, runid):
     print >> fpeak, peak2
 
 
-def parseBedStrand(bedFields, warningSize=None, strandIndex=5):
+def parseBed(bedFields, nameDict, warningSize=None, nameIndex=3, strandIndex=5):
   try:
+    suffix = 1
+    if bedFields[nameIndex] in nameDict:
+      suffix = nameDict[bedFields[nameIndex]]
+      while (bedFields[nameIndex] + '_' + str(suffix)) in nameDict:
+        suffix += 1
+      bedFields[nameIndex] = bedFields[nameIndex] + '_' + str(suffix)
+    nameDict[bedFields[nameIndex]] = suffix + 1
     if bedFields[strandIndex] == "+" or bedFields[strandIndex] == "." or bedFields[strandIndex] == "1":
       bedFields[strandIndex] = "+"
     elif bedFields[strandIndex] == "-" or bedFields[strandIndex] == "0":
@@ -129,6 +136,7 @@ def FileOrTextarea(textarea_input, json_files, key, of_name, runid, warningSize 
   write the data into a new file.
   '''
   lineType = None
+  regionNameDict = dict()
   if key in json_files:
     # uploaded file
     fname = of_name + json_files[key][0]["filename"]
@@ -141,7 +149,7 @@ def FileOrTextarea(textarea_input, json_files, key, of_name, runid, warningSize 
           line = line.strip().split()
           lineType = CheckLineType(line, lineType)
           if lineType == 'bed':
-            parseBedStrand(line, warningSize)
+            parseBed(line, regionNameDict, warningSize)
           print >> fOut, '\t'.join(line)
         except Exception as err:
           print >> sys.stderr, '[EpiAlignment]Skipping line #' + str(
@@ -158,7 +166,7 @@ def FileOrTextarea(textarea_input, json_files, key, of_name, runid, warningSize 
           line = line.strip().split()
           lineType = CheckLineType(line, lineType)
           if lineType == 'bed':
-            parseBedStrand(line, warningSize)
+            parseBed(line, regionNameDict, warningSize)
           print >> fOut, '\t'.join(line)
         except Exception as err:
           print >> sys.stderr, '[EpiAlignment]Skipping line #' + str(
@@ -201,7 +209,7 @@ def Cons_transList(input1, intype1, promoterUp, promoterDown, sp):
 
 def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, genAssem):
   trans_list1 = Cons_transList(input1, intype1, promoterUp, promoterDown, genAssem[0])
-  trans_list2 = Cons_transList(input2, intype2, promoterUp, promoterDown, gsenAssem[1])
+  trans_list2 = Cons_transList(input2, intype2, promoterUp, promoterDown, genAssem[1])
 
   with open(input1 + ".bed", "w") as fout1, open(input2 + ".bed", "w") as fout2:
     i = 0

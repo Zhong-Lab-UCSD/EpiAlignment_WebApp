@@ -6,6 +6,7 @@ import sys
 import argparse
 from time import time, sleep
 import datetime
+from random import randint
 
 if sys.version_info[0] < 3:
   raise Exception("Please use Python 3 to run this client. If you are using Python 2, please run EpiAlignment_PyClient_2.py instead.")
@@ -28,6 +29,7 @@ def ParseArg():
   p.add_argument("Input", type=str, nargs="?", help="Input file name. The input file is a sample sheet with details of jobs to be submitted to EpiAlignment.")
   p.add_argument("--public_data", action="store_true", help="If specified, get available ENCODE/public dataset IDs and descriptions in EpiAlignment.")
   p.add_argument("--find_gene_cluster", type=str, help="Search for gene clusters containing a gene name/Ensembl id. Please provide an ensembl id or a gene name/partial name.")
+  p.add_argument("--retries", type=int, default=5, help="Retry times for result submission.")
   if len(sys.argv) == 1:
     print(p.print_help(), file=sys.stderr)
     sys.exit(0)
@@ -173,15 +175,15 @@ class RequestsEpiAlign:
       r.raise_for_status()
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
       print("Fail to connect.", file=sys.stderr)
-      return
+      raise
     except requests.exceptions.HTTPError:
       print("HTTP error.", file=sys.stderr)
-      return
+      raise
     else:
       runid_dict = json.loads(r.text)
       return runid_dict["runid"]
 
-  def Get_sample(self, runid, gap=10, total_wait = 172800):
+  def Get_sample(self, runid, maxRetries, gap=10, total_wait=172800):
     '''
     Send get requests to the website repeatly until the task is done.
 
@@ -195,7 +197,9 @@ class RequestsEpiAlign:
     '''
     time_start = time()
     time_waited = 0
-    while time_waited < total_wait:
+    numOfRetries = 0
+    
+    while time_waited < total_wait and (numOfRetries == 0 or numOfRetries < maxRetries):
       try:
         r = self.get("/backend/results/" + runid)
         r.raise_for_status()
@@ -217,10 +221,18 @@ class RequestsEpiAlign:
 
       except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
         print("Fail to connect.", file=sys.stderr)
-        return
+        numOfRetries += 1
+        if numOfRetries >= maxRetries:
+          raise
+        else:
+          sleep(randint(500, 3000) / 1000)
       except requests.exceptions.HTTPError:
         print("HTTP error.", file=sys.stderr)
-        return
+        numOfRetries += 1
+        if numOfRetries >= maxRetries:
+          raise
+        else:
+          sleep(randint(500, 3000) / 1000)
 
   def Get_cluster(self, partial_name):
     '''
@@ -425,7 +437,16 @@ def Main():
     for data, files in SampleForm:
       # Send a post requests to transfer data and files to EpiAlignment.
       # This function will return the runid
-      runid = session.Post_sample(data, files)
+      numOfRetries = 0
+      runid = None
+      while runid is None and (numOfRetries == 0 or numOfRetries < args.retries):
+        try:
+          runid = session.Post_sample(data, files)
+        except:
+          sleep(randint(500, 3000) / 1000)
+          numOfRetries += 1
+      if runid is None:
+        sys.exit(1)
       print(runid)
       # Get the result when the job is done. 
       # The function will return a python dictionary.
@@ -433,7 +454,7 @@ def Main():
       #
       # In this list, each element is a dictionary containing alignment scores and other information
       # of region pairs.
-      result_dict = session.Get_sample(runid)
+      result_dict = session.Get_sample(runid, args.retries)
       # Print results into the output files. 
       fout_name = "alignResult_" + str(sample_index) + ".txt"
       ParseOutput(result_dict, fout_name)

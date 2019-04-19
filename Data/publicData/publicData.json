@@ -38,27 +38,36 @@
       "peak_id": "SRR1977583-P",
       "bigwig_id": "SRR1977583-B",
       "peak_file":
-        "GSM1673963/hg38_RoundSpermatids_H3K4me3.broadPeak",
+        "GSM1673960/hg38_RoundSpermatids_H3K4me3.broadPeak",
       "bigwig_file":
-        "GSM1673963/hg38_RoundSpermatids_H3K4me3.bw"
+        "GSM1673960/hg38_RoundSpermatids_H3K4me3.bw",
+      "expression_files": [
+        "GSM1673963/hg38_RS_RNA_FPKM.txt"
+      ]
     },
     "GSM1674003": {
       "id": "GSM1674003",
       "peak_id": "SRR1049856-P",
       "bigwig_id": "SRR1049856-B",
       "peak_file":
-        "GSM1674008/mm10_RoundSpermatids_H3K4me3.broadPeak",
+        "GSM1674003/mm10_RoundSpermatids_H3K4me3.broadPeak",
       "bigwig_file":
-        "GSM1674008/mm10_RoundSpermatids_H3K4me3.bw"
+        "GSM1674003/mm10_RoundSpermatids_H3K4me3.bw",
+      "expression_files": [
+        "GSM1674008/mm10_RS_1_RNA_FPKM.txt"
+      ]
     },
     "GSM1674016": {
       "id": "GSM1674016",
       "peak_id": "SRR1977636-P",
       "bigwig_id": "SRR1977636-B",
       "peak_file":
-        "GSM1674021/mouse2_e3_peaks.broadPeak.clean.bed",
+        "GSM1674016/mouse2_e3_peaks.broadPeak.clean.bed",
       "bigwig_file":
-        "GSM1674021/mouse2_RS_K4me3_ChIP_qf_sort_MAPQ6_rmdup_clean.bw"
+        "GSM1674016/mouse2_RS_K4me3_ChIP_qf_sort_MAPQ6_rmdup_clean.bw",
+      "expression_files": [
+        "GSM1674021/mm10_RS_2_RNA_FPKM.txt"
+      ]
     }
   }
 }

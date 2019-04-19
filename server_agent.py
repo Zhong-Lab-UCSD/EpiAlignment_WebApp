@@ -268,7 +268,7 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
   '''
   # Extract genes in the cluster
   cluster_genes2 = GenesInCluster(cluster_id, genAssem[1], of_name)
-  transDict2 = Cons_transDict(cluster_genes2[0], genAssem[1], of_name)
+  transDict2 = Cons_transDict(cluster_genes2[0], genAssem[1])
   trans_list2 = []
   for gene in cluster_genes2:
     if gene in transDict2:
@@ -277,7 +277,7 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
   fname2 = of_name + cluster_id + runid + "_2.bed"
   if input1 != "":
     # uploaded file
-    trans_list1 = Cons_transList(input1, intype1, promoterUp, promoterDown, genAssem[0], of_name)
+    trans_list1 = Cons_transList(input1, intype1, promoterUp, promoterDown, genAssem[0])
     with open(input1 + ".bed", "w") as fout1, open(fname2, "w") as fout2:
       for region1 in trans_list1:
         for region2 in trans_list2:
@@ -290,7 +290,7 @@ def PairCutCluster(input1, intype1, cluster_id, promoterUp, promoterDown, genAss
     # Input1 is empty
     fname1 = of_name + cluster_id + runid + "_1.bed"
     cluster_genes1 = GenesInCluster(cluster_id, genAssem[0], of_name)
-    transDict1 = Cons_transDict(cluster_genes1[0], genAssem[0], of_name)
+    transDict1 = Cons_transDict(cluster_genes1[0], genAssem[0])
     trans_list1 = []
     for gene in cluster_genes1:
       if gene in transDict1:
@@ -601,6 +601,24 @@ def ExeEpiAlignment(alignMode, searchRegionMode, bed1, bed2, genAssem, of_name, 
     p_epi = Popen(cmd_list, stderr=PIPE)
     if seq_stat:
       p_seq = Popen(cmd_list_seq, stderr=PIPE)
+    # Fetch overlapping genes.
+    p_gene1 = Popen(cmd_list_gene1, stderr=PIPE)
+    p_gene2 = Popen(cmd_list_gene2, stderr=PIPE)
+
+    (std_out_gene1, std_err_gene1) = p_gene1.communicate()
+    exit_code_gene1 = p_gene1.returncode
+    (std_out_gene2, std_err_gene2) = p_gene2.communicate()
+    exit_code_gene2 = p_gene2.returncode
+
+    if exit_code_gene1 != 0 or exit_code_gene2 != 0:
+      print >> sys.stderr, "[EpiAlignment]Error occurred when fetching expression data."
+
+    (std_out_epi, std_err_epi) = p_epi.communicate()
+    exit_code_epi = p_epi.returncode
+    if exit_code_epi != 0:
+      print >> sys.stderr, "[EpiAlignment]Failed to align regions. Exit code: " + str(exit_code_epi)
+      sys.exit(exit_code_epi)
+
     (std_out_epi, std_err_epi) = p_epi.communicate()
     exit_code_epi = p_epi.returncode
     if exit_code_epi != 0:
@@ -711,12 +729,15 @@ def snCalculater(signal, mid_point, half_noise):
     return (signal - mid_point) / half_noise
   return "."
 
-def SeqBg(s, mu):
+def SeqBg(s, mu, alignMode):
   seq_dict = {"backgroundMean": ".", "backgroundSd":".", "backgroundMedian": ".", "backgroundQ75": ".", \
     "backgroundQ25":".", "orthoMedian": ".", "orthoQ75": ".", "orthoQ25": "."}
   s = str(round(float(s), 2))
   mu = str(round(float(mu), 2))
-  bg_anno = "Annotation/AnnotationFiles/seqBackground.txt"
+  if alignMode == "enhancer":
+    bg_anno = "Annotation/AnnotationFiles/enhancerBackground.txt"
+  else:
+    bg_anno = "Annotation/AnnotationFiles/promoterBackground.txt"
   with open(bg_anno, "r") as fin:
     for line in fin:
       line = line.strip().split()
@@ -760,8 +781,8 @@ def SequenceEvaluation(json_obj, line_epi, line_seq, epiScore, seqScore, s, mu, 
     s2 = json_obj["scoreE"]
     s1 = None
   # Orthologous and Background
-  seqEval_dict["bgPvalueS"] = FitNorm(s1, seq_bg["backgroundMean"], seq_bg["backgroundSd"])
-  seqEval_dict["bgPvalueE"] = FitNorm(s2, seq_bg["backgroundMean"], seq_bg["backgroundSd"])
+  #seqEval_dict["bgPvalueS"] = FitNorm(s1, seq_bg["backgroundMean"], seq_bg["backgroundSd"])
+  #seqEval_dict["bgPvalueE"] = FitNorm(s2, seq_bg["backgroundMean"], seq_bg["backgroundSd"])
   # SignalToNoise ratio
   if json_obj["shifted"] != ".":
     upper, lower = Signal_to_Noise(seqScore, 500, query_len)
@@ -811,16 +832,14 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
   seqScore_fname = of_name + "seq_scores_" + runid
   out_name = of_name + "AlignResults_" + runid + ".txt"
   seq_stat = os.path.isfile(seq_fname)
+  seq_bg = SeqBg(s, mu, alignMode)
 
   if seq_stat:
     fseq = open(seq_fname, "r")
   if alignMode == "enhancer":
     fepiScore = open(epiScore_fname, "r")
-    seq_bg = SeqBg(s, mu)
     if seq_stat:
       fseqScore = open(seqScore_fname, "r")
-  else:
-    seq_bg = {}
 
   with open(epi_fname, "r") as fepi, open(out_name, "w") as fout:
     i = 1
@@ -891,7 +910,7 @@ def Main():
   InputParas(out_folder, web_json["body"], runid)
 
   # Run EpiAlignment
-  ExeEpiAlignment(web_json["body"]["alignMode"], web_json["body"]["searchRegionMode"], out_folder, runid)
+  ExeEpiAlignment(web_json["body"]["alignMode"], web_json["body"]["searchRegionMode"], bed1, bed2, web_json["body"]["genomeAssembly"], out_folder, runid)
   # Parse the alignment results.
   ParseAlignResults(bed1, bed2, intype1, intype2, web_json["body"]["alignMode"], web_json["body"]["searchRegionMode"], \
     out_folder, runid, web_json["body"]["paras"], web_json["body"]["paramu"])

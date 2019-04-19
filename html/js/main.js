@@ -506,16 +506,6 @@ var app = new Vue({
             'check_circle' +
             '</i> Data submitted to server. Redirecting to the ' +
             'result page ...'
-          // /* ***** Testing code *****
-          //  * This is added to prevent redirecting to the result page
-          //  * so that form submission process can be captured in console.
-          //  */
-          // if (!window.confirm('Please click "Ok" to go to the result ' +
-          //   'page, click "Cancel" to remain at this page.')
-          // ) {
-          //   return
-          // }
-          //
           window.setTimeout(() => {
             window.location.href = '/result_page/' + runid
           }, 2000)

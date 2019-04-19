@@ -606,18 +606,12 @@ def ExeEpiAlignment(alignMode, searchRegionMode, bed1, bed2, genAssem, of_name, 
     p_gene2 = Popen(cmd_list_gene2, stderr=PIPE)
 
     (std_out_gene1, std_err_gene1) = p_gene1.communicate()
-    exit_code_gene1 = p_gene1.returncode
     (std_out_gene2, std_err_gene2) = p_gene2.communicate()
+    exit_code_gene1 = p_gene1.returncode
     exit_code_gene2 = p_gene2.returncode
 
     if exit_code_gene1 != 0 or exit_code_gene2 != 0:
       print >> sys.stderr, "[EpiAlignment]Error occurred when fetching expression data."
-
-    (std_out_epi, std_err_epi) = p_epi.communicate()
-    exit_code_epi = p_epi.returncode
-    if exit_code_epi != 0:
-      print >> sys.stderr, "[EpiAlignment]Failed to align regions. Exit code: " + str(exit_code_epi)
-      sys.exit(exit_code_epi)
 
     (std_out_epi, std_err_epi) = p_epi.communicate()
     exit_code_epi = p_epi.returncode

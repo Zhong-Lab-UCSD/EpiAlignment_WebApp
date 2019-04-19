@@ -716,7 +716,6 @@ def Signal_to_Noise(scores, bin, query_len):
   i = query_len
   max_values = []
   min_values = []
-  print >> sys.stderr, len(scores)
   while i + bin < len(scores):
     max_values.append(max(scores[i:i + bin]))
     min_values.append(min(scores[i:i + bin]))

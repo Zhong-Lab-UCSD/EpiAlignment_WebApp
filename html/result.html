@@ -397,7 +397,7 @@
             <tr @click="toggleRow(row)" class="expandable">
               <td class="dataTableCell">{{ row.item.index }}</td>
               <td class="dataTableCell dataTableCellNoGap"><a @click.stop class="noFlex btnWithAnno" target="_blank" title="Open region in GIVE Browser"
-                :href="getGiveLink([queryGenomeAssembly, targetGenomeAssembly], [row.item.region1, row.item.region2], [[row.item.region1], [row.item.targetE, row.item.targetS]])"><i class="material-icons">
+                :href="getGiveLink([queryGenomeAssembly, targetGenomeAssembly], row.item)"><i class="material-icons">
                   open_in_new
                 </i><div class="annotation">GIVE</div>
               </a></td>
@@ -645,7 +645,7 @@
                     </div>
                   </div>
                   <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer' && entry.item.expression">
-                    <div class="sectionHeader">Expression value of surrounding genes</div>
+                    <div class="sectionHeader">Expression values of surrounding genes</div>
                     <div class="flexRow flexCenter flexWrap">
                       <table class="expressionTable">
                         <thead>

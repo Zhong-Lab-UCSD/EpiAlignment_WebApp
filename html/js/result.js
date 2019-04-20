@@ -636,12 +636,19 @@ var app = new Vue({
         ucscRefToSession[assembly] +
         '&position=' + region
     },
-    getGiveLink: function (refs, regions, highlight) {
+    getGiveLink: function (refs, item) {
       let trackPart = ''
       if (this.displayDataSets) {
         trackPart = '&track=' +
           window.encodeURIComponent(JSON.stringify(this.displayDataSets))
       }
+      let regions = [item.region1, item.region2]
+      let highlight = [
+        [item.region1],
+        (item.targetE !== item.targetS && item.targetS)
+          ? [item.targetE, item.targetS]
+          : [item.targetE]
+      ]
       return GIVE_TARGET +
         'ref=' + window.encodeURIComponent(JSON.stringify(refs)) +
         '&coordinate=' + window.encodeURIComponent(JSON.stringify(regions)) +

@@ -169,7 +169,7 @@
               <div class="elemLabel">Input regions:</div>
               <div class="flexColumn flexStretch flex">
                 <textarea spellcheck="false" autocomplete="new-password" name="speciesText[]" v-model="formParams.speciesText[0]"
-                  :placeholder="genomePlaceholder" @focus="bedHint1On = true" @blur="bedHint1On = false"></textarea>
+                  placeholder="Paste BED6 data or gene names here." @focus="bedHint1On = true" @blur="bedHint1On = false"></textarea>
                 <div class="flexNoGapElem textAreaHolder">
                   <div class="bedFormatHint" v-show="bedHint1On"><strong>BED6 fields:</strong><br>
                     <code>chrom&#9;chromStart&#9;chromEnd&#9;name&#9;score&#9;strand</code><br>
@@ -184,9 +184,7 @@
                 <div class="errorMessage" v-show="formError.inputError[0]">
                   <i class="material-icons iconAtLeft">warning</i>
                   <span>Please either provide the input regions
-                    (BED6{{ enhancerSelected ? '' : ' or gene names' }})
-                    in the text box, or upload a text file
-                    (BED6{{ enhancerSelected ? '' : ' or gene names' }}).</span>
+                    (BED6 or gene names) in the text box, or upload a text file.</span>
                 </div>
               </div>
             </div>
@@ -350,7 +348,7 @@
                 </div>
                 <div class="flexColumn flexStretch flex" :class="{ inactive: !genomeRegionSelected }">
                   <textarea spellcheck="false" autocomplete="new-password" :disabled="!genomeRegionSelected" name="speciesText[]"
-                    v-model="formParams.speciesText[1]" :placeholder="genomePlaceholder"
+                    v-model="formParams.speciesText[1]" :placeholder="targetPlaceholder"
                     @focus="bedHint2On = true" @blur="bedHint2On = false"></textarea>
                 <div class="flexNoGapElem textAreaHolder">
                   <div class="bedFormatHint" v-show="bedHint2On"><strong>BED6 fields:</strong><br>

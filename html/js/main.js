@@ -176,7 +176,7 @@ var app = new Vue({
       return 'Define target regions with a BED file' +
         (this.enhancerSelected ? '.' : ' / a gene list.')
     },
-    genomePlaceholder: function () {
+    targetPlaceholder: function () {
       return 'Paste BED6 data ' +
         (this.enhancerSelected ? 'here.' : 'or gene names here.')
     },

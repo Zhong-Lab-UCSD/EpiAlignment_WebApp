@@ -438,7 +438,7 @@
           </template>
           <template slot="expand" slot-scope="entry">
             <v-card flat>
-              <div class="flexRow flexStretch enhancerCardContainer">
+              <div class="flexRow flexStart enhancerCardContainer">
                 <div class="resultImgHolder flexColumn flexCenter flexNoWrap flexNoGap noFlex justifyCenter"
                   v-if="alignMode === 'enhancer'"
                   :class="{ 'loading': !entry.item.imageError && !entry.item.image }">

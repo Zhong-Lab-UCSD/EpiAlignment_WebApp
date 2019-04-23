@@ -448,12 +448,26 @@
                   </div>
                 </div>
                 <div class="flex resultDesc">
-                  <div id="dataHelp" class="help flexRow flexCenter flexNoWrap">
-                    <i class="material-icons iconAtLeft">help</i>
-                    <div>What do all these results mean?</div>
-                  </div>
                   <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer'">
-                    <div class="sectionHeader">Overview</div>
+                    <div class="sectionHeader flexRow flexNoGap flexStart flexWrap">
+                      <div class="nobr">Overview</div>
+                      <div v-show="!showHelp.overview" class="help flexRow flexCenter flexNoWrap" @click="showHelp.overview = !showHelp.overview">
+                        <i class="material-icons iconAtLeft">help</i>
+                      </div>
+                      <div v-show="showHelp.overview" class="helpContent flex flexRow flexNoGap flexStart">
+                        <div class="flex">
+                          This panel shows alignment scores of the two hits. <br>
+                          A badge <span class="inline flexRow flexCenter shiftedLabel noFlex">
+                            <i class="material-icons">swap_horizontal_circle</i>
+                            <span>The EpiAlign hit is different from the SeqOnly hit.</span>
+                          </span> will be displayed if the coordinates of the two hits don’t
+                          overlap.
+                        </div>
+                        <div class="help">
+                          <i class="material-icons" @click="showHelp.overview = false">close</i>
+                        </div>
+                      </div>
+                    </div>
                     <div class="flexRow flexWrap flexNoGap flexCenter">
                       <div class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
                         <span class="anno">EpiAlign hit score:</span>
@@ -467,12 +481,43 @@
                     <div v-if="entry.item.shifted === 'Y'" class="flexRow flexWrap flexNoGap flexCenter">
                       <span class="flexRow flexCenter shiftedLabel noFlex">
                         <i class="material-icons">swap_horizontal_circle</i>
-                        The EpiAlign hit is different from the SeqOnly hit.
+                        <span>The EpiAlign hit is different from the SeqOnly hit.</span>
                       </span>
                     </div>
                   </div>
                   <div class="flexColumn dataPart flexNoGap">
-                    <div class="sectionHeader">Sequence evaluation</div>
+                    <div class="sectionHeader flexRow flexNoGap flexStart flexWrap">
+                      <div class="nobr">Sequence evaluation</div>
+                      <div v-show="!showHelp.seqEval" class="help flexRow flexCenter flexNoWrap"
+                        @click="showHelp.seqEval = !showHelp.seqEval">
+                        <i class="material-icons iconAtLeft">help</i>
+                      </div>
+                      <div v-show="showHelp.seqEval" class="helpContent flex flexRow flexNoGap flexStart">
+                        <div class="flex">
+                          <p>
+                            This panel evaluates sequence similarities between the query region and the two hits.
+                          </p>
+                          <p>
+                            For every hit, a <strong>signal-to-noise ratio (SNR)</strong> compares its
+                            sequence-only score to the scores of surrounding regions.
+                            An SNR no larger than 1 indicates that the hit’s sequence similarity to the query is
+                            indistinguishable from random sequences nearby.
+                          </p>
+                          <p>
+                            <strong>Context of sequence-only alignment scores</strong> shows the
+                            sequence-only {{ alignMode === 'enhancer' ? 'scores' : 'score' }}
+                            of the EpiAlign hit
+                            {{ alignMode === 'enhancer' ? 'and the SeqOnly hit (if different)' : '' }}
+                            together with a background distribution and
+                            a distribution from conserved mouse-human
+                            {{ alignMode === 'enhancer' ? 'region pairs' : 'promoters' }}.
+                          </p>
+                        </div>
+                        <div class="help">
+                          <i class="material-icons" @click="showHelp.seqEval = false">close</i>
+                        </div>
+                      </div>
+                    </div>
                     <div v-if="!!entry.item.signalToNoise" class="flexRow flexWrap flexNoGap flexStart">
                       <div class="subHeader">Signal-to-noise ratio</div>
                       <div class="flexRow flex flexNoGap flexWrap flexEnd">
@@ -591,7 +636,23 @@
                     </div>
                   </div>
                   <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer'">
-                    <div class="sectionHeader">Epigenome evaluation</div>
+                    <div class="sectionHeader flexRow flexNoGap flexStart flexWrap">
+                      <div class="nobr">Epigenome evaluation</div>
+                      <div v-show="!showHelp.epiEval" class="help flexRow flexCenter flexNoWrap"
+                        @click="showHelp.epiEval = !showHelp.epiEval">
+                        <i class="material-icons iconAtLeft">help</i>
+                      </div>
+                      <div v-show="showHelp.epiEval" class="helpContent flex flexRow flexNoGap flexStart">
+                        <div class="flex">
+                          This panel shows the epigenomic alignment scores between the query and the hits
+                          with their theoretical range calculated from the query epigenomic profile.
+                          A larger value within the range suggests higher epigenomic similarity.
+                        </div>
+                        <div class="help">
+                          <i class="material-icons" @click="showHelp.epiEval = false">close</i>
+                        </div>
+                      </div>
+                    </div>
                     <div class="flexRow flexWrap flexNoGap flexStart">
                       <div class="subHeader">Epigenome contribution range</div>
                       <div class="svgGraphHolder flexColumn">
@@ -644,47 +705,69 @@
                       </div>
                     </div>
                   </div>
-                  <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer' && entry.item.expression">
-                    <div class="sectionHeader">Expression values of surrounding genes</div>
-                    <div class="flexRow flexCenter flexWrap">
-                      <table class="expressionTable">
-                        <thead>
-                          <tr>
-                            <th>Gene symbol</th>
-                            <th>Distance to query / target region</th>
-                            <th>FPKM value(s)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <template v-for="(expInRef, refIndex) in entry.item.expression">
+                  <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer'">
+                    <div class="sectionHeader flexRow flexNoGap flexStart flexWrap">
+                      <div class="nobr">Expression values of surrounding genes</div>
+                      <div v-show="!showHelp.expression" class="help flexRow flexCenter flexNoWrap"
+                        @click="showHelp.expression = !showHelp.expression">
+                        <i class="material-icons iconAtLeft">help</i>
+                      </div>
+                      <div v-show="showHelp.expression" class="helpContent flex flexRow flexNoGap flexStart">
+                        <div class="flex">
+                          This panel shows expression levels (if available) of genes within the 100kb flanking regions.
+                        </div>
+                        <div class="help">
+                          <i class="material-icons" @click="showHelp.expression = false">close</i>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flexRow flexCenter flexWrap" v-if="!entry.item.expression">
+                      No expression data available for selected datasets.
+                    </div>
+                    <div v-else>
+                      <div class="flexRow flexCenter flexWrap">
+                        <table class="expressionTable">
+                          <thead>
                             <tr>
-                              <th colspan="3">{{ expInRef.refName }}</th>
+                              <th>Gene symbol</th>
+                              <th>Distance to query / target region</th>
+                              <th>FPKM value(s)</th>
                             </tr>
-                            <tr v-for="geneEntry in expInRef.expValues">
-                              <td>{{ geneEntry.symbol }}</td>
-                              <td class="rightAlign">{{ geneEntry.distance > 0 ? geneEntry.distance : 'Overlapping' }}</td>
-                              <td class="flexColumn flexEnd">
-                                <div v-for="(expEntry, expIndex) in geneEntry.indExpValues" class="flexRow flexNoGap flexCenter">
-                                  <div class="expColorSquare" :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">
+                          </thead>
+                          <tbody>
+                            <template v-for="(expInRef, refIndex) in entry.item.expression">
+                              <tr>
+                                <th colspan="3">{{ expInRef.refName }}</th>
+                              </tr>
+                              <tr v-for="geneEntry in expInRef.expValues">
+                                <td>{{ geneEntry.symbol }}</td>
+                                <td class="rightAlign">{{ geneEntry.distance > 0 ? geneEntry.distance : 'Overlapping' }}</td>
+                                <td class="flexColumn flexEnd">
+                                  <div v-for="(expEntry, expIndex) in geneEntry.indExpValues" class="flexRow flexNoGap flexCenter">
+                                    <div class="expColorSquare"
+                                      :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">
+                                    </div>
+                                    {{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}
                                   </div>
-                                  {{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}
-                                </div>
-                              </td>
-                            </tr>
-                          </template>
-                        </tbody>
-                      </table>
-                      <div class="flexColumn flexWrap figureLegend">
-                        <!-- Legend for expression, populate from expInRef.expIds -->
-                        <template v-for="(expInRef, refIndex) in entry.item.expression">
-                          <div v-for="(expId, expIndex) in expInRef.expIds"
-                            class="flexRow flexCenter flexNoWrap flexNoGap noFlex expLegendEntry">
-                            <div class="expColorSquare" :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">
+                                </td>
+                              </tr>
+                            </template>
+                          </tbody>
+                        </table>
+                        <div class="flexColumn flexWrap figureLegend">
+                          <!-- Legend for expression, populate from expInRef.expIds -->
+                          <template v-for="(expInRef, refIndex) in entry.item.expression">
+                            <div v-for="(expId, expIndex) in expInRef.expIds"
+                              class="flexRow flexCenter flexNoWrap flexNoGap noFlex expLegendEntry">
+                              <div class="expColorSquare"
+                                :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">
+                              </div>
+                              <a v-if="buildLinkFromExpressionId(expId)" :href="buildLinkFromExpressionId(expId)"
+                                target="_blank">{{ expId }}</a>
+                              <span v-else>{{ expId }}</span>
                             </div>
-                            <a v-if="buildLinkFromExpressionId(expId)" :href="buildLinkFromExpressionId(expId)" target="_blank">{{ expId }}</a>
-                            <span v-else>{{ expId }}</span>
-                          </div>
-                        </template>
+                          </template>
+                        </div>
                       </div>
                     </div>
                   </div>

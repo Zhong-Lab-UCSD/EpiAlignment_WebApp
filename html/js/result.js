@@ -83,6 +83,13 @@ var app = new Vue({
     collapsedRunInfoList: [],
     runid: null,
     loading: true,
+    showHelp: {
+      overview: false,
+      seqEval: false,
+      epiEval: false,
+      expression: false
+    },
+
     lastRefreshedTime: '',
     highlightLoading: false,
     showRunDetails: false,

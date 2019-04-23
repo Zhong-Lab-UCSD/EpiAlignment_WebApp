@@ -1364,7 +1364,33 @@ div.resultDesc div.sectionHeader {
 	font-weight: bold;
 	line-height: 1.7rem;
 	background: #EEEEEE;
-	padding: 0.3em 0.5em;
+	padding: 0.15em 0.25em;
+}
+
+div.resultDesc div.sectionHeader > * {
+	margin: 0.15em 0.25em;
+}
+
+div.resultDesc div.sectionHeader .help {
+	font-size: 16px;
+	margin-left: 0.5em;
+	font-weight: normal;
+}
+
+div.resultDesc div.sectionHeader .helpContent {
+	font-size: 0.85rem;
+	margin-left: 1em;
+	font-weight: normal;
+	background: rgba(255, 255, 255, 0.86);
+	border: 1px dashed #666666;
+	padding: 0.25em 0.25em 0.25em 0.5em;
+	flex-basis: 30em;
+	line-height: 1.5em;
+}
+
+div.resultDesc div.sectionHeader .helpContent p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
 }
 
 div.resultDesc div.subHeader {
@@ -1378,10 +1404,17 @@ div.resultDesc span.shiftedLabel {
 	background: #EEEEEE;
 	padding: 0.3em 0.5em;
 	border-radius: 0.75em;
+	display: inline-flex;
+	vertical-align: middle;
+	font-size: 1em;
+}
+
+div.resultDesc span.shiftedLabel.inline {
+	padding: 0.15em 0.25em;
 }
 
 div.resultDesc span.shiftedLabel > i.material-icons {
-	font-size: 1.5rem;
+	font-size: 1.6em;
 	margin-right: 0.25em;
 }
 

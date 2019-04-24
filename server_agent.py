@@ -778,6 +778,9 @@ def SequenceEvaluation(json_obj, line_epi, line_seq, epiScore, seqScore, s, mu, 
     s2 = ExtractScore(seqScore, int(line_epi[6]), 50) * norm_factor
     seqEval_dict["scoreE2"] = e2
     seqEval_dict["scoreS2"] = s2
+  elif json_obj["shifted"] == "N":
+    seqEval_dict["scoreE2"] = json_obj["scoreE"]
+    seqEval_dict["scoreS2"] = json_obj["scoreS"]
   elif json_obj["shifted"] == ".":
     s2 = json_obj["scoreE"]
     s1 = None

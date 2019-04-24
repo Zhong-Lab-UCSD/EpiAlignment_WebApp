@@ -809,13 +809,13 @@ def WriteFinalResult(json_obj, fout, alignMode):
       print >> fout, "\t".join(["Index", "Query_region_name", "Query_gene", "Query_transcript", "Query_coordinate",\
         "Target_region_name", "Target_gene", "Target_transcript", "Target_coordinate",\
         "EpiAlign_target", "EpiAlignHit_epiScore", "EpiAlignHit_seqScore", "EpiAlignHit_SNR", \
-        "SeqOnly_target", "SeqOnlyHit_epiScore", "SeqOnlyHit_seqScore", "SeqOnlyHit_SNR"])
+        "SeqOnly_target", "SeqOnlyHit_epiScore", "SeqOnlyHit_seqScore", "SeqOnlyHit_SNR", "HitShifted"])
 
     print >> fout, "\t".join([str(f) for f in [json_obj["index"],\
       json_obj["region_name1"], json_obj["ensID1"], json_obj["transID1"], json_obj["region1"],\
       json_obj["region_name2"], json_obj["ensID2"], json_obj["transID2"], json_obj["region2"],\
       json_obj["targetE"], json_obj["scoreE"], json_obj["scoreS2"], json_obj["signalToNoise"]["snE"], \
-      json_obj["targetS"], json_obj["scoreE2"], json_obj["scoreS"], json_obj["signalToNoise"]["snS"] ] ])
+      json_obj["targetS"], json_obj["scoreE2"], json_obj["scoreS"], json_obj["signalToNoise"]["snS"], json_obj["shifted"] ] ])
 
   elif alignMode == "promoter":
     if json_obj["index"] == 1:

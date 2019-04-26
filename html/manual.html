@@ -658,17 +658,24 @@
 
       <div ref="pythonClientTemplate" class="section">
         <h1>Python client template</h1>
-        <p>We provided EpiAlignment_PyClient.py, a python template program for users to access EpiAlignment from their
-          own
-          server, submit multiple jobs and parse the output. The user may also modify the code and incorporate it into
-          their own programs. The basic usage of the template program is:</p>
-        <code class="codeParagraph">pipenv run python EpiAlignment_PyClient.py sampleSheet.txt</code>
-        <p>where sampleSheet.txt is a tab-delimited text file with details of the jobs you would like to submit to
-          EpiAlignment.</p>
-        <p>The python client template can be downloaded from the homepage of EpiAlignment. Sample input files are also
-          available in the same zip file. Please follow <a href="https://github.com/Zhong-Lab-UCSD/EpiAlignment_WebApp/blob/master/html/assets/PythonClient/README.md"
+        <p>We provided EpiAlignment_PyClient.py, a Python template program for users to access EpiAlignment from their
+          own server, submit multiple jobs and parse the output. The user may also modify the code and incorporate it
+          into their own programs. The Python client template can be downloaded from the homepage of EpiAlignment.
+          Sample input files are also available in the same zip file. Please follow <a
+            href="https://github.com/Zhong-Lab-UCSD/EpiAlignment_WebApp/blob/master/html/assets/PythonClient/README.md"
             target="_blank">the README.md file</a> (also included in the zip file) to prepare your sample sheet and
           submit jobs to EpiAlignment.</p>
+        <p>You may run the Python client via the following command:</p>
+        <code class="codeParagraph">python EpiAlignment_PyClient.py sampleSheet.txt</code>
+        <p>where sampleSheet.txt is a tab-delimited text file with details of the jobs you would like to submit to
+          EpiAlignment.</p>
+        <h3>Running the client template with <code>pipenv</code></h3>
+        <p>If <a href="https://pipenv.readthedocs.io/" target="_blank"><code>pipenv</code></a> is available, you may
+          initialize the running environment with the following command:
+        </p>
+        <code class="codeParagraph">pipenv install</code>
+        <p>Then you may run the client within the initialized environment by:</p>
+        <code class="codeParagraph">pipenv run python EpiAlignment_PyClient.py sampleSheet.txt</code>
       </div>
       <!--<div class="section">
         <h1>Computational methods</h1>

@@ -1677,6 +1677,10 @@ div.section p {
 	line-height: 1.4em;
 }
 
+div.section li > p {
+	margin-left: 0;
+}
+
 div.exampleSteps {
 	font-size: 0.875rem;
 	padding: 0.5rem;

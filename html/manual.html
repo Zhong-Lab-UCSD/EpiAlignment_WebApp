@@ -428,37 +428,37 @@
           in the species are not included in any cluster. 
           An example of a pre-identified gene cluster is shown below, in which <em>Aph1a</em>, <em>Aph1b</em>
           and <em>Aph1c</em> are paralogues in mouse, and <em>APH1A</em>, <em>APH1B</em> are paralogues in human.</p>
-          <div>
-            <table class="verticalBorder">
-              <caption>An example of a pre-identified gene cluster</caption>
-              <thead>
-                <tr>
-                  <th></th>
-                  <th><em>Aph1a</em></th>
-                  <th><em>Aph1b</em></th>
-                  <th><em>Aph1c</em></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th><em>APH1A</em></th>
-                  <td>Orthologous</td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <th><em>APH1B</em></th>
-                  <td></td>
-                  <td>Orthologous</td>
-                  <td>Orthologous</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p>By selecting this cluster, you can either align any human genomic region(s) to the promoters of mouse genes
-            <em>Aph1a</em>,
-            <em>Aph1b</em>, <em>Aph1c</em>, or any mouse genomic region(s) to the promoters of human genes <em>APH1A</em>,
-            <em>APH1B</em>.</p>
+        <div>
+          <table class="verticalBorder">
+            <caption>An example of a pre-identified gene cluster</caption>
+            <thead>
+              <tr>
+                <th></th>
+                <th><em>Aph1a</em></th>
+                <th><em>Aph1b</em></th>
+                <th><em>Aph1c</em></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th><em>APH1A</em></th>
+                <td>Orthologous</td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <th><em>APH1B</em></th>
+                <td></td>
+                <td>Orthologous</td>
+                <td>Orthologous</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>By selecting this cluster, you can either align any human genomic region(s) to the promoters of mouse genes
+          <em>Aph1a</em>,
+          <em>Aph1b</em>, <em>Aph1c</em>, or any mouse genomic region(s) to the promoters of human genes <em>APH1A</em>,
+          <em>APH1B</em>.</p>
 
         <p>You can type an Ensembl ID or a gene symbol in the searching bar to search a gene cluster. 
           A result panel will pop up with
@@ -541,29 +541,30 @@
           You may download the table to rank the results by any measurements and select region pairs for future studies 
           (see "Filtering the results" below).</p>
         <ul>
-          <li><strong>Overview</strong>: the highest alignment scores achieved with and without epigenomic information. 
+          <li><p><strong>Overview</strong>: the highest alignment scores achieved with and without epigenomic information. 
             A badge saying "The EpiAlign hit is different from the SeqOnly hit" 
             will be displayed if the coordinates of the two hits don’t overlap, 
-            suggesting that another location overtakes the best sequence match due to higher epigenomic similarity.<br><br> </li>     
-          <li><strong>Sequence evaluation</strong>: an evaluation of sequence similarities between the query region and the two hits. 
+            suggesting that another location overtakes the best sequence match due to higher epigenomic similarity.</p></li>     
+          <li>
+            <p><strong>Sequence evaluation</strong>: an evaluation of sequence similarities between the query region and the two hits. 
             For every hit, a signal-to-noise ratio (SNR) is provided comparing its sequence alignment score (S score)
             to the scores of arbitrary locations within the target region. 
-            An SNR no larger than 1 indicates that the hit’s sequence similarity to the query is indistinguishable from random sequences nearby.<br> 
-            Two reference distributions of S scores are also provided for comparison purposes. The distribution of conserved mouse-human region pairs 
+            An SNR no larger than 1 indicates that the hit’s sequence similarity to the query is indistinguishable from random sequences nearby.</p>
+            <p>Two reference distributions of S scores are also provided for comparison purposes. The distribution of conserved mouse-human region pairs 
             was generated using mouse regions marked by H3K4me3, H3K27ac or H3K4me1 in any tissue type included in our ChIP-Seq database and their human 
             homologues. These mouse regions were also aligned to randomly-selected human genomic regions (~6kb long) to generate the background distribution. 
-            Approximately 15,000 mouse-human region pairs were randomly-selected and aligned to generate each distribution.<br><br></li>
-          <li><strong>Epigenome evaluation</strong>: an evaluation of epigenomic similarities between the query region and the two hits.
+            Approximately 15,000 mouse-human region pairs were randomly-selected and aligned to generate each distribution.</p></li>
+          <li><p></p><strong>Epigenome evaluation</strong>: an evaluation of epigenomic similarities between the query region and the two hits.
             A hit's epigenomic similarity score <em>E</em> is defined as the difference between its alignment scores yielded with and without epigenomic information.
             A theoretical range of <em>E</em> 
             is provided based on the query epigenomic profile, 
             where the maximum and the minimum can be achieved when all epigenomic states are rewarded or penalized, respectively. 
-            A larger <em>E</em> value suggests higher epigenomic similarity between two regions.<br>
-            Please note that a negative epigenomic similarity score does not mean that one region 
+            A larger <em>E</em> value suggests higher epigenomic similarity between two regions.</p>
+            <p>Please note that a negative epigenomic similarity score does not mean that one region 
             is marked by epigenomic modification while the other is not. The query region and the hit may both contain epigenomic peaks, 
-            whereas the peak regions barely overlap.<br><br> </li>  
-          <li><strong>Expression values of surrounding genes</strong>: expression levels of genes within 100kb flanking regions 
-            of the query and target regions. This part will only be displayed if RNA-Seq data of the same tissue type is available.</li>   
+            whereas the peak regions barely overlap.</p></li>  
+          <li><p><strong>Expression values of surrounding genes</strong>: expression levels of genes within 100kb flanking regions 
+            of the query and target regions. This part will only be displayed if RNA-Seq data of the same tissue type is available.</p></li>   
         </ul>
         
         <p>Note: if you set epigenomic weight to zero during input, the EpiAlignment score is equivalent to

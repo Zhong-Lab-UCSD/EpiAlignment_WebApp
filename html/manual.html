@@ -68,13 +68,13 @@
                   <a href="#queryRegions" @click="clickOnNav">Query regions</a>
                 </li>
                 <li>
-                  <a href="#targetRegions" @click="clickOnNav">Query regions</a>
+                  <a href="#targetRegions" @click="clickOnNav">Target regions</a>
                   <ul>
                     <li>
                       <a href="#oneVsOneModeTarget" @click="clickOnNav">One-vs-one mode</a>
                     </li>
                     <li>
-                      <a href="#manyVsManyModeTarget" @click="clickOnNav">Many-vs-many mode</a>
+                      <a href="#manyVsManyTarget" @click="clickOnNav">Many-vs-many mode</a>
                     </li>
                   </ul>
                 </li>
@@ -662,7 +662,7 @@
           own
           server, submit multiple jobs and parse the output. The user may also modify the code and incorporate it into
           their own programs. The basic usage of the template program is:</p>
-        <code class="codeParagraph">python EpiAlignment_PyClient.py sampleSheet.txt</code>
+        <code class="codeParagraph">pipenv run python EpiAlignment_PyClient.py sampleSheet.txt</code>
         <p>where sampleSheet.txt is a tab-delimited text file with details of the jobs you would like to submit to
           EpiAlignment.</p>
         <p>The python client template can be downloaded from the homepage of EpiAlignment. Sample input files are also

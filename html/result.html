@@ -462,6 +462,7 @@
                             <span>The EpiAlign hit is different from the SeqOnly hit.</span>
                           </span> will be displayed if the coordinates of the two hits don’t
                           overlap.
+                          <a href="manual.html#oneVsOneOutput" target="_blank">(more...)</a>
                         </div>
                         <div class="help">
                           <i class="material-icons" @click="showHelp.overview = false">close</i>
@@ -509,9 +510,10 @@
                             of the EpiAlign hit
                             {{ alignMode === 'enhancer' ? 'and the SeqOnly hit (if different)' : '' }}
                             together with a background distribution and
-                            a distribution from conserved mouse-human
+                            a distribution of conserved mouse-human
                             {{ alignMode === 'enhancer' ? 'region pairs' : 'promoters' }}.
                           </p>
+                          <p><a :href="'manual.html#' + (alignMode === 'enhancer' ? 'oneVsOneOutput' : 'manyVsManyOutput')" target="_blank">(more...)</a></p>
                         </div>
                         <div class="help">
                           <i class="material-icons" @click="showHelp.seqEval = false">close</i>
@@ -647,6 +649,7 @@
                           This panel shows the epigenomic alignment scores between the query and the hits
                           with their theoretical range calculated from the query epigenomic profile.
                           A larger value within the range suggests higher epigenomic similarity.
+                          <a href="manual.html#oneVsOneOutput" target="_blank">(more...)</a>
                         </div>
                         <div class="help">
                           <i class="material-icons" @click="showHelp.epiEval = false">close</i>
@@ -715,6 +718,7 @@
                       <div v-show="showHelp.expression" class="helpContent flex flexRow flexNoGap flexStart">
                         <div class="flex">
                           This panel shows expression levels (if available) of genes within the 100kb flanking regions.
+                          <a href="manual.html#oneVsOneOutput" target="_blank">(more...)</a>
                         </div>
                         <div class="help">
                           <i class="material-icons" @click="showHelp.expression = false">close</i>

@@ -293,7 +293,7 @@ button {
 button > div.buttonTip {
 	display: none;
 	position: absolute;
-	left: 9em;
+	left: 10em;
 	top: 0;
 	width: 15em;
 	text-align: left;
@@ -399,7 +399,7 @@ button:active > div.buttonTip {
 }
 
 i.material-icons {
-	font-size: 1.4em;
+	font-size: 1.5em;
 	vertical-align: text-bottom;
 }
 

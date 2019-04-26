@@ -141,7 +141,8 @@
            suitable if you have <strong>medium-sized query regions, 
            usually marked by epigenomic modifications, (e.g. ChIP-Seq peaks, hundreds to thousands of base pairs long)</strong>, 
            and much longer target regions. 
-           It will match the query region(s) to a sub-region of the target region(s). The many-vs-many mode attempts to align 
+           Each query region will be aligned to a sub-region of the target region with the highest similarity.
+           The many-vs-many mode attempts to align 
            every input query region to all target regions to find the best hit. 
            It would be useful if you have query and target regions of similar lengths (medium-sized), and would like to find one best match 
            for the query region among a set of target regions. The two modes are illustrated in figures below.</p>
@@ -157,15 +158,11 @@
       <div ref="quickStart" class="section">
         <!--Quick Start-->
         <h1>Quick start</h1>
-        <p>EpiAlignment has two major alignment modes: one-vs-one (default) and many-vs-many. Given an input query region 
-          (usually hundreds to thousands of bp), the default
-          mode can be used to identify the best-matching sub-region within the corresponding target region, 
-          whereas the many-vs-many mode is useful for finding the best match among a set of target regions.</p>
 
         <h3 ref="oneVsOneExample">An example for using the one-vs-one mode</h3>
         <!--Example 1-->
         <p>In this example, we will search a H3K4me3-marked mouse genomic region (~2kb) against the neighborhood of its
-          homologous region in human. This example will take about one minute to run on EpiAlignment.</p>
+          homologous region in human. This example will take about 2 minute to run on EpiAlignment.</p>
         <h4>Import sample data with one click:</h4>
         <div class="exampleSteps">
           <ul>
@@ -192,38 +189,33 @@
               </div>
             </ul>
             <li>In the "Target region" box, set "Genome assembly" to hg38.</li>
-            <li>Make sure that "Use homologous regions in this species" is selected. This is the default mode we are
-              going
-              to use.</li>
-            <li>Leave the size of bps upstream as 20000 and change the size of bps downstream to 0.</li>
+            <li>Make sure that "Use homologous regions in this species" is selected, and the upstream and downstream 
+              distances for extension are both 20,000bp.
+            </li>
             <li>Click "Submit" in STEP 4.</li>
           </ul>
         </div>
 
         <h4>Output</h4>
-        <p>You will be redirected to the result page after submitting the data. In this mode, the result page
-          shows
-          an interactive table with details of the alignments. You can click on each row to expand it and view the alignment
-          scores yielded with and without epigenomic information along the target region. For visualization, 
+        <p>The result page shows
+          an interactive table where each row can be expanded to view detailed results and result evaluations. For visualization, 
           you can click the icon (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
             <span class="annotation">GIVE</span>
           </span>)
-          at the beginning of each row to view query and target regions together 
+          to view query and target regions together 
           in the Genomic Interaction Visualization Engine (GIVE), or view each region individially in the UCSC genome 
           browser by clicking the icon (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
             <span class="annotation">UCSC</span>
-          </span>)
-          beside each coordinate. In the UCSC genome browser, you can
-          select any preset ENCODE/public epigenomic data from the custom tracks.
+          </span>).
+          Results can be downloaded and further filtered by clicking "Download results".
           </p>
         <div class="manualImg large">
           <img alt="Expandable data table for one-vs-one mode" src="assets/images/Enhancer_result_comment.png">
         </div>
-        <p>The table can be downloaded by clicking "Download results".</p>
 
         <h3 ref="manyVsManyExample">An example for using the many-vs-many mode</h3>
         <!--Example 2-->
-        <p>In this example, we will use gene promoters as input regions. We will search the promoter of 
+        <p>In this example, we will search the promoter of 
           a human protocadherin beta gene, PCDHB5,
           against a mouse gene cluster to find mouse promoters with the
           highest structural similarities
@@ -263,18 +255,17 @@
         </div>
 
         <h4>Output</h4>
-        <p>After successfully submitting the data, you will be redirect to the result page. In this mode, 
-          two heatmaps and a table will be retunred. The heatmaps illustrate alignment scores of every promoter pair 
-          and the best hits found for each promoter. The three digits behind each gene name is the id
-          of the promoter region. </p>
-        <div class="manualImg large">
+        <p>Two heatmaps, a bar chart and an interactive table will be returned. 
+          The heatmaps illustrate alignment scores of every promoter pair 
+          and the best hits found for the query promoter. The three digits behind each gene name is the id
+          of the promoter region. The bar chart presents expression values of related genes in the same tissue type.</p>
+        <div class="manualImg small">
           <img alt="Heatmap for many-vs-many mode" src="assets/images/Heatmap.png">
         </div>
-        <p>The table shows details of the alignments between each pair of promoters. You can sort the table by each column
-          by clicking the column name. Click the arrow beside "#" to reset the order. 
-          Similar to that in the default mode, You can click the <i class="material-icons">open_in_new</i> 
-          icons to view the regions
-          in the UCSC genome browser or GIVE. The table can be
+        <p>Similar to that in the default mode, you may expand each row of the table to view more details,
+          or click the <i class="material-icons">open_in_new</i> 
+          icons to visualize the regions
+          in UCSC genome browser or GIVE. The table can be
           downloaded by clicking "Download results".</p>
         <div class="manualImg large">
           <img alt="Data table for many-vs-many mode" src="assets/images/PromoterTable_comments.png">
@@ -286,28 +277,13 @@
         <!--Usage-->
         <h1 ref="usageOverview">Usage</h1>
         <h2>Overview</h2>
-        <p>EpiAlignment provides two major alignment modes: one-vs-one and many-vs-many. Both modes use a semi-global
-          approach to
-          identify the best alignment between a pair of regions, whereas the result presentation and interpretation are
-          different. 
-          The one-vs-one mode attempts to find a best-matching part for a query region in the 
-          corresponding target region (one-against-one alignment). 
-          It is more useful in cases where query regions are functional genomic elements marked by epigenomic modifications (usually hundreds 
-          to thousands base pairs), while the target regions 
-          are much longer,
-          and the best match of the query region cannot be easily determined in the target species with sequence homologies only.
-          This mode allows defining target regions using homologous information.</p>
-        <p>The many-vs-many mode, on the other hand, aligns every input query region to 
-          all target regions to find the best
-          hit (all-against-all alignment). Therefore, it would be more useful in cases where the query region corresponds to 
-          multiple candidates with potentially similar structures and functions, such as promoters of paralogous genes. This
-          mode could also be handy if you'd like to use gene promoters as input regions 
-          as you can define promoter regions with gene names. We recommend users to provide query and target
-          regions with similar lengths in this mode.</p>
-        <p>Each alignment mode provides various ways of defining target regions for users' convenience. 
-          An overview of the alignment modes
-          and
-          target region types supported is shown below:</p>
+        <p>EpiAlignment provides two major alignment modes: the one-vs-one mode and the many-vs-many mode. 
+          The default one-vs-one mode attempts to find a best-matching part for a query region in its corresponding target region. 
+          It is useful in cases where target regions are much longer than query regions, 
+          and best matches of the query regions cannot be easily determined in the target species with sequence homologies only. 
+          The many-vs-many mode, on the other hand, was designed to identify the best match for a query region among a set of target regions. 
+          It is more useful when the query region corresponds to 
+          multiple candidates with potentially similar functions, such as promoters of paralogous genes.</p>
         <div>
           <table>
             <caption>Alignment modes and supported target region types</caption>
@@ -342,68 +318,6 @@
           </table>
         </div>
 
-        <h3 ref="oneVsOneMode">One-vs-one mode (default)</h3>
-        <h4>Use homologous regions in this species</h4>
-        <p>This mode allows users to define target regions using homologous information. Specifically, EpiAlignment
-          will first extend each query region by a user-specified distance (default: 20,000kb) upstream and downstream, and then
-          use <a href="https://genome.ucsc.edu/cgi-bin/hgLiftOver" target="_blank">liftOver</a> to remap the extended
-          region to the target species. If the remapping succeeds, the result region will be used as the target region.</p>
-        <h4>Define target regions with a BED file</h4>
-        <p>By select this option, users can provide their own
-          query and target regions. EpiAlignment will pair the query targe regions in the two input files based on
-          their
-          line number and perform a one-against-one alignment to identify the best-matching sub-regions.</p>
-
-        <h3 ref="manyVsManyMode">Many-vs-many mode</h3>
-        <h4>Search a gene cluster</h4>
-        <p>This mode allows users to align query regions to promoters of a group of evolutionarily-related genes and find
-          the
-          best match. The gene cluster data is preset in EpiAlignment, identified by grouping paralogous genes in each
-          species and linking orthologous genes across species. Different isoform promoters of the same genes
-          are
-          all included. An example of a pre-identified gene cluster is shown below, in which <em>Aph1a</em>, <em>Aph1b</em>
-          and <em>Aph1c</em> are paralogues in mouse, and <em>APH1A</em>, <em>APH1B</em> are paralogues in human.</p>
-        <div>
-          <table class="verticalBorder">
-            <caption>An example of a pre-identified gene cluster</caption>
-            <thead>
-              <tr>
-                <th></th>
-                <th><em>Aph1a</em></th>
-                <th><em>Aph1b</em></th>
-                <th><em>Aph1c</em></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th><em>APH1A</em></th>
-                <td>Orthologous</td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <th><em>APH1B</em></th>
-                <td></td>
-                <td>Orthologous</td>
-                <td>Orthologous</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p>By selecting this cluster, you can either align any human genomic region(s) to the promoters of mouse genes
-          <em>Aph1a</em>,
-          <em>Aph1b</em>, <em>Aph1c</em>, or any mouse genomic region(s) to the promoters of human genes <em>APH1A</em>,
-          <em>APH1B</em>.</p>
-
-        <h4>Define target regions with a BED file / a gene list</h4>
-        <p>Users can define their own query and target regions by selecting this option. Genomic coordinates, 
-          gene symbols and Ensembl IDs
-          are accepted as inputs. If gene names are provided, EpiAlignment will automatically fetch all
-          promoters
-          of the genes, which could be handy if you don't want to retrieve promoter regions by yourself. EpiAlignment
-          will
-          then align each input query region to all input target regions to find top hits.</p>
-
         <h2 ref="input">Input</h2>
         <!--Input-->
         <p>EpiAlignment requires two types of inputs from users: (1) a pair of peak files from ChIP-Seq experiments, 
@@ -416,9 +330,9 @@
         </div>
         <p>EpiAlignment currently supports two genome assemblies: hg38 (Homo sapiens) and mm10 (Mus musculus). Please
           note
-          that the genome assemblies for the query and target regions have to be different if you choose to define
+          that the genome assemblies have to be different if you choose to define
           target
-          regions using homologous regions in the default mode. For other modes, the two genome assemblies can be
+          regions using homologous regions in the default mode. For other sub-modes, the two genome assemblies can be
           identical whereas not recommended.</p>
 
         <h3 ref="peakFileAndDatasets">Peak files and datasets for pairwise ChIP-Seq experiments</h3>
@@ -452,108 +366,129 @@
           the first species in the Query regions box, and the peak file for the second species in the Target regions
           box.
           <em>Uploading your own peak file will clear any previously selected public data in all references.</em></p>
-        <div class="manualImg small">
+        <!--<div class="manualImg small">
           <img alt="Upload your own peak file" src="assets/images/UploadPeak_comment.png">
+        </div>-->
+
+        <h3 ref="queryRegions">
+          Query regions
+        </h3>
+        <p>In both modes, query regions can be provided as genomic coordinates in BED6 format.
+          Coordinates can be either pasted into the textarea (one region per line) or uploaded as a file. Typically, the 
+          query regions are hundreds to thousands bp-long genomic elements marked by epigenomic modifications, such as ChIP-Seq 
+          peaks. If your query regions are longer than 10kb, a warning will show up on the result page.</p>
+        <p>Gene symbols or Ensembl IDs are also accepted if gene promoters are used as input regions. 
+            Please note that 
+            gene symbols are case-sensitive. For human gene symbols, all letters should be uppercase,
+            whereas for mouse gene symbols, only the first letter should be uppercase.
+          In this case, users need to specify which range around gene transcription start sites (TSSs) will be defined as promoter regions.
+          By default, the (-1,000, +500) flanking regions around TSSs are used.</p>
+        <div class="manualImg">
+          <img alt="Select TSS flanking ranges for promoters" src="assets/images/TSSrange_comments.png">
         </div>
 
-        <h3 ref="queryAndTargetRegions">
-          Query and target regions
+        <p>EpiAlignment will merge different isoform promoters of the same gene 
+          if their overlapping region is longer than 80% of the promoter length. For example, if
+          promoter regions are 1,500bp long, two promoters will be merged if
+          their overlapping region is longer than <span class="equation">1500 &#215; 0.8 = 1200</span>. The last three
+          digits of the promoter's genomic coordinate will be used as promoter id.</p>
+
+        <h3 ref="targetRegions">
+          Target regions
         </h3>
-        <h4 ref="oneVsOneModeQueryAndTarget">One-vs-one mode</h4>
-        <h5>Query regions</h5>
-        <p>For the default mode, the input query regions need to be defined with genomic coordinates in BED6 format.
-          The coordinates can be either pasted into the textarea (one region per line) or uploaded as a file. Typically, the 
-          query regions are hundreds to thousands bp-long genomic elements marked by epigenomic modifications, such as ChIP-Seq 
-          peaks. If your query regions are longer than 10kb, a warning will show up on the result page.
-          Please note that each line should
-          have a unique name. A sample data is shown below:</p>
-        <div class="manualImg">
-          <img alt="One-vs-one mode sample query regions" src="assets/images/Enhancer_s1.png">
-        </div>
-        <h5 ref="oneVsOneModeTarget">Target regions</h5>
-        <h6>Use homologous regions in this species</h6>
-        <p>In this case, users only need to specify the number of base pairs 
-          by which the query regions will be increased. By default, they will be extended 20,000 kb
-          from the two ends respectively.</p>
+        <h4 ref="oneVsOneModeTarget">One-vs-one mode</h4>
+
+        <h5>Use homologous regions in this species</h5>
+        <p>Query regions will be aligned against their homologous neighborhoods in this sub-mode.
+          Users only need to specify the number of base pairs 
+          by which the query regions will be increased (default: 20,000bp on each side). 
+          The web server will extend each query region and 
+          remap it to the target species using <a href="https://genome.ucsc.edu/cgi-bin/hgLiftOver" target="_blank">liftOver</a>
+          to define the corresponding target region. </p>
+        <p>Note: the region pair will not appear in the final result if liftOver fails to remap the query.</p>
         <div class="manualImg small">
           <img alt="Use homologous regions for enhancer targets" src="assets/images/OrthoMode_comments.png">
         </div>
 
-        <h6>Define target regions with a BED file</h6>
-        <p>In this mode, target should be provided as genomic coordinates in BED6 format. The list should have the
+        <h5>Define target regions with a BED file</h5>
+        <p>In this sub-mode, target should be provided as genomic coordinates in BED6 format. The list should have the
           same row count and order as the query regions, as EpiAlignment will directly pair them based on their
-          line
-          number, and align each pair separately. EpiAlignment will only use names of the query regions to
-          refer to individual pairs, so it is recommended to keep the names same between query and the target
-          regions. A sample input file is shown below, paired with the sample query region file shown above:</p>
-        <div class="manualImg">
-          <img alt="One-vs-one mode sample target regions" src="assets/images/Enhancer_s2.png">
-        </div>
+          line number, and align each pair separately. </p>
 
+        <h4 ref="manyVsManyTarget">Many-vs-many mode</h4>
 
-        <h4 ref="manyVsManyModeQueryAndTarget">Many-vs-many mode</h4>
-        <h5>Query regions</h5>
-        <p>In this mode, the query regions can be provided as genomic coordinates in BED6 format. 
-          Gene symbols or Ensembl IDs are also accepted if gene promoters are used as input regions. 
-          The coordinates and gene names can be either
-          pasted into the textarea (one region/name per line) or uploaded as a file. 
-          When using gene symbols or Ensembl IDs, ranges of promoters need to be specified. 
-          By default, the (-1,000, +500) flanking regions around TSSs are used as promoter regions. Please note that 
-          gene symbols are case-sensitive. For human gene symbols, all letters should be uppercase,
-          whereas for mouse gene symbols, only the first letter should be uppercase.
-          Sample query regions are shown below: </p>
-        <div class="manualImg">
-          <img alt="Sample files for promoter query regions" src="assets/images/sampleGeneName.png">
-        </div>
-        <div class="manualImg">
-          <img alt="Select TSS flanking ranges for promoters" src="assets/images/TSSrange_comments.png">
-        </div>
-        <p>Given that a gene may have transcripts with overlapping promoter regions, EpiAlignment will merge promoters
-          of the same gene if their overlapping region is longer than 80% of the promoter length. For example, if
-          promoter regions are defined as 500kb upstream and 1000kb downstream the TSS, two promoters will be merged if
-          their overlapping region is longer than <span class="equation">1500 &#215; 0.8 = 1200</span>. The last three
-          digits of the promoter's genomic coordinate will be used as promoter id.</p>
-        <h5 ref="manyVsManyModeTarget">Target regions</h5>
-        <h6>Search a gene cluster</h6>
-        <p>In this mode, you may search for a gene cluster and use promoters of genes in the cluster as target regions.
-          You
-          can type an Ensembl ID or a gene symbol in the searching bar. A search results panel will pop up with
-          candidate
-          clusters listed in it. Please note that gene without matching
+        <h5>Search a gene cluster</h5>
+        <p>In this sub-mode, you may use a set of promoters of evolutionarily-related genes (namely a gene cluster) 
+          to define target regions. 
+          The gene clusters are preset in EpiAlignment, identified by grouping paralogous genes in each
+          species and linking orthologous genes across species. Different isoform promoters of the same genes
+          are
+          all included. Please note that gene without matching
           paralogues
           in the species are not included in any cluster. 
-          You may click on the cluster name to further examine genes and their descriptions in the
-          cluster. Click the box with arrow (<i class="material-icons">open_in_browser</i>) on the rightside of the
+          An example of a pre-identified gene cluster is shown below, in which <em>Aph1a</em>, <em>Aph1b</em>
+          and <em>Aph1c</em> are paralogues in mouse, and <em>APH1A</em>, <em>APH1B</em> are paralogues in human.</p>
+          <div>
+            <table class="verticalBorder">
+              <caption>An example of a pre-identified gene cluster</caption>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th><em>Aph1a</em></th>
+                  <th><em>Aph1b</em></th>
+                  <th><em>Aph1c</em></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th><em>APH1A</em></th>
+                  <td>Orthologous</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th><em>APH1B</em></th>
+                  <td></td>
+                  <td>Orthologous</td>
+                  <td>Orthologous</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>By selecting this cluster, you can either align any human genomic region(s) to the promoters of mouse genes
+            <em>Aph1a</em>,
+            <em>Aph1b</em>, <em>Aph1c</em>, or any mouse genomic region(s) to the promoters of human genes <em>APH1A</em>,
+            <em>APH1B</em>.</p>
+
+        <p>You can type an Ensembl ID or a gene symbol in the searching bar to search a gene cluster. 
+          A result panel will pop up with
+          candidate clusters listed in it. 
+          You may click on the cluster name to further examine genes and their descriptions. 
+          Click the box with arrow (<i class="material-icons">open_in_browser</i>) on the rightside of the
           cluster name to select the cluster you would like to
           use. You may click anywhere outside the pop-up panel at anytime to close it.</p>
-        <div class="manualImg large">
+        <div class="manualImg">
           <img alt="Gene cluster search and selection panel" src="assets/images/GeneClusters_comment.png">
         </div>
 
-        <h6>Define target regions with a BED file / a gene list.</h6>
+        <h5>Define target regions with a BED file / a gene list.</h5>
         <p>In this case, the
           format of the input target regions is exactly the same as query regions. The query and target region files do
           not need to have identical row counts, as EpiAlignment will perform an all-against-all alignment.</p>
 
-
         <h3 ref="parameters">Parameters</h3>
-        <p>The alignment algorithm of EpiAlignment is developed on an evolutionary basis [<a href="#ref_1" @click="clickOnNav">1</a>].
-          Therefore, the parameters describe evolutionary events. The user may change the parameters to adjust the
-          rewards
-          and penalties assigned to sequences and epigenomic modifications.</p>
-        <h4 ref="weight">The epigenome weight</h4>
-        <p> This parameter represents the relative weight of the epigenome to the sequence. The weight will be
-          multiplied to the epigenome parts of the alignment scores. With a
-          larger
-          epigenomic weight, the alignment will rely more on epigenomic similarity than sequence
-          similarity. Consequently, regions with larger sequence differences (i.e., more mismatches and indels) but
+        <h4 ref="weight">The epigenome weight </h4>
+        <p> The weight parameter <em>w</em> represents the relative weight of the epigenome to the sequence. 
+          EpiAlignment considers sequence only when <em>w</em> = 0, 
+          while it increasingly relies on epigenomic information as <em>w</em> rises. 
+          When using a larger <em>w</em>, regions with larger sequence differences (i.e., more mismatches and indels) but
           similar
-          epigenomic states may beat regions with similar sequences but different epigenomic states. Additionally, in
-          this
-          case, a region pair with a larger overlap between epigenomic peaks is more likely to gain a higher
-          alignment score. If you would like to increase the default epigenomic weight, please carefully check the
-          sequence
-          similarities and the epigenomic occupancies in the best hits.</p>
+          epigenomic states may overtake regions with similar sequences but different epigenomic states. Additionally, 
+          a region pair with a larger overlap of epigenomic peaks is more likely to gain a higher
+          alignment score. You may increase w to include hits with lower sequence similarities, 
+          or decrease w to limit the results to hits with S scores comparable to the best sequence matches. Sequence and epigenomic similarities 
+          between each pair of regions 
+          can be further scrutinized on the result page.</p>
 
         <h4 ref="alignmentParameters">Alignment parameters</h4>
         <ul id="paralist">
@@ -576,54 +511,87 @@
         </ul>
 
         <h2 ref="output">Output</h2>
-        <p>You will be redirect to the result page after successfully submitting your data. The result page will
-          refresh
-          automatically until the task is done. To align a pair of regions of lengths <span class="equation"><em>m</em></span>
-          and
-          <span class="equation"><em>n</em></span>, <span class="equation">O(<em>mn</em>)</span> time is required by
-          EpiAlignment. Therefore, given your region lengths and numbers, the task may take minutes to hours to finish.
-          You
-          may provide your email and choose to be notified by email after the task is done, or you can bookmark the
-          page
-          and come back later. We recommend that the users select either way if there are more than 100 region pairs,
-          especially when using the one-vs-one mode.</p>
+        <p>In both modes, EpiAlignment will return two types of alignment results, yielded with (<em>w</em> = 0) 
+          and without (<em>w</em> = 0) epigenomic information. 
+          For each query region, best matches identified in the two alignments 
+          are named “EpiAlign hit” and “SeqOnly hit” respectively.
+          All scores are calibrated to 1,000 bp (i.e., alignment score per kilobase), 
+          and are thus comparable across alignment results of different region pairs.</p> 
+          
+        <p>Alignment results are presented in an interactive table on the result page. 
+          In both modes, you may click the icon  at the front of each row to launch a browser powered by GIVE 
+          (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
+            <span class="annotation">GIVE</span>
+          </span>)
+          to have a side-by-side view of both the query and the target regions. 
+          If you have chosen a preset dataset, the dataset will be included in the browser automatically. 
+          You may also visualize each region individually in UCSC genome browser by clicking the icon 
+          beside each coordinate (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
+            <span class="annotation">UCSC</span>
+            </span>). 
+          You may select any ENCODE/public epigenomic data tracks in "Custom Tracks", 
+          change the display mode from "hide" to "dense" to view them at the same location.</p>
+
+        <p>The table can be sorted by each column by clicking the column name. 
+          Users may also click on each row to open an expandable panel and view more details.</p>
 
         <h3 ref="oneVsOneOutput">One-vs-one mode</h3>
-        <p>For the one-vs-one mode, the result page shows an interactive table with alignment details. The table can be
-          sorted by each column by clicking the arrow beside column name. Click the arrow beside
-          "#" to reset the order. The table can be downloaded by clicking "Download results".</p>
-        <p>You may click the icon (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
-          <span class="annotation">GIVE</span>
-        </span>) at the front of each row to launch a browser powered by GIVE to have a side-by-side view of both the query
-          and the target regions. If you have chosen a preset dataset, the dataset will be included in the browser
-          automatically. If you click the icon (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
-          <span class="annotation">UCSC</span>
-          </span>) beside each genome coordinates, you can
-          see the location in UCSC genome browser. The bigWig files of all preset
-          ENCODE and public datasets were available in this browser page. You may select any ENCODE/public epigenomic data
-          tracks in "Custom Tracks", change the display mode from "hide" to "dense" to view them at the same location. </p>
-        <p>Besides, each row of the table can be clicked to expand and show the details of the one-vs-one alignment. This
-          includes highest alignment scores, and how the alignment scores
-          with ("EpiAlign") or without ("SeqOnly") epigenomic information, distribute along the target region plotted in a
-          graph.
-          Note: if you set epigenomic weight to zero during input, the EpiAlignment score will be the degenerated
+        <p>In this mode, each expandable panel contains a chart presenting alignment scores along the target regions (left) 
+          and a result evaluation panel with a number of metrics(right). All metrics are contained in the downloaded table. 
+          You may download the table to rank the results by any measurements and select region pairs for future studies 
+          (see "Filtering the results" below).</p>
+        <ul>
+          <li><strong>Overview</strong>: the highest alignment scores achieved with and without epigenomic information. 
+            A badge saying "The EpiAlign hit is different from the SeqOnly hit" 
+            will be displayed if the coordinates of the two hits don’t overlap, 
+            suggesting that another location overtakes the best sequence match due to higher epigenomic similarity.<br><br> </li>     
+          <li><strong>Sequence evaluation</strong>: an evaluation of sequence similarities between the query region and the two hits. 
+            For every hit, a signal-to-noise ratio (SNR) is provided comparing its sequence alignment score (S score)
+            to the scores of arbitrary locations within the target region. 
+            An SNR no larger than 1 indicates that the hit’s sequence similarity to the query is indistinguishable from random sequences nearby.<br> 
+            Two reference distributions of S scores are also provided for comparison purposes. The distribution of conserved mouse-human region pairs 
+            was generated using mouse regions marked by H3K4me3, H3K27ac or H3K4me1 in any tissue type included in our ChIP-Seq database and their human 
+            homologues. These mouse regions were also aligned to randomly-selected human genomic regions (~6kb long) to generate the background distribution. 
+            Approximately 15,000 mouse-human region pairs were randomly-selected and aligned to generate each distribution.<br><br></li>
+          <li><strong>Epigenome evaluation</strong>: an evaluation of epigenomic similarities between the query region and the two hits.
+            A hit's epigenomic similarity score <em>E</em> is defined as the difference between its alignment scores yielded with and without epigenomic information.
+            A theoretical range of <em>E</em> 
+            is provided based on the query epigenomic profile, 
+            where the maximum and the minimum can be achieved when all epigenomic states are rewarded or penalized, respectively. 
+            A larger <em>E</em> value suggests higher epigenomic similarity between two regions.<br>
+            Please note that a negative epigenomic similarity score does not mean that one region 
+            is marked by epigenomic modification while the other is not. The query region and the hit may both contain epigenomic peaks, 
+            whereas the peak regions barely overlap.<br><br> </li>  
+          <li><strong>Expression values of surrounding genes</strong>: expression levels of genes within 100kb flanking regions 
+            of the query and target regions. This part will only be displayed if RNA-Seq data of the same tissue type is available.</li>   
+        </ul>
+        
+        <p>Note: if you set epigenomic weight to zero during input, the EpiAlignment score is equivalent to
           sequence-only alignment score, and no "SeqOnly" result will be reported.</p>
-        <div class="manualImg large">
-          <img alt="Expandable data table for one-vs-one mode" src="assets/images/Enhancer_result_comment.png">
+        <div class="manualImg">
+          <img alt="Expandable data table for one-vs-one mode" src="assets/images/oneManualResult.png">
         </div>
+        <h4> Filtering the results</h4>
+        <p>Users may download the result table and rank the hits by any metrics, such as the overall alignment score.
+          Here, we provided several options for users to filter the results.
+          In general, and thus the sequence similarity scarcely contributes to the overall similarity at the location.</p>
 
         <h3 ref="manyVsManyOutput">Many-vs-many mode</h3>
-        <p>For the many-vs-many mode, the result page shows two heatmaps and a table. EpiAlignment scores are plotted in
-          the
-          first heatmap to show scores of any query region (row) against all target region(s) (column). A sequence-only
-          alignment result is also provided for comparative purposes, with scores illustrated in the second heatmap.
-          The row and column names are region names. If gene names or gene clusters are used as the query input to align
-          promoter regions, the row and column names will consist of gene names and the last three digits of
-          promoters' genomic coordinates. In each row, the cell with the highest score of the row is marked with a
+        <p>In many-vs-many mode, each expandable panels contains two reference distributions of sequence alignment scores (S score)
+          for the evaluation of sequence similarity between two promoters. The background distribution was generated by aligning 
+          10,000 pairs of randomly-paired human and mouse regions. 
+          The S score distribution of orthologous promoter pairs was generated using all promoter pairs whose corresponding 
+          human and mouse genes are unique orthologues to each other. Only genes included in the database for 
+          evolutionarily-related genes were used (4,615 pairs in total).</p>
+        <p>Alignment scores between query and target regions are illustrated in the two heatmaps on the result page, 
+          where rows correspond to query regions, and columns correspond to target regions.
+          In each row, the cell with the highest score of the row is marked with a
           capital "H".</p>
         <p>For each query region (row), EpiAlignment detects if its best hit switches from one target region to another
           when aligning with and without epigenomic information. The best hit is considered as "changed" if it meets
           the following criteria:</p>
+
+
 
         <div class="exampleSteps">
           <div class="flexRow flexWrap flexStretch">
@@ -679,17 +647,6 @@
           is highlighted by a green box, and the best hit found by alignment without epigenomic information is
           highlighted by a gray box. </p>
 
-        <p>The table shows details of the alignments between each pair of promoters. Similar to the one-vs-one mode,
-          You may click the icon
-          (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
-            <span class="annotation">GIVE</span>
-          </span>) at the front of each row to see a side-by-side view in the GIVE browser, or click
-          (<span class="btnWithAnno"><i class="material-icons">open_in_new</i>
-            <span class="annotation">UCSC</span>
-          </span>)
-          beside each genome coordinates to view the location in UCSC genome browser. </p>
-        <p>You can also sort the table by each column by clicking the arrow beside column name, or download the table
-          by clicking "Download results".</p>
         <div class="manualImg large">
           <img alt="Heatmap for many-vs-many mode" src="assets/images/Heatmap.png">
         </div>

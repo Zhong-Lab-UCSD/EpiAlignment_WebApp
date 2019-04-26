@@ -1724,6 +1724,7 @@ div.section table {
 	border-collapse: collapse;
 	border-top: 0.14rem solid #666666;
 	border-bottom: 0.14rem solid #666666;
+	font-size: 0.875rem;
 }
 
 div.section table > caption {

@@ -555,7 +555,7 @@
             An SNR no larger than 1 indicates that the hit’s sequence similarity to the query is indistinguishable from random sequences nearby.</p>
             <p>Two reference distributions of <em>S</em> scores are also provided for comparison purposes. The distribution of conserved mouse-human region pairs 
             was generated using mouse regions marked by H3K4me3, H3K27ac or H3K4me1 in any tissue type included in our ChIP-Seq database and their human 
-            homologues. These mouse regions were also aligned to randomly-selected human genomic regions (~6kb long) to generate the background distribution. 
+            homologues, identified using liftOver (minMatch = 0.5). These mouse regions were also aligned to randomly-selected human genomic regions (~6kb long) to generate the background distribution. 
             Approximately 15,000 mouse-human region pairs were randomly-selected and aligned to generate each distribution. 
             In general, sequence similarity scarcely contributes to the alignment when SNR close to 1 or <em>S</em> score close to the background.</p></li>
           <li><p></p><strong>Epigenome evaluation</strong>: an evaluation of epigenomic similarities between the query region and the two hits.

@@ -1849,4 +1849,20 @@ span.equation {
 	html {
 		font-size: 16px;
 	}
+
+	div#runInfo {
+		font-size: 0.75rem;
+	}
+
+	#heatmapPanel .borderedPanel {
+		font-size: 0.75rem;
+	}
+
+	table.encodeTable > * > tr > td:not(.tablePlaceHolder):empty::before {
+		font-size: 0.75rem;
+	}
+
+	div#selectedClusterHolder {
+		font-size: 0.75rem;
+	}
 }

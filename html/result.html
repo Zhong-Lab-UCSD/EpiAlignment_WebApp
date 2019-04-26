@@ -498,7 +498,7 @@
                           <p>
                             This panel evaluates sequence similarities between the query region and the two hits.
                           </p>
-                          <p>
+                          <p v-show="alignMode === 'enhancer'">
                             For every hit, a <strong>signal-to-noise ratio (SNR)</strong> compares its
                             sequence-only score to the scores of surrounding regions.
                             An SNR no larger than 1 indicates that the hit’s sequence similarity to the query is
@@ -510,8 +510,8 @@
                             of the EpiAlign hit
                             {{ alignMode === 'enhancer' ? 'and the SeqOnly hit (if different)' : '' }}
                             together with a background distribution and
-                            a distribution of conserved mouse-human
-                            {{ alignMode === 'enhancer' ? 'region pairs' : 'promoters' }}.
+                            a distribution of 
+                            {{ alignMode === 'enhancer' ? 'conserved mouse-human region pairs' : 'homologous mouse-human promoters' }}.
                           </p>
                           <p><a :href="'manual.html#' + (alignMode === 'enhancer' ? 'oneVsOneOutput' : 'manyVsManyOutput')" target="_blank">(more...)</a></p>
                         </div>
@@ -562,11 +562,11 @@
                             <line :x1="getXSeqScore(entry.item, seqBg.orthoMedian)" :y1="figProp.vertMargin" :x2="getXSeqScore(entry.item, seqBg.orthoMedian)"
                               :y2="figProp.lineHeight - figProp.vertMargin" class="seqCompOrthoMedian" />
                             <!-- Draw the two cross marks -->
-                            <use :class="{ seqCompCrossSeqMark: entry.item.shifted === 'Y', seqCompCrossEpiMark: entry.item.shifted !== 'Y' }"
+                            <use :class="{ seqCompCrossSeqMark: alignMode === 'enhancer' && entry.item.shifted === 'Y', seqCompCrossEpiMark: alignMode !== 'enhancer' || entry.item.shifted !== 'Y' }"
                               xlink:href="#crossMarker" href="#crossMarker"
                               :x="getXSeqScore(entry.item, entry.item.scoreS)"
                               :y="figProp.lineHeight / 2" />
-                            <use class="seqCompCrossEpiMark" xlink:href="#crossMarker" href="#crossMarker" v-if="entry.item.shifted === 'Y'"
+                            <use class="seqCompCrossEpiMark" xlink:href="#crossMarker" href="#crossMarker" v-if="alignMode === 'enhancer' && entry.item.shifted === 'Y'"
                               :x="getXSeqScore(entry.item, entry.item.scoreS2)" :y="figProp.lineHeight / 2" />
                           </svg>
                           <!-- Draw the horizontal axis -->

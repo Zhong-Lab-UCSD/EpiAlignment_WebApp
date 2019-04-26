@@ -45,10 +45,12 @@ const serverBasePath = '.'
  * @property {string} id Unique cluster ID
  */
 class Cluster {
-  constructor (id, geneEnsemblId, speciesName, geneMap, geneName) {
+  constructor (
+    id, geneEnsemblId, speciesName, geneMap, geneName, supportedSpeciesNames
+  ) {
     this.id = id
     this.genesBySpecies = {}
-    this.addNewSpeciesIfNotExists(speciesName)
+    supportedSpeciesNames.forEach(name => this.addNewSpeciesIfNotExists(name))
     this.addGeneById(geneEnsemblId, speciesName, geneMap, geneName)
   }
 
@@ -84,7 +86,9 @@ class Cluster {
   }
 }
 
-async function loadClustersFromFile (clusters, species, settings, geneMap) {
+async function loadClustersFromFile (
+  clusters, species, settings, geneMap, supportedSpecies
+) {
   let clusterFileName = path.format({
     dir: settings.rawFilePath || path.format({
       dir: serverBasePath,
@@ -103,7 +107,8 @@ async function loadClustersFromFile (clusters, species, settings, geneMap) {
       if (!clusters._map.has(clusterId)) {
         let newCluster =
           new Cluster(
-            clusterId, geneEnsemblId, species.name, geneMap, geneName)
+            clusterId, geneEnsemblId, species.name,
+            geneMap, geneName, supportedSpecies.map(species => species.name))
         clusters.push(newCluster)
         clusters._map.set(clusterId, newCluster)
       } else {
@@ -157,7 +162,9 @@ class ClusterProcesser {
       species => loadSpeciesGeneAnno(species)
         .then(speciesGeneMap => (this.geneMap[species.name] = speciesGeneMap))
     )).then(() => Promise.all(supportedSpecies.map(species =>
-      loadClustersFromFile(this.clusters, species, settings, this.geneMap)
+      loadClustersFromFile(
+        this.clusters, species, settings, this.geneMap, supportedSpecies
+      )
     ))).then(() => this.clusters.forEach(cluster => {
       for (let species in cluster.genesBySpecies) {
         if (cluster.genesBySpecies.hasOwnProperty(species)) {

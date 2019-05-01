@@ -1085,6 +1085,7 @@ tr.expandable {
 	box-shadow: 0.07rem 0.07rem 0.07rem 0.07rem rgba(0,0,0,0.35);
 	font-size: 0.875rem;
 	max-width: 100%;
+	max-height: 40rem;
 }
 
 div#heatmap > div {
@@ -1269,11 +1270,16 @@ div.legendIcon.heatmapObj.plain {
 
 #expressionBar {
 	padding: 0.5rem 0.75rem 0.75rem 0.75rem;
+	max-height: 100%;
 }
 
 #expressionBar .flexShrink {
 	flex: 0 1 auto;
 	overflow-y: auto;
+}
+
+#expressionBar .refBarHolder {
+	min-height: 8.5em;
 }
 
 #expressionBar .figureLegend {

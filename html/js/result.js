@@ -227,8 +227,8 @@ var app = new Vue({
       legendBoxOffset: 0
     },
     expFigProp: {
-      geneHeight: 30,
-      refHeight: 20,
+      geneHeight: 28,
+      refHeight: 3,
       axisHeight: 45,
       gap: 5,
       textAreaWidth: 80,

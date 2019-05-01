@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EpiAlignment Manual</title>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
+  <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-78231712-3"></script>
+  <script src="js/googleAnalytics.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/vue@2.5.21/dist/vue.min.js"></script>
+  <script defer src="js/manual.js" type="module"></script>
+</head>
+
+<body class="manual">
+  <div id="manual_app" class="flex flexRow flexNoGap flexNoWrap" v-cloak>
+    <div v-show="!showNav" id="callOutNav" @click="toggleNav(true)">
+      Table of contents
+    </div>
+    <transition name="nav-slide-right">
+      <div v-show="showNav" id="manualNav" class="noFlex flexColumn flexNoGap flexEnd">
+        <div id="navHeader" class="flexRow flexWrap flexNoGap flexCenter">
+          <div class="flex">Table of contents</div>
+          <div id="collapseNavButton" @click="toggleNav(false)">Collapse</div>
+        </div>
+        <div id="navContent" class="flex">
+          <ul>
+            <li>
+              <a href="#weight" @click="clickOnNav">Epigenome weight <span class="equation"><em>w</em></span></a>
+            </li>
+            <li>
+              <a href="#alignmentParameters" @click="clickOnNav">Alignment parameters</a>
+            </li>
+            <hr>
+            <li>
+              <a href="manual.html">Back to manual</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </transition>
+    <div id="manualContent" ref="manualContent" class="flex flexColumn flexNoWrap">
+      <div id="header" class="noFlex flexRow flexCenter flexWrap">
+        <!-- Introduction -->
+        <div id="headerContainer" class="flex flexColumn flexStretch flexNoWrap flexNoGap">
+          <h1 class="flex"><a href="index.html">EpiAlignment: a chromosomal similarity search engine</a></h1>
+          <div class="headerByline">
+            EpiAlignment is a tool that can align genomic regions with both sequence
+            and epigenomic information.
+          </div>
+        </div>
+        <div id="headerButtonHolder" class="flex flexRow flexWrap flexCenter justifyEnd">
+          <a class="buttons flexRow flexCenter justifyCenter" title="A template python program that can be used to access EpiAlignment"
+            target="_blank" href="assets/PythonClient.zip"><i class="material-icons">save_alt</i>Python
+            client template</a>
+        </div>
+      </div>
+      <div ref="weight" class="manualHeader">
+        <h1>Choosing parameters in EpiAlignment</h1>
+      </div>
+      <div class="section">
+        <!-- Weight -->
+        <h2>Epigenome weight <span class="equation"><em>w</em></span></h2>
+        <p> The weight parameter <em>w</em> represents the relative weight of the epigenome to the sequence.
+          EpiAlignment considers sequence only when <em>w</em> = 0,
+          while it increasingly relies on epigenomic information as <em>w</em> rises.
+          When using a larger <em>w</em>, regions with larger sequence differences (i.e., more mismatches and indels) but
+          similar
+          epigenomic states may overtake regions with similar sequences but different epigenomic states. Additionally,
+          a region pair with a larger overlap of epigenomic peaks is more likely to gain a higher
+          alignment score. You may increase w to include hits with lower sequence similarities,
+          or decrease w to limit the results to hits with <em>S</em> scores comparable to the best sequence matches. Sequence
+          and epigenomic similarities
+          between each pair of regions
+          can be further scrutinized on the result page.</p>
+      </div>
+      <div class="section">
+        <!-- Alignment parameters -->
+        <h2 ref="alignmentParameters">Alignment parameters </h2>
+        <ul id="paralist">
+          <li><strong><span class="equation"><em>s</em></span></strong>: sequence substitution rate. With a smaller <span
+              class="equation"><em>s</em></span>,
+            a larger reward score
+            will be assigned to a pair of matched bases, and a larger penalty score will be assigned to a pair of
+            mismatched bases.</li>
+          <li><strong><span class="equation"><em>&#956;</em></span></strong>: sequence deletion rate. A larger gap penalty will
+            be assigned to
+            insertions
+            and deletions with a smaller <span class="equation"><em>&#956;</em></span>.</li>
+          <li><strong><span class="equation"><em>&#954;</em></span></strong>: rate of switching between the two epigenomic
+            states 0 and 1. With a
+            smaller
+            <span class="equation"><em>&#954;</em></span>, a larger reward score will be assigned to a pair of matched
+            epigenomic states, and a
+            larger
+            penalty score will be assigned to a pair of mismatched epigenomic states.</li>
+          <li><strong><span class="equation"><em>&#960;</em><sub>A</sub></span></strong>, <strong><span
+                class="equation"><em>&#960;</em><sub>C</sub></span></strong>,
+            <strong><span class="equation"><em>&#960;</em><sub>G</sub></span></strong> and <strong><span
+                class="equation"><em>&#960;</em><sub>T</sub></span></strong>: equilibrium
+            probabilities of the four nucleotide bases.</li>
+          <li><strong><span class="equation"><em>&#960;</em><sub>1</sub></span></strong>: equilibrium probability of the
+            epigenomic state 1, that is,
+            the
+            probability of having the epigenomic modification on genomic locations.</li>
+        </ul>
+      </div>
+      <div class="section">
+        <p><a href="manual.html">Click here to go back to manual.</a></p>
+      </div>
+      <div id="footer" class="flexRow flexWrap flexCenter noFlex justifyEnd">
+        <div class="flex flexColumn flexStretch flexNoGap">
+          <!-- footer text -->
+          <div>Copyright © 2018 The Regents of the University of California. All Rights
+            Reserved.</div>
+          <div class="flex flexRow flexWrap flexStretch flexNoGap">
+            <div>Created by Jia Lu, Xiaoyi Cao and Sheng Zhong, Department of
+              Bioengineering.</div>
+            <a href='&#109;&#097;&#105;&#108;&#116;&#111;:&#115;&#122;&#104;&#111;&#110;&#103;&#064;&#101;&#110;&#103;&#046;&#117;&#099;&#115;&#100;&#046;&#101;&#100;&#117;'>Contact
+              us via email</a>
+            <a href="https://github.com/Zhong-Lab-UCSD/EpiAlignment_WebApp" target="_blank">Find us on Github</a>
+          </div>
+        </div>
+        <img id="ucsdLogo" src="assets/images/UCSanDiegoLogo-White.png">
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

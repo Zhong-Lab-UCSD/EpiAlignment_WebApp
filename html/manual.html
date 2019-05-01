@@ -80,14 +80,6 @@
                 </li>
                 <li>
                   <a href="#parameters" @click="clickOnNav">Parameters</a>
-                  <ul>
-                    <li>
-                      <a href="#weight" @click="clickOnNav">The epigenome weight</a>
-                    </li>
-                    <li>
-                      <a href="#alignmentParameters" @click="clickOnNav">Alignment parameters</a>
-                    </li>
-                  </ul>
                 </li>
               </ul>
             </li>
@@ -480,40 +472,7 @@
           not need to have identical row counts, as EpiAlignment will perform an all-against-all alignment.</p>
 
         <h3 ref="parameters">Parameters</h3>
-        <h4 ref="weight">The epigenome weight </h4>
-        <p> The weight parameter <em>w</em> represents the relative weight of the epigenome to the sequence. 
-          EpiAlignment considers sequence only when <em>w</em> = 0, 
-          while it increasingly relies on epigenomic information as <em>w</em> rises. 
-          When using a larger <em>w</em>, regions with larger sequence differences (i.e., more mismatches and indels) but
-          similar
-          epigenomic states may overtake regions with similar sequences but different epigenomic states. Additionally, 
-          a region pair with a larger overlap of epigenomic peaks is more likely to gain a higher
-          alignment score. You may increase w to include hits with lower sequence similarities, 
-          or decrease w to limit the results to hits with <em>S</em> scores comparable to the best sequence matches. Sequence and epigenomic similarities 
-          between each pair of regions 
-          can be further scrutinized on the result page.</p>
-
-        <h4 ref="alignmentParameters">Alignment parameters</h4>
-        <ul id="paralist">
-          <li><strong><span class="equation"><em>s</em></span></strong>: sequence substitution rate. With a smaller <span class="equation"><em>s</em></span>,
-            a larger reward score
-            will be assigned to a pair of matched bases, and a larger penalty score will be assigned to a pair of
-            mismatched bases.</li>
-          <li><strong><span class="equation"><em>&#956;</em></span></strong>: sequence deletion rate. A larger gap penalty will be assigned to
-            insertions
-            and deletions with a smaller <span class="equation"><em>&#956;</em></span>.</li>
-          <li><strong><span class="equation"><em>&#954;</em></span></strong>: rate of switching between the two epigenomic states 0 and 1. With a
-            smaller
-            <span class="equation"><em>&#954;</em></span>, a larger reward score will be assigned to a pair of matched epigenomic states, and a
-            larger
-            penalty score will be assigned to a pair of mismatched epigenomic states.</li>
-          <li><strong><span class="equation"><em>&#960;</em><sub>A</sub></span></strong>, <strong><span class="equation"><em>&#960;</em><sub>C</sub></span></strong>,
-            <strong><span class="equation"><em>&#960;</em><sub>G</sub></span></strong> and <strong><span class="equation"><em>&#960;</em><sub>T</sub></span></strong>: equilibrium
-            probabilities of the four nucleotide bases.</li>
-          <li><strong><span class="equation"><em>&#960;</em><sub>1</sub></span></strong>: equilibrium probability of the epigenomic state 1, that is,
-            the
-            probability of having the epigenomic modification on genomic locations.</li>
-        </ul>
+        <p>Please refer to <a href="manualParam.html">Choosing parameters in EpiAlignment</a> for details.</p>
 
         <h2 ref="output">Output</h2>
         <p>In both modes, EpiAlignment will return two types of alignment results, yielded with (<em>w</em> = 0) 

@@ -88,6 +88,7 @@ var app = new Vue({
     showMoreParamText: 'Show more parameters...',
     submitStatus: null,
     showModeHelp: false,
+    showParamHelp: false,
 
     bedHint1On: false,
     bedHint2On: false,

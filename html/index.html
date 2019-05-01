@@ -81,7 +81,7 @@
               <div>
                 <strong>Sample data is available in both modes.</strong>
               </div>
-              <div><a href="manual.html#usageOverview">More information ...</a>
+              <div><a href="manual.html#usageOverview" target="_blank">More information ...</a>
               </div>
             </div>
             <div class="flexRow flexWrap flexNoGap flexStart">
@@ -381,12 +381,25 @@
           <h2> STEP 3 </h2>
         </div>
         <div class="stepright flexColumn flexStretch">
-          <div>
+          <div class="flexRow flexCenter flexWrap">
             <h2>Set the alignment parameters</h2>
+            <div id="paramHelp" class="help flexRow flexCenter flexNoWrap" @click="showParamHelp = !showParamHelp">
+              <i class="material-icons iconAtLeft">help</i>
+              <div>What are these parameters?</div>
+            </div>
+          </div>
+          <div v-show="showParamHelp" class="tooltipPanel flexColumn flexNoWrap flexStretch">
+            <div class="flexRow flexNoGap flexWrap flexStretch">
+              <div>
+                <strong>A <span class="equation"><em>w</em></span> value greater than 0.15 is not recommended.</strong>
+              </div>
+              <div><a href="manualParam.html" target="_blank">More information ...</a>
+              </div>
+            </div>
           </div>
           <div class="flexRow flexCenter flexWrap">
             <div class="flexRow flexNoWrap shortInputContainer">
-              <div class="subElemLabel">Epigenome weight (relative to sequence):</div>
+              <div class="subElemLabel">Epigenome weight <span class="equation"><em>w</em></span> (relative to sequence):</div>
               <input ref="weight" type="number" min="0" step="any" autocomplete="new-password" name="epiweight"
                 v-model.number="formParams.epiweight" value="0.05">
             </div>

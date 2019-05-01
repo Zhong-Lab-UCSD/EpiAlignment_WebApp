@@ -222,58 +222,86 @@
         </div>
         <div class="flexColumn flexNoWrap flexNoGap noFlex">
           <div id="expressionBar" v-if="!!expList" class="borderedPanel flexColumn flexShrink flexNoGap">
-            <div class="selfAlignStretch resultHeader"><span class="headerText">Gene expression values</span></div>
-            <div class="flexShrink flexColumn flexNoGap refBarHolder" v-for="(expInRef, refIndex) in expList">
-              <div>
-                <strong>{{ capitalize(expInRef.refName) }}</strong>
-              </div>
-              <div class="flexShrink flexColumn">
-                <!-- SVG bar content -->
-                <div style="font-size: 0;" :style="{ height: getExpInRefHeight(expInRef) + 'px' }">
-                  <svg :width="expFigProp.width" :height="getExpInRefHeight(expInRef)">
-                    <svg v-for="(geneEntry, geneIndex) in expInRef.expValues" :width="expFigProp.width"
-                      :height="expFigProp.geneHeight" x="0"
-                      :y="geneIndex * (expFigProp.geneHeight + expFigProp.gap) + expFigProp.refHeight">
-                      <text :x="expFigProp.textAreaWidth - expFigProp.textMargin"
-                        :y="(expFigProp.geneHeight + expFigProp.textSize - expFigProp.gap) / 2"
-                        :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="end">{{ geneEntry.symbol }}</text>
-                      <rect v-for="(expValue, index) in geneEntry.indExpValues" :x="expFigProp.textAreaWidth"
-                        :y="index * expFigProp.geneHeight / geneEntry.indExpValues.length"
-                        :width="getXExpression(expList, expValue.FPKM) - expFigProp.textAreaWidth"
-                        :height="expFigProp.geneHeight / geneEntry.indExpValues.length"
-                        :style="{ fontSize: figProp.axisLabelSize, fill: '#' + getColorString(expList, refIndex, index) }" />
+            <div class="selfAlignStretch resultHeader" @click="barGraphMode = !barGraphMode"><span class="headerText">Gene expression values</span></div>
+            <div v-show="barGraphMode">
+              <div class="flexShrink flexColumn flexNoGap refBarHolder" v-for="(expInRef, refIndex) in expList">
+                <div>
+                  <strong>{{ capitalize(expInRef.refName) }}</strong>
+                </div>
+                <div class="flexShrink flexColumn">
+                  <!-- SVG bar content -->
+                  <div style="font-size: 0;" :style="{ height: getExpInRefHeight(expInRef) + 'px' }">
+                    <svg :width="expFigProp.width" :height="getExpInRefHeight(expInRef)">
+                      <svg v-for="(geneEntry, geneIndex) in expInRef.expValues" :width="expFigProp.width"
+                        :height="expFigProp.geneHeight" x="0"
+                        :y="geneIndex * (expFigProp.geneHeight + expFigProp.gap) + expFigProp.refHeight">
+                        <text :x="expFigProp.textAreaWidth - expFigProp.textMargin"
+                          :y="(expFigProp.geneHeight + expFigProp.textSize - expFigProp.gap) / 2"
+                          :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="end">{{ geneEntry.symbol }}</text>
+                        <rect v-for="(expValue, index) in geneEntry.indExpValues" :x="expFigProp.textAreaWidth"
+                          :y="index * expFigProp.geneHeight / geneEntry.indExpValues.length"
+                          :width="getXExpression(expList, expValue.FPKM) - expFigProp.textAreaWidth"
+                          :height="expFigProp.geneHeight / geneEntry.indExpValues.length"
+                          :style="{ fontSize: figProp.axisLabelSize, fill: '#' + getColorString(expList, refIndex, index) }" />
+                      </svg>
+                      <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth" :y2="getExpressionHeight(expList)"
+                        class="seqCompAxis" />
                     </svg>
-                    <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth"
-                      :y2="getExpressionHeight(expList)" class="seqCompAxis" />
+                  </div>
+                </div>
+                <div class="noFlex flexNoWrap">
+                  <!-- SVG bottom axis -->
+                  <svg :width="expFigProp.width" :height="expFigProp.axisHeight">
+                    <defs>
+                      <marker id="arrowHead" markerWidth="10" markerHeight="10" refx="2" refy="5" orient="auto">
+                        <path d="M0 2 L2 5 L0 8 L10 5 L0 2" />
+                      </marker>
+                    </defs>
+                    <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth" :y2="expFigProp.gap - 0.5"
+                      class="seqCompAxis" />
+                    <line :x1="expFigProp.textAreaWidth" :y1="expFigProp.gap - 0.5" :x2="expFigProp.width - expFigProp.horizMargin"
+                      :y2="expFigProp.gap - 0.5" class="seqCompAxis" marker-end="url(#arrowHead)" />
+                    <!-- Draw all the tick marks -->
+                    <g v-for="tick in getTickList(0, getExpressionMax(expList), expFigProp.maxNumOfTicks)">
+                      <line :x1="getXExpression(expList, tick)" :y1="expFigProp.gap - 0.5" :x2="getXExpression(expList, tick)"
+                        :y2="expFigProp.gap + expFigProp.tickSize - 0.5" class="seqCompAxis" />
+                      <text :x="getXExpression(expList, tick)"
+                        :y="expFigProp.gap + expFigProp.tickSize + expFigProp.axisLabelSize - 0.5"
+                        :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="middle">{{ tick }}</text>
+                    </g>
+                    <text :x="(expFigProp.width + expFigProp.textAreaWidth - expFigProp.horizMargin) / 2"
+                      :y="expFigProp.gap * 2 + expFigProp.tickSize + expFigProp.axisLabelSize + expFigProp.textSize - 0.5"
+                      :style="{ fontSize: expFigProp.textSize, fontWeight: 'bold' }" text-anchor="middle">FPKM</text>
                   </svg>
                 </div>
               </div>
-              <div class="noFlex flexNoWrap">
-                <!-- SVG bottom axis -->
-                <svg :width="expFigProp.width" :height="expFigProp.axisHeight">
-                  <defs>
-                    <marker id="arrowHead" markerWidth="10" markerHeight="10" refx="2" refy="5" orient="auto">
-                      <path d="M0 2 L2 5 L0 8 L10 5 L0 2" />
-                    </marker>
-                  </defs>
-                  <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth" :y2="expFigProp.gap - 0.5"
-                    class="seqCompAxis" />
-                  <line :x1="expFigProp.textAreaWidth" :y1="expFigProp.gap - 0.5" :x2="expFigProp.width - expFigProp.horizMargin"
-                    :y2="expFigProp.gap - 0.5" class="seqCompAxis" marker-end="url(#arrowHead)" />
-                  <!-- Draw all the tick marks -->
-                  <g v-for="tick in getTickList(0, getExpressionMax(expList), expFigProp.maxNumOfTicks)">
-                    <line :x1="getXExpression(expList, tick)" :y1="expFigProp.gap - 0.5" :x2="getXExpression(expList, tick)"
-                      :y2="expFigProp.gap + expFigProp.tickSize - 0.5" class="seqCompAxis" />
-                    <text :x="getXExpression(expList, tick)"
-                      :y="expFigProp.gap + expFigProp.tickSize + expFigProp.axisLabelSize - 0.5"
-                      :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="middle">{{ tick }}</text>
-                  </g>
-                  <text :x="(expFigProp.width + expFigProp.textAreaWidth - expFigProp.horizMargin) / 2"
-                    :y="expFigProp.gap * 2 + expFigProp.tickSize + expFigProp.axisLabelSize + expFigProp.textSize - 0.5"
-                    :style="{ fontSize: expFigProp.textSize, fontWeight: 'bold' }" text-anchor="middle">FPKM</text>
-                </svg>
-              </div>
             </div>
+            <table class="expressionTable v-datatable v-table theme--light" v-show="!barGraphMode">
+              <thead>
+                <tr>
+                  <th>Gene symbol</th>
+                  <th>FPKM value(s)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-for="(expInRef, refIndex) in expList">
+                  <tr>
+                    <th colspan="3">{{ capitalize(expInRef.refName) }}</th>
+                  </tr>
+                  <tr v-for="geneEntry in expInRef.expValues">
+                    <td>{{ geneEntry.symbol }}</td>
+                    <td class="flexColumn flexEnd">
+                      <div v-for="(expEntry, expIndex) in geneEntry.indExpValues" class="flexRow flexNoGap flexCenter">
+                        <div class="expColorSquare"
+                          :style="{ background: '#' + getColorString(expList, refIndex, expIndex) }">
+                        </div>
+                        {{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
             <div class="noFlex flexRow flexWrap flexNoGap figureLegend">
               <!-- Legend for expression, populate from expInRef.expIds -->
               <template v-for="(expInRef, refIndex) in expList">
@@ -745,7 +773,7 @@
                           <tbody>
                             <template v-for="(expInRef, refIndex) in entry.item.expression">
                               <tr>
-                                <th colspan="3">{{ expInRef.refName }}</th>
+                                <th colspan="3">{{ capitalize(expInRef.refName) }}</th>
                               </tr>
                               <tr v-for="geneEntry in expInRef.expValues">
                                 <td>{{ geneEntry.symbol }}</td>

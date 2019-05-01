@@ -110,6 +110,7 @@ var app = new Vue({
     geneIdentifier1: null, // ['transID1', 'region_name1']
     geneIdentifier2: null, // ['transID2', 'region_name2']
     showHeatmap: false,
+    barGraphMode: true,
 
     heatmapDesc: {
       min: Number.MAX_VALUE,

@@ -1425,25 +1425,25 @@ div.resultDesc span.shiftedLabel > i.material-icons {
 	margin-right: 0.25em;
 }
 
-div.enhancerCardContainer table.expressionTable {
+div#pageContainer table.expressionTable {
 	width: auto;
 	border-collapse: collapse;
 	border: 0.07rem solid #666666;
 	margin: 1em 0.5em;
 }
 
-div.enhancerCardContainer table.expressionTable > * > tr {
+div#pageContainer table.expressionTable > * > tr {
 	padding: 0;
 	height: auto;
 }
 
-div.enhancerCardContainer table.expressionTable > thead > tr > th {
+div#pageContainer table.expressionTable > thead > tr > th {
 	padding: 0.5em 1em;
 	height: auto;
 	font-weight: bold;
 }
 
-div.enhancerCardContainer table.expressionTable > tbody > tr > th {
+div#pageContainer table.expressionTable > tbody > tr > th {
 	padding: 0.5em 0.5em;
 	height: auto;
 	text-align: left;
@@ -1451,12 +1451,12 @@ div.enhancerCardContainer table.expressionTable > tbody > tr > th {
 	background: #EEEEEE;
 }
 
-div.enhancerCardContainer table.expressionTable > tbody > tr > td {
+div#pageContainer table.expressionTable > tbody > tr > td {
 	padding: 0.5em 1em;
 	height: auto;
 }
 
-div.enhancerCardContainer table.expressionTable > tbody > tr > td.rightAlign {
+div#pageContainer table.expressionTable > tbody > tr > td.rightAlign {
 	text-align: right;
 }
 

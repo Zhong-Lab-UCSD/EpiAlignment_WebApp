@@ -398,7 +398,8 @@ button:active > div.buttonTip {
 	align-self: center;
 }
 
-i.material-icons {
+i.material-icons,
+i.material-icons-outlined {
 	font-size: 1.5em;
 	vertical-align: text-bottom;
 }
@@ -899,29 +900,30 @@ div#runInfo > div > div > div.parameter > span.entryKey {
 	font-family: 'Times New Roman', Times, serif;
 }
 
-div.runInfoShowHide {
+div.grayButton {
 	cursor: pointer; 
 	border: 0.07rem solid #999999;
 	border-radius: 0.21rem;
-	background: #CCCCCC;
+	background: rgba(0, 0, 0, 0.125);
+	mix-blend-mode: multiply;
 }
 
-div.expandedRunInfo div.runInfoShowHide {
+div.expandedRunInfo div.grayButton {
 	margin: 0.1rem 0.5rem 0 0.5rem;
 	padding: 0 2.5rem;
 }
 
-div.collapsedRunInfo div.runInfoShowHide {
+div.collapsedRunInfo div.grayButton {
 	margin: 0.1rem 0.5rem;
 	padding: 0 1rem;
 }
 
-div.runInfoShowHide:hover {
-	background: #BBBBBB;
+div.grayButton:hover {
+	background: rgba(0, 0, 0, 0.2);
 }
 
-div.runInfoShowHide:active {
-	background: #AAAAAA;
+div.grayButton:active {
+	background: rgba(0, 0, 0, 0.25);
 }
 
 div.errorContainer {
@@ -978,7 +980,7 @@ span.keyboard {
 }
 
 .resultHeader {
-	margin: 1.5rem 0 1rem 0;
+	margin: 1.5rem 0 0.25rem 0;
 }
 
 .resultHeader > * {
@@ -1268,18 +1270,18 @@ div.legendIcon.heatmapObj.plain {
 	margin: -1em 1em 0 1em;
 }
 
-#expressionBar {
-	padding: 0.5rem 0.75rem 0.75rem 0.75rem;
-	max-height: 100%;
-}
-
-#expressionBar .flexShrink {
+#pageContainer .flexShrink {
 	flex: 0 1 auto;
 	overflow-y: auto;
 }
 
-#expressionBar .refBarHolder {
+#pageContainer .refBarHolder {
 	min-height: 8.5em;
+}
+
+#expressionBar {
+	padding: 0.5rem 0.75rem 0.75rem 0.75rem;
+	max-height: 100%;
 }
 
 #expressionBar .figureLegend {
@@ -1297,11 +1299,22 @@ div.legendIcon.heatmapObj.plain {
 	margin-right: 1.5em;
 }
 
+div#pageContainer div.grayButton {
+	padding: 0.14rem 0.21rem;
+}
+
+div#pageContainer div.grayButton > div > i.material-icons-outlined {
+	margin-right: 0.2em;
+}
+
+div#pageContainer div.grayButton > div > i.material-icons-outlined.rotated90deg {
+	transform: rotate(90deg);
+}
+
 /* ***** Enhancer image related ***** */
 
 div.enhancerHint {
 	font-size: 0.875rem;
-	margin-top: -0.6em;
 	margin-bottom: 0.4em;
 }
 
@@ -1400,6 +1413,13 @@ div.resultDesc div.sectionHeader .helpContent p {
 	margin-bottom: 0.5em;
 }
 
+div#pageContainer div.resultDesc div.sectionHeader div.grayButton {
+	font-size: 0.875rem;
+	font-weight: 500;
+	margin: 0 0.75em;
+	padding: 0.07rem 0.21rem;
+}
+
 div.resultDesc div.subHeader {
 	font-size: 1.1rem;
 	font-weight: bold;
@@ -1425,11 +1445,19 @@ div.resultDesc span.shiftedLabel > i.material-icons {
 	margin-right: 0.25em;
 }
 
+div#pageContainer div.enhancerTableBarContainer > * {
+	max-height: 30rem;
+}
+
+div#pageContainer div.expressionTableHolder,
+div#pageContainer div.barGraphHolder {
+  margin: 1em 0.5em;
+}
+
 div#pageContainer table.expressionTable {
 	width: auto;
 	border-collapse: collapse;
 	border: 0.07rem solid #666666;
-	margin: 1em 0.5em;
 }
 
 div#pageContainer table.expressionTable > * > tr {

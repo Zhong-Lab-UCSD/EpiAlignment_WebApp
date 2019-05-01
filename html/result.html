@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EpiAlignment - Result</title>
-  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons|Material+Icons+Outlined' rel="stylesheet" type="text/css">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@1.5.11/dist/vuetify.min.css" rel="stylesheet" type="text/css">
   <link href="styles/mainstyles.css" rel="stylesheet" type="text/css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-78231712-3"></script>
@@ -39,7 +39,7 @@
             <span class="entryValue">{{ entry.value }}</span>
           </div>
         </div>
-        <div class="runInfoShowHide selfAlignStart" @click="showRunInfoDetails">Show more details ...</div>
+        <div class="grayButton selfAlignStart" @click="showRunInfoDetails">Show more details ...</div>
       </div>
       <div v-show="showRunDetails" class="expandedRunInfo noFlex flexColumn flexNoWrap flexNoGap">
         <div class="noFlex flexRow flexWrap flexNoGap justifyStart" v-for="row in expandedRunInfoList">
@@ -48,7 +48,7 @@
             <span class="entryValue">{{ entry.value }}</span>
           </div>
         </div>
-        <div class="runInfoShowHide selfAlignStart" @click="foldRunInfoDetails">Fold details</div>
+        <div class="grayButton selfAlignStart" @click="foldRunInfoDetails">Fold details</div>
       </div>
     </div>
     <div class="errorContainer" v-if="error">
@@ -222,8 +222,19 @@
         </div>
         <div class="flexColumn flexNoWrap flexNoGap noFlex">
           <div id="expressionBar" v-if="!!expList" class="borderedPanel flexColumn flexShrink flexNoGap">
-            <div class="selfAlignStretch resultHeader" @click="barGraphMode = !barGraphMode"><span class="headerText">Gene expression values</span></div>
-            <div v-show="barGraphMode">
+            <div class="selfAlignStretch resultHeader flexRow flexCenter flexWrap flexNoGap">
+              <span class="headerText flex">Gene expression values</span>
+              <div @click="barGraphMode = !barGraphMode"
+                class="grayButton">
+                <div v-show="barGraphMode" class="flexRow flexCenter flexNoGap flexNoWrap">
+                  <i class="material-icons-outlined">table_chart</i> Table view
+                </div>
+                <div v-show="!barGraphMode" class="flexRow flexCenter flexNoGap flexNoWrap">
+                  <i class="material-icons-outlined rotated90deg">insert_chart</i> Bar plot view
+                </div>
+              </div>
+            </div>
+            <div v-show="barGraphMode" class="flexColumn flexShrink flexNoGap">
               <div class="flexShrink flexColumn flexNoGap refBarHolder" v-for="(expInRef, refIndex) in expList">
                 <div>
                   <strong>{{ capitalize(expInRef.refName) }}</strong>
@@ -276,32 +287,34 @@
                 </div>
               </div>
             </div>
-            <table class="expressionTable v-datatable v-table theme--light" v-show="!barGraphMode">
-              <thead>
-                <tr>
-                  <th>Gene symbol</th>
-                  <th>FPKM value(s)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template v-for="(expInRef, refIndex) in expList">
+            <div v-show="!barGraphMode" class="flexColumn flexShrink flexNoGap expressionTableHolder">
+              <table class="expressionTable v-datatable v-table theme--light">
+                <thead>
                   <tr>
-                    <th colspan="3">{{ capitalize(expInRef.refName) }}</th>
+                    <th>Gene symbol</th>
+                    <th>FPKM value(s)</th>
                   </tr>
-                  <tr v-for="geneEntry in expInRef.expValues">
-                    <td>{{ geneEntry.symbol }}</td>
-                    <td class="flexColumn flexEnd">
-                      <div v-for="(expEntry, expIndex) in geneEntry.indExpValues" class="flexRow flexNoGap flexCenter">
-                        <div class="expColorSquare"
-                          :style="{ background: '#' + getColorString(expList, refIndex, expIndex) }">
+                </thead>
+                <tbody>
+                  <template v-for="(expInRef, refIndex) in expList">
+                    <tr>
+                      <th colspan="2">{{ capitalize(expInRef.refName) }}</th>
+                    </tr>
+                    <tr v-for="geneEntry in expInRef.expValues">
+                      <td>{{ geneEntry.symbol }}</td>
+                      <td class="flexColumn flexEnd">
+                        <div v-for="(expEntry, expIndex) in geneEntry.indExpValues" class="flexRow flexNoGap flexCenter">
+                          <div class="expColorSquare"
+                            :style="{ background: '#' + getColorString(expList, refIndex, expIndex) }">
+                          </div>
+                          {{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}
                         </div>
-                        {{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}
-                      </div>
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
             <div class="noFlex flexRow flexWrap flexNoGap figureLegend">
               <!-- Legend for expression, populate from expInRef.expIds -->
               <template v-for="(expInRef, refIndex) in expList">
@@ -318,7 +331,9 @@
           </div>
         </div>
         <div id="heatmapDesc" class="flex">
-          <div class="resultHeader"><span class="headerText">Result description</span></div>
+          <div class="resultHeader flexRow flexNoGap">
+            <div class="headerText">Result description</div>
+          </div>
           <p>
             EpiAlignment score are plotted in the heatmap to show scores of
             all given target region(s) (column) against any query region (row).
@@ -481,7 +496,7 @@
                 </div>
                 <div class="flex resultDesc">
                   <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer'">
-                    <div class="sectionHeader flexRow flexNoGap flexStart flexWrap">
+                    <div class="sectionHeader flexRow flexNoGap flexCenter flexWrap">
                       <div class="nobr">Overview</div>
                       <div v-show="!showHelp.overview" class="help flexRow flexCenter flexNoWrap" @click="showHelp.overview = !showHelp.overview">
                         <i class="material-icons iconAtLeft">help</i>
@@ -519,7 +534,7 @@
                     </div>
                   </div>
                   <div class="flexColumn dataPart flexNoGap">
-                    <div class="sectionHeader flexRow flexNoGap flexStart flexWrap">
+                    <div class="sectionHeader flexRow flexNoGap flexCenter flexWrap">
                       <div class="nobr">Sequence evaluation</div>
                       <div v-show="!showHelp.seqEval" class="help flexRow flexCenter flexNoWrap"
                         @click="showHelp.seqEval = !showHelp.seqEval">
@@ -670,7 +685,7 @@
                     </div>
                   </div>
                   <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer'">
-                    <div class="sectionHeader flexRow flexNoGap flexStart flexWrap">
+                    <div class="sectionHeader flexRow flexNoGap flexCenter flexWrap">
                       <div class="nobr">Epigenome evaluation</div>
                       <div v-show="!showHelp.epiEval" class="help flexRow flexCenter flexNoWrap"
                         @click="showHelp.epiEval = !showHelp.epiEval">
@@ -741,8 +756,17 @@
                     </div>
                   </div>
                   <div class="flexColumn dataPart flexNoGap" v-if="alignMode === 'enhancer'">
-                    <div class="sectionHeader flexRow flexNoGap flexStart flexWrap">
+                    <div class="sectionHeader flexRow flexNoGap flexCenter flexWrap">
                       <div class="nobr">Expression values of surrounding genes</div>
+                      <div v-if="entry.item.expression"
+                        @click="entry.item.barGraphMode = !entry.item.barGraphMode" class="grayButton">
+                        <div v-show="entry.item.barGraphMode" class="flexRow flexCenter flexNoGap flexNoWrap">
+                          <i class="material-icons-outlined">table_chart</i> Table view
+                        </div>
+                        <div v-show="!entry.item.barGraphMode" class="flexRow flexCenter flexNoGap flexNoWrap">
+                          <i class="material-icons-outlined rotated90deg">insert_chart</i> Bar plot view
+                        </div>
+                      </div>
                       <div v-show="!showHelp.expression" class="help flexRow flexCenter flexNoWrap"
                         @click="showHelp.expression = !showHelp.expression">
                         <i class="material-icons iconAtLeft">help</i>
@@ -761,35 +785,90 @@
                       No expression data available for selected datasets.
                     </div>
                     <div v-else>
-                      <div class="flexRow flexCenter flexWrap">
-                        <table class="expressionTable">
-                          <thead>
-                            <tr>
-                              <th>Gene symbol</th>
-                              <th>Distance to query / target region</th>
-                              <th>FPKM value(s)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <template v-for="(expInRef, refIndex) in entry.item.expression">
+                      <div class="flexRow flexCenter flexWrap enhancerTableBarContainer">
+                        <div class="flexColumn flexShrink expressionTableHolder">
+                          <table v-show="!entry.item.barGraphMode" class="expressionTable">
+                            <thead>
                               <tr>
-                                <th colspan="3">{{ capitalize(expInRef.refName) }}</th>
+                                <th>Gene symbol</th>
+                                <th>Distance to query / target region</th>
+                                <th>FPKM value(s)</th>
                               </tr>
-                              <tr v-for="geneEntry in expInRef.expValues">
-                                <td>{{ geneEntry.symbol }}</td>
-                                <td class="rightAlign">{{ geneEntry.distance > 0 ? geneEntry.distance : 'Overlapping' }}</td>
-                                <td class="flexColumn flexEnd">
-                                  <div v-for="(expEntry, expIndex) in geneEntry.indExpValues" class="flexRow flexNoGap flexCenter">
-                                    <div class="expColorSquare"
-                                      :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">
+                            </thead>
+                            <tbody>
+                              <template v-for="(expInRef, refIndex) in entry.item.expression">
+                                <tr>
+                                  <th colspan="3">{{ capitalize(expInRef.refName) }}</th>
+                                </tr>
+                                <tr v-for="geneEntry in expInRef.expValues">
+                                  <td>{{ geneEntry.symbol }}</td>
+                                  <td class="rightAlign">{{ geneEntry.distance > 0 ? geneEntry.distance : 'Overlapping' }}</td>
+                                  <td class="flexColumn flexEnd">
+                                    <div v-for="(expEntry, expIndex) in geneEntry.indExpValues" class="flexRow flexNoGap flexCenter">
+                                      <div class="expColorSquare"
+                                        :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">
+                                      </div>
+                                      {{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}
                                     </div>
-                                    {{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}
-                                  </div>
-                                </td>
-                              </tr>
-                            </template>
-                          </tbody>
-                        </table>
+                                  </td>
+                                </tr>
+                              </template>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div v-show="entry.item.barGraphMode" class="flexColumn flexShrink flexNoGap barGraphHolder">
+                          <div class="flexShrink flexColumn flexNoGap refBarHolder" v-for="(expInRef, refIndex) in entry.item.expression">
+                            <div>
+                              <strong>{{ capitalize(expInRef.refName) }}</strong>
+                            </div>
+                            <div class="flexShrink flexColumn">
+                              <!-- SVG bar content -->
+                              <div style="font-size: 0;" :style="{ height: getExpInRefHeight(expInRef) + 'px' }">
+                                <svg :width="expFigProp.width" :height="getExpInRefHeight(expInRef)">
+                                  <svg v-for="(geneEntry, geneIndex) in expInRef.expValues" :width="expFigProp.width"
+                                    :height="expFigProp.geneHeight" x="0"
+                                    :y="geneIndex * (expFigProp.geneHeight + expFigProp.gap) + expFigProp.refHeight">
+                                    <text :x="expFigProp.textAreaWidth - expFigProp.textMargin"
+                                      :y="(expFigProp.geneHeight + expFigProp.textSize - expFigProp.gap) / 2"
+                                      :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="end">{{ geneEntry.symbol }}</text>
+                                    <rect v-for="(expValue, index) in geneEntry.indExpValues" :x="expFigProp.textAreaWidth"
+                                      :y="index * expFigProp.geneHeight / geneEntry.indExpValues.length"
+                                      :width="getXExpression(entry.item.expression, expValue.FPKM) - expFigProp.textAreaWidth"
+                                      :height="expFigProp.geneHeight / geneEntry.indExpValues.length"
+                                      :style="{ fontSize: figProp.axisLabelSize, fill: '#' + getColorString(entry.item.expression, refIndex, index) }" />
+                                  </svg>
+                                  <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth" :y2="getExpressionHeight(entry.item.expression)"
+                                    class="seqCompAxis" />
+                                </svg>
+                              </div>
+                            </div>
+                            <div class="noFlex flexNoWrap">
+                              <!-- SVG bottom axis -->
+                              <svg :width="expFigProp.width" :height="expFigProp.axisHeight">
+                                <defs>
+                                  <marker id="arrowHead" markerWidth="10" markerHeight="10" refx="2" refy="5" orient="auto">
+                                    <path d="M0 2 L2 5 L0 8 L10 5 L0 2" />
+                                  </marker>
+                                </defs>
+                                <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth" :y2="expFigProp.gap - 0.5"
+                                  class="seqCompAxis" />
+                                <line :x1="expFigProp.textAreaWidth" :y1="expFigProp.gap - 0.5" :x2="expFigProp.width - expFigProp.horizMargin"
+                                  :y2="expFigProp.gap - 0.5" class="seqCompAxis" marker-end="url(#arrowHead)" />
+                                <!-- Draw all the tick marks -->
+                                <g v-for="tick in getTickList(0, getExpressionMax(entry.item.expression), expFigProp.maxNumOfTicks)">
+                                  <line :x1="getXExpression(entry.item.expression, tick)" :y1="expFigProp.gap - 0.5" :x2="getXExpression(entry.item.expression, tick)"
+                                    :y2="expFigProp.gap + expFigProp.tickSize - 0.5" class="seqCompAxis" />
+                                  <text :x="getXExpression(entry.item.expression, tick)"
+                                    :y="expFigProp.gap + expFigProp.tickSize + expFigProp.axisLabelSize - 0.5"
+                                    :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="middle">{{ tick }}</text>
+                                </g>
+                                <text :x="(expFigProp.width + expFigProp.textAreaWidth - expFigProp.horizMargin) / 2"
+                                  :y="expFigProp.gap * 2 + expFigProp.tickSize + expFigProp.axisLabelSize + expFigProp.textSize - 0.5"
+                                  :style="{ fontSize: expFigProp.textSize, fontWeight: 'bold' }" text-anchor="middle">FPKM</text>
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
                         <div class="flexColumn flexWrap figureLegend">
                           <!-- Legend for expression, populate from expInRef.expIds -->
                           <template v-for="(expInRef, refIndex) in entry.item.expression">

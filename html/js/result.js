@@ -433,6 +433,9 @@ var app = new Vue({
         Vue.set(row.item, 'imageError', false)
         if (row.expanded) {
           this.getEnhancerImage(row.item)
+          if (row.item.barGraphMode === undefined) {
+            Vue.set(row.item, 'barGraphMode', false)
+          }
         }
       }
     },

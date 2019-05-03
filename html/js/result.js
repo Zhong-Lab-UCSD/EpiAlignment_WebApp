@@ -233,13 +233,13 @@ var app = new Vue({
       refHeight: 3,
       axisHeight: 45,
       gap: 5,
-      textAreaWidth: 80,
+      textAreaWidth: 70,
       textMargin: 5,
       textSize: 14,
       tickSize: 5,
       axisLabelSize: 12,
       maxNumOfTicks: 10,
-      width: 350,
+      width: 300,
       horizMargin: 10
     },
     params: {

@@ -53,12 +53,13 @@ const serverBasePath = '.'
  * @param {string} ncbiEntry the entry in NCBI gene_info file
  */
 class Gene {
-  constructor (symbol, ensemblId, aliases, description) {
+  constructor (symbol, ensemblId, aliases, description, type) {
     this.symbol = symbol
     this.ensemblId = ensemblId
     this.aliases = aliases || []
     this.aliases.unshift(this.symbol.toLowerCase())
     this.description = description || ''
+    this.type = type || 'other'
   }
 
   toJSON () {
@@ -83,9 +84,46 @@ class Gene {
     let description = tokens[8]
     let symbol = tokens[2]
     let aliases = tokens[4] !== '-' ? tokens[4].split('|') : []
-    return new this(symbol, ensemblId, aliases, description)
+    return new this(symbol, ensemblId, aliases, description, tokens[9])
+  }
+
+  merge (newGeneEntry) {
+    let newGenePriority =
+      this.constructor.priorityList.indexOf(newGeneEntry.type)
+    let currGenePriority = this.constructor.priorityList.indexOf(this.type)
+    if (currGenePriority < newGenePriority) {
+      // replace current gene with new gene, and add current gene symbol
+      // and all aliases as aliases of the new gene
+      this.aliases.forEach(alias => {
+        if (newGeneEntry.aliases.indexOf(alias) < 0) {
+          newGeneEntry.aliases.push(alias)
+        }
+      })
+      this.symbol = newGeneEntry.symbol
+      this.ensemblId = newGeneEntry.ensemblId
+      this.aliases = newGeneEntry.aliases
+      this.description = newGeneEntry.description + '; ' + this.description
+      this.type = newGeneEntry.type
+    } else {
+      newGeneEntry.aliases.forEach(alias => {
+        if (this.aliases.indexOf(alias) < 0) {
+          this.aliases.push(alias)
+        }
+      })
+      this.description += '; ' + newGeneEntry.description
+    }
+    return this
   }
 }
+
+/**
+ * Priority list of gene types, entries __later in the list__ will get higher
+ * priorities than entries earlier in the list (or does not exist in the list)
+ */
+Gene.priorityList = [
+  'ncRNA',
+  'protein_coding'
+]
 
 async function loadGeneAnnoFromGzipBuffer (buffer, keys, caseInSensitive) {
   keys = keys || ['ensemblId']
@@ -99,9 +137,13 @@ async function loadGeneAnnoFromGzipBuffer (buffer, keys, caseInSensitive) {
       let newGene = Gene.getGeneFromNcbiEntry(line)
       keys.forEach(key => {
         if (newGene.hasOwnProperty(key) && newGene[key]) {
-          speciesGeneMap.set(
-            (caseInSensitive ? newGene[key].toLowerCase() : newGene[key]),
-            newGene)
+          let matchingKey = caseInSensitive
+            ? newGene[key].toLowerCase() : newGene[key]
+          if (speciesGeneMap.has(matchingKey)) {
+            speciesGeneMap.get(matchingKey).merge(newGene)
+          } else {
+            speciesGeneMap.set(matchingKey, newGene)
+          }
         }
       })
     }

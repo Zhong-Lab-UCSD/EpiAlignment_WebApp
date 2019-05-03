@@ -234,7 +234,8 @@ async function getExperimentsUsingBiosample (biosampleObj, notReleaseOnly) {
   // first get the uuid of the biosampleObj
   let uuid = biosampleObj.uuid
   let queryUrlBase = 'https://www.encodeproject.org/search/?' +
-    'format=json&type=Experiment&replicates.library.biosample.uuid=' + uuid
+    'format=json&type=Experiment&replicates.library.biosample.uuid=' + uuid +
+    '&limit=all'
   let status = ''
   if (!notReleaseOnly) {
     // release only
@@ -392,7 +393,8 @@ async function processExperimentFileObj (
   experimentId, assembly, additionalMeta
 ) {
   additionalMeta = additionalMeta || {}
-  let experimentObj = await getEncodeObject('experiments', experimentId)
+  let experimentObj = await getEncodeObject(
+    'experiments', experimentId, data => data.files)
   let availableFiles = experimentObj.files.filter(file => (
     file.assembly === assembly && file.output_category !== 'raw data' &&
     file.status === 'released' && (

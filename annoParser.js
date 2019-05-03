@@ -67,7 +67,8 @@ class Gene {
       symbol: this.symbol,
       aliases: this.aliases,
       ensemblId: this.ensemblId,
-      description: this.description
+      description: this.description,
+      type: this.type
     }
   }
 
@@ -122,7 +123,7 @@ class Gene {
  */
 Gene.priorityList = [
   'ncRNA',
-  'protein_coding'
+  'protein-coding'
 ]
 
 async function loadGeneAnnoFromGzipBuffer (buffer, keys, caseInSensitive) {

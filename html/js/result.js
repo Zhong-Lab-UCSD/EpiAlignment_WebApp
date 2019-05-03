@@ -29,6 +29,7 @@ const POLLING_INTERVAL_PROMOTER = 3000 // 3 seconds
 const MINIMUM_HEATMAP_GAP = 10
 
 const ALIGN_SCORE_95 = 166.63 // 95% alignment score of random sequence
+const EXPRESSION_MAX_MIN = 1
 
 const expandedRunInfoKeyList = [
   [
@@ -656,7 +657,8 @@ var app = new Vue({
       let regions = [item.region1, item.region2]
       let highlight = [
         [item.region1],
-        (item.targetE !== item.targetS && item.targetS)
+        (this.alignMode === 'enhancer' &&
+          item.targetE !== item.targetS && item.targetS)
           ? [item.targetE, item.targetS]
           : [item.targetE]
       ]
@@ -777,29 +779,23 @@ var app = new Vue({
       }
       return item.scoreE - item.scoreS
     },
-    getXExpression: function (expList, expValue) {
+    getXExpression: function (expInRef, expValue) {
       let xLength = this.expFigProp.width -
         (this.expFigProp.horizMargin + this.expFigProp.textAreaWidth)
       let xMin = 0
-      let xMax = this.getExpressionMax(expList)
+      let xMax = this.getExpressionMax(expInRef)
       let xScale = xLength / (xMax - xMin)
       return (expValue - xMin) * xScale + this.expFigProp.textAreaWidth
     },
-    getExpressionMax: function (expList) {
-      return expList.reduce((prevInRefMax, expInRef) =>
-        expInRef.expValues.reduce((inRefMax, geneEntry) => {
-          let geneExpMax =
-            Math.max(...geneEntry.indExpValues.map(expVal => expVal.FPKM))
-          if (inRefMax < geneExpMax) {
-            return geneExpMax
-          }
-          return inRefMax
-        }, prevInRefMax), 0)
-    },
-    getExpressionHeight: function (expList) {
-      return expList.reduce((prev, expInRef) => {
-        return prev + this.getExpInRefHeight(expInRef)
-      }, 0)
+    getExpressionMax: function (expInRef) {
+      return expInRef.expValues.reduce((inRefMax, geneEntry) => {
+        let geneExpMax =
+          Math.max(...geneEntry.indExpValues.map(expVal => expVal.FPKM))
+        if (inRefMax < geneExpMax) {
+          return geneExpMax
+        }
+        return inRefMax
+      }, EXPRESSION_MAX_MIN)
     },
     getExpInRefHeight: function (expInRef) {
       return expInRef.expValues.length *

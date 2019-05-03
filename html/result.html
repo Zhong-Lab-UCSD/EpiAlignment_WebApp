@@ -251,11 +251,11 @@
                           :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="end">{{ geneEntry.symbol }}</text>
                         <rect v-for="(expValue, index) in geneEntry.indExpValues" :x="expFigProp.textAreaWidth"
                           :y="index * expFigProp.geneHeight / geneEntry.indExpValues.length"
-                          :width="getXExpression(expList, expValue.FPKM) - expFigProp.textAreaWidth"
+                          :width="getXExpression(expInRef, expValue.FPKM) - expFigProp.textAreaWidth"
                           :height="expFigProp.geneHeight / geneEntry.indExpValues.length"
                           :style="{ fontSize: figProp.axisLabelSize, fill: '#' + getColorString(expList, refIndex, index) }" />
                       </svg>
-                      <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth" :y2="getExpressionHeight(expList)"
+                      <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth" :y2="getExpInRefHeight(expInRef)"
                         class="seqCompAxis" />
                     </svg>
                   </div>
@@ -273,10 +273,10 @@
                     <line :x1="expFigProp.textAreaWidth" :y1="expFigProp.gap - 0.5" :x2="expFigProp.width - expFigProp.horizMargin"
                       :y2="expFigProp.gap - 0.5" class="seqCompAxis" marker-end="url(#arrowHead)" />
                     <!-- Draw all the tick marks -->
-                    <g v-for="tick in getTickList(0, getExpressionMax(expList), expFigProp.maxNumOfTicks)">
-                      <line :x1="getXExpression(expList, tick)" :y1="expFigProp.gap - 0.5" :x2="getXExpression(expList, tick)"
+                    <g v-for="tick in getTickList(0, getExpressionMax(expInRef), expFigProp.maxNumOfTicks)">
+                      <line :x1="getXExpression(expInRef, tick)" :y1="expFigProp.gap - 0.5" :x2="getXExpression(expInRef, tick)"
                         :y2="expFigProp.gap + expFigProp.tickSize - 0.5" class="seqCompAxis" />
-                      <text :x="getXExpression(expList, tick)"
+                      <text :x="getXExpression(expInRef, tick)"
                         :y="expFigProp.gap + expFigProp.tickSize + expFigProp.axisLabelSize - 0.5"
                         :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="middle">{{ tick }}</text>
                     </g>
@@ -808,7 +808,7 @@
                                       <div class="expColorSquare"
                                         :style="{ background: '#' + getColorString(entry.item.expression, refIndex, expIndex) }">
                                       </div>
-                                      {{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}
+                                      <div class="flex">{{ Number.parseFloat(expEntry.FPKM).toFixed(3) }}</div>
                                     </div>
                                   </td>
                                 </tr>
@@ -833,11 +833,11 @@
                                       :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="end">{{ geneEntry.symbol }}</text>
                                     <rect v-for="(expValue, index) in geneEntry.indExpValues" :x="expFigProp.textAreaWidth"
                                       :y="index * expFigProp.geneHeight / geneEntry.indExpValues.length"
-                                      :width="getXExpression(entry.item.expression, expValue.FPKM) - expFigProp.textAreaWidth"
+                                      :width="getXExpression(expInRef, expValue.FPKM) - expFigProp.textAreaWidth"
                                       :height="expFigProp.geneHeight / geneEntry.indExpValues.length"
                                       :style="{ fontSize: figProp.axisLabelSize, fill: '#' + getColorString(entry.item.expression, refIndex, index) }" />
                                   </svg>
-                                  <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth" :y2="getExpressionHeight(entry.item.expression)"
+                                  <line :x1="expFigProp.textAreaWidth" :y1="0" :x2="expFigProp.textAreaWidth" :y2="getExpInRefHeight(expInRef)"
                                     class="seqCompAxis" />
                                 </svg>
                               </div>
@@ -855,10 +855,10 @@
                                 <line :x1="expFigProp.textAreaWidth" :y1="expFigProp.gap - 0.5" :x2="expFigProp.width - expFigProp.horizMargin"
                                   :y2="expFigProp.gap - 0.5" class="seqCompAxis" marker-end="url(#arrowHead)" />
                                 <!-- Draw all the tick marks -->
-                                <g v-for="tick in getTickList(0, getExpressionMax(entry.item.expression), expFigProp.maxNumOfTicks)">
-                                  <line :x1="getXExpression(entry.item.expression, tick)" :y1="expFigProp.gap - 0.5" :x2="getXExpression(entry.item.expression, tick)"
+                                <g v-for="tick in getTickList(0, getExpressionMax(expInRef), expFigProp.maxNumOfTicks)">
+                                  <line :x1="getXExpression(expInRef, tick)" :y1="expFigProp.gap - 0.5" :x2="getXExpression(expInRef, tick)"
                                     :y2="expFigProp.gap + expFigProp.tickSize - 0.5" class="seqCompAxis" />
-                                  <text :x="getXExpression(entry.item.expression, tick)"
+                                  <text :x="getXExpression(expInRef, tick)"
                                     :y="expFigProp.gap + expFigProp.tickSize + expFigProp.axisLabelSize - 0.5"
                                     :style="{ fontSize: expFigProp.axisLabelSize }" text-anchor="middle">{{ tick }}</text>
                                 </g>

@@ -704,7 +704,7 @@ var app = new Vue({
       let span = length / maxNumOfTicks
       if (Math.ceil(span) > 0) {
         // round up to closest [1,2,5] * 10^x
-        let spanExp = parseInt(Math.log(span) / Math.LN10)
+        let spanExp = parseInt(Math.floor(Math.log(span) / Math.LN10))
         let spanHeader = span / Math.pow(10, spanExp)
         if (spanHeader > 5) {
           spanExp++

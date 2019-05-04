@@ -117,7 +117,7 @@ def Plot_ScoreDist(epi_list, seq_list, ind, of_name, runid, xtitle, start, stop,
 
   gp = ggplot2.ggplot(dataf)
   p = (gp + ggplot2.aes_string(x="coordinate", y='value') + \
-    ggplot2.geom_point(size = 0.1, color = colorVec) +\
+    ggplot2.geom_point(size = 0.1, color = colorVec, shape = ".") +\
     ggplot2.labs(x=xtitle, y="Alignment scores") +\
     ggplot2.facet_grid(ro.Formula('mode ~ .'), scales = "free_y") +\
     ggplot2.theme(text=ggplot2.element_text(size=14)))

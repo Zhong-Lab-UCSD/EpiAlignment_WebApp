@@ -24,6 +24,8 @@ const ClusterProcesser = require('./clusterProcessing')
 const MODE_ONE = 'One-vs-one mode'
 const MODE_MANY = 'Many-vs-many mode'
 
+const IMG_REDUCE_RATIO = 10
+
 const expKeyIndexEncode = {
   'ensemblGeneId': 0,
   'pme_TPM': 9,
@@ -144,11 +146,11 @@ function getRunIdResultPath (runid) {
   return getRunIdFilePath(runid, '.json')
 }
 
-function getRunIdImagePath (runid, index) {
+function getRunIdImagePath (runid, index, format) {
   return path.format({
     dir: getRunIdTempPath(runid),
     name: 'Image_' + index + '_' + runid,
-    ext: '.png'
+    ext: '.' + (format || 'png')
   })
 }
 
@@ -740,52 +742,72 @@ app.get('/results/:runid', function (req, res) {
   }
 })
 
-app.get('/result_image/:runid/:index.png', function (req, res) {
-  let runid = req.params.runid
-  let index = req.params.index
-  let imageName = getRunIdImagePath(runid, index)
-  // Check if the image exists.
-  if (fs.existsSync(imageName)) {
-    res.sendFile(path.format({
-      dir: __dirname,
-      base: imageName
-    }))
-  } else {
-    // if the image does not exist
-    let scriptExecution = spawn('python', [pythonPlotScript])
-
-    // Handle normal output
-    scriptExecution.stdout.on('data', (data) => {
-      console.log(data + '')
-    })
-
-    // Handle error output
-    scriptExecution.stderr.on('data', (data) => {
-      console.log(data + '')
-    })
-
-    scriptExecution.on('exit', (code) => {
-      try {
-        fs.statSync(imageName)
-        res.sendFile(path.format({
-          dir: __dirname,
-          base: imageName
-        }))
-      } catch (err) {
-        res.status(404).send('No image file available.')
-      }
-    })
-    // python input
-    let pyImageMessenger = {
-      'index': index,
-      'runid': runid,
-      'path': resultFolder
+app.get('/result_image/:runid/:index.:format',
+  function (req, res) {
+    let runid = req.params.runid
+    let index = req.params.index
+    let format = req.params.format || 'png'
+    let reduceBy = parseInt(req.query.reduceBy || 1)
+    if (format.toLowerCase() !== 'png' && format.toLowerCase() !== 'pdf') {
+      format = 'png'
     }
-    scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
-    // tell the node that sending inputs to python is done.
-    scriptExecution.stdin.end()
+    format = format.toLowerCase()
+    let imageName = getRunIdImagePath(runid, index, format)
+    // Check if the image exists.
+    if (fs.existsSync(imageName)) {
+      res.sendFile(path.format({
+        dir: __dirname,
+        base: imageName
+      }))
+    } else {
+      // if the image does not exist
+      let scriptExecution = spawn('python', [pythonPlotScript])
+      let stdErrData = ''
+
+      // Handle normal output
+      scriptExecution.stdout.on('data', (data) => {
+        console.log(data + '')
+      })
+
+      // Handle error output
+      scriptExecution.stderr.on('data', (data) => {
+        console.log(data + '')
+        data.toString().split('\n').forEach(errLine => {
+          if (errLine && errLine.trim().startsWith('[EpiAlignment]')) {
+            errLine = errLine.replace('[EpiAlignment]', '').trim()
+            stdErrData += (stdErrData ? '\n' : '') + errLine
+          }
+        })
+      })
+
+      scriptExecution.on('exit', (code) => {
+        try {
+          fs.statSync(imageName)
+          res.sendFile(path.format({
+            dir: __dirname,
+            base: imageName
+          }))
+        } catch (err) {
+          res.status(404).send(
+            stdErrData ||
+            'No image file available.'
+          )
+        }
+      })
+      // python input
+      let pyImageMessenger = {
+        'index': index,
+        'runid': runid,
+        'path': resultFolder,
+        'format': format,
+        'reduceBy': reduceBy
+      }
+      scriptExecution.stdin.write(JSON.stringify(pyImageMessenger))
+      // tell the node that sending inputs to python is done.
+      scriptExecution.stdin.end()
+    }
   }
-})
+)
 
 app.get('/get_cluster/:partialName', (req, res) => {
   clusterProc.getClusters(req.params.partialName).then(result => {

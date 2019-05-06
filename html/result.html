@@ -120,7 +120,7 @@
       <div id="heatmapPanel" class="flexRow flexStart flex flexWrap" v-if="alignMode === 'promoter'">
         <div id="heatmap" class="borderedPanel">
           <div class="flexColumn flexStart">
-            <div class="selfAlignStretch resultHeader"><span class="headerText">EpiAlign score</span></div>
+            <div class="selfAlignStretch resultHeader"><span class="headerText">EpiAlignment score</span></div>
             <table>
               <thead>
                 <tr>
@@ -149,7 +149,7 @@
                 </tr>
               </tbody>
             </table>
-            <div v-if="hasSequence" class="selfAlignStretch resultHeader"><span class="headerText">SeqOnly score</span></div>
+            <div v-if="hasSequence" class="selfAlignStretch resultHeader"><span class="headerText">Sequence-only score</span></div>
             <table v-if="hasSequence">
               <thead>
                 <tr>
@@ -208,7 +208,7 @@
                   <div class="legendIcon heatmapBorder epiMax noFlex"></div>
                   <div v-if="percentileEnabled" class="legendIcon heatmapBorder epiMax noFlex insignificant"></div>
                 </div>
-                <div class="flex">Shifted EpiAlign target</div>
+                <div class="flex">Shifted EpiAlignment target</div>
               </div>
               <div v-if="hasSequence" class="flexRow flexStart flexNoWrap">
                 <div class="flexRow flexCenter noFlex flexNoGap flexNoWrap" :class="{ withPercentile: percentileEnabled }">
@@ -345,21 +345,21 @@
           </p>
           <p>
             EpiAlignment can detects if the best it for any query region (row)
-            switches from one target region to another with EpiAlign and
+            switches from one target region to another with EpiAlignment and
             Sequence-only alignment. For any query region, if:
             <ul>
               <li>
-                the best hit region with EpiAlign (<em>the new hit</em>) is
+                the best hit region with EpiAlignment (<em>the new hit</em>) is
                 different from the best hit region with Sequence-only (<em>the
                   old hit</em>), and
               </li>
               <li>
                 <em>the new hit</em> has a <em>higher</em> score with
-                EpiAlign than with Sequence-only alignment, and
+                EpiAlignment than with Sequence-only alignment, and
               </li>
               <li>
                 <em>the old hit</em> has a <em>lower</em> score with
-                EpiAlign than with Sequence-only alignment,
+                EpiAlignment than with Sequence-only alignment,
               </li>
             </ul>
             <em>the new hit</em> will be marked on the heatmap with a green
@@ -477,7 +477,7 @@
                     <i class="material-icons" v-on="on">swap_horizontal_circle</i>
                   </template>
                   <span>
-                    The EpiAlign hit is different from the SeqOnly hit.
+                    The EpiAlignment hit is different from the Sequence-only hit.
                   </span>
                 </v-tooltip>
               </td>
@@ -506,7 +506,7 @@
                           This panel shows alignment scores of the two hits. <br>
                           A badge <span class="inline flexRow flexCenter shiftedLabel noFlex">
                             <i class="material-icons">swap_horizontal_circle</i>
-                            <span>The EpiAlign hit is different from the SeqOnly hit.</span>
+                            <span>The EpiAlignment hit is different from the Sequence-only hit.</span>
                           </span> will be displayed if the coordinates of the two hits don’t
                           overlap.
                           <a href="manual.html#oneVsOneOutput" target="_blank">(more...)</a>
@@ -518,18 +518,18 @@
                     </div>
                     <div class="flexRow flexWrap flexNoGap flexCenter">
                       <div class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
-                        <span class="anno">EpiAlign hit score:</span>
+                        <span class="anno">EpiAlignment hit score:</span>
                         <span>{{ Number.parseFloat(entry.item.scoreE).toFixed(3) }}</span>
                       </div>
                       <div v-if="entry.item.targetS !== '.'" class="flexRow flexWrap noFlex flexStart flexNoGap dataEntry">
-                        <span class="anno">SeqOnly hit score:</span>
+                        <span class="anno">Sequence-only hit score:</span>
                         <span>{{ Number.parseFloat(entry.item.scoreS).toFixed(3) }}</span>
                       </div>
                     </div>
                     <div v-if="entry.item.shifted === 'Y'" class="flexRow flexWrap flexNoGap flexCenter">
                       <span class="flexRow flexCenter shiftedLabel noFlex">
                         <i class="material-icons">swap_horizontal_circle</i>
-                        <span>The EpiAlign hit is different from the SeqOnly hit.</span>
+                        <span>The EpiAlignment hit is different from the Sequence-only hit.</span>
                       </span>
                     </div>
                   </div>
@@ -554,8 +554,8 @@
                           <p>
                             <strong>Context of sequence-only alignment scores</strong> shows the
                             sequence-only {{ alignMode === 'enhancer' ? 'scores' : 'score' }}
-                            of the EpiAlign hit
-                            {{ alignMode === 'enhancer' ? 'and the SeqOnly hit (if different)' : '' }}
+                            of the EpiAlignment hit
+                            {{ alignMode === 'enhancer' ? 'and the Sequence-only hit (if different)' : '' }}
                             together with a background distribution and
                             a distribution of 
                             {{ alignMode === 'enhancer' ? 'conserved mouse-human region pairs' : 'homologous mouse-human promoters' }}.
@@ -571,11 +571,11 @@
                       <div class="subHeader">Signal-to-noise ratio</div>
                       <div class="flexRow flex flexNoGap flexWrap flexEnd">
                         <div v-if="entry.item.signalToNoise.snE !== '.'" class="flexRow flexNoWrap noFlex flexStart flexNoGap dataEntry">
-                          <span class="anno">EpiAlign hit:</span>
+                          <span class="anno">EpiAlignment hit:</span>
                           <span>{{ Number.parseFloat(entry.item.signalToNoise.snE).toFixed(3) }}</span>
                         </div>
                         <div v-if="entry.item.signalToNoise.snS !== '.'" class="flexRow flexNoWrap noFlex flexStart flexNoGap dataEntry">
-                          <span class="anno">SeqOnly hit:</span>
+                          <span class="anno">Sequence-only hit:</span>
                           <span>{{ Number.parseFloat(entry.item.signalToNoise.snS).toFixed(3) }}</span>
                         </div>
                       </div>
@@ -673,12 +673,12 @@
                               :y="figProp.lineHeight / 2" />
                             <text :x="figProp.legendLeftX + figProp.legendBoxWidth + figProp.horizMargin / 2"
                               :y="(figProp.lineHeight + figProp.textSize - figProp.vertMargin) / 2"
-                              :style="{fontSize: figProp.textSize}">EpiAlign hit</text>
+                              :style="{fontSize: figProp.textSize}">EpiAlignment hit</text>
                             <use class="seqCompCrossSeqMark" v-if="entry.item.shifted === 'Y'" xlink:href="#crossMarker" href="#crossMarker"
                               :x="figProp.legendRightX + figProp.legendBoxWidth / 2" :y="figProp.lineHeight / 2" />
                             <text :x="figProp.legendRightX + figProp.legendBoxWidth + figProp.horizMargin / 2"
                               :y="(figProp.lineHeight + figProp.textSize - figProp.vertMargin) / 2"
-                              :style="{fontSize: figProp.textSize}" v-if="entry.item.shifted === 'Y'">SeqOnly hit</text>
+                              :style="{fontSize: figProp.textSize}" v-if="entry.item.shifted === 'Y'">Sequence-only hit</text>
                           </svg>
                         </svg>
                       </div>
@@ -719,7 +719,7 @@
                             <!-- Draw the number labels -->
                             <text :x="getXEpiScore(entry.item, getEpiContribEpiHit(entry.item))" :y="figProp.axisLabelSize"
                               :style="{fontSize: figProp.axisLabelSize}" text-anchor="middle">
-                              EpiAlign hit</text>
+                              EpiAlignment hit</text>
                           </svg>
                           <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(0.5)">
                             <!-- Draw the two box plots -->
@@ -738,7 +738,7 @@
                             <text :x="getXEpiScore(entry.item, getEpiContribSeqHit(entry.item))"
                               :y="figProp.axisLabelSize" :style="{fontSize: figProp.axisLabelSize}"
                               text-anchor="middle">
-                              SeqOnly hit</text>
+                              Sequence-only hit</text>
                           </svg>
                           <svg :width="figProp.width" :height="figProp.lineHeight" x="0" :y="getLineY(entry.item.shifted === 'Y' ? 2 : 1.5)">
                             <line :x1="figProp.horizMargin / 2" :y1="figProp.vertMargin + 0.5" :x2="figProp.width - figProp.horizMargin / 2"

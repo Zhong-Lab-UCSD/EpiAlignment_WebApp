@@ -174,11 +174,19 @@ div.disabledDueToStep1 {
 }
 
 div.tooltipPanel {
-	padding: 0.5em;
+	padding: 0.5em 0.75em;
 	border: #000000 dotted 0.07rem;
 	opacity: 0.8;
 	background: #FFFFCC;
-	font-size: 0.875rem;
+	font-size: 0.9rem;
+}
+
+div.tooltipPanel:not(.flexColumn) > div {
+	margin: 0.25em 0;
+}
+
+div.tooltipPanel > div.parameters > div {
+	margin: 0.25em 0.5em;
 }
 
 div.tooltipPanel.flexColumn {
@@ -1041,6 +1049,14 @@ a.buttonLink {
 	margin: -0.4em 0;
 }
 
+div.tblHeaderText {
+	margin: 0.2em;
+	white-space: normal;
+	vertical-align: middle;
+	display: inline-block;
+	max-width: 75%;
+}
+
 .dataTableCell:not(.dataTableCellNoGap) {
 	padding: 0 0.75rem !important;
 	vertical-align: middle;
@@ -1898,5 +1914,9 @@ span.equation {
 
 	div#selectedClusterHolder {
 		font-size: 0.75rem;
+	}
+
+	div.tooltipPanel {
+		font-size: 0.875rem;
 	}
 }

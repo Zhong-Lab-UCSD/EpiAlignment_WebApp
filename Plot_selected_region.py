@@ -96,8 +96,8 @@ def Plot_ScoreDist(epi_list, seq_list, ind, of_name, runid, xtitle, start, stop,
         reduceList(seq_array, reduceBy, averageList)),
       "coordinate": IntVector(reduceList(coorRange, reduceBy, averageList) * 2),
       "mode": StrVector(
-        reduceList(["EpiAlign"] * (tlen + qlen), reduceBy, centerOfList) +
-        reduceList(["SeqOnly"] * (tlen + qlen), reduceBy, centerOfList))
+        reduceList(["EpiAlignment"] * (tlen + qlen), reduceBy, centerOfList) +
+        reduceList(["Sequence-only"] * (tlen + qlen), reduceBy, centerOfList))
     }
   if qlen < tlen:
     colorVec = [GRAY_COLOR] * qlen + [BLACK_COLOR] * (tlen - qlen) +\

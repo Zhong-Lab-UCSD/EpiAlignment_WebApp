@@ -388,13 +388,39 @@
               <div>What are these parameters?</div>
             </div>
           </div>
-          <div v-show="showParamHelp" class="tooltipPanel flexColumn flexNoWrap flexStretch">
-            <div class="flexRow flexNoGap flexWrap flexStretch">
+          <div v-show="showParamHelp" class="tooltipPanel">
+            <div>
+              <strong>The weight parameter <span class="equation"><em>w</em></span></strong>
+              represents the relative weight of the epigenome to the sequence.
+              EpiAlignment considers only sequence when <span class="equation"><em>w</em> = 0</span>,
+              while it increasingly relies on epigenomic information as <em>w</em> rises.
+              A <span class="equation"><em>w</em></span> value greater than 0.15 is not recommended.
+            </div>
+            <div v-show="showParam" class="parameters">
+              <strong>Alignment parameters</strong>
               <div>
-                <strong>A <span class="equation"><em>w</em></span> value greater than 0.15 is not recommended.</strong>
+                <strong><span class="equation"><em>s</em></span></strong>: sequence substitution rate.
               </div>
-              <div><a href="manualParam.html" target="_blank">More information ...</a>
+              <div>
+                <strong><span class="equation"><em>&#956;</em></span></strong>: sequence deletion rate.
               </div>
+              <div>
+                <strong><span class="equation"><em>&#954;</em></span></strong>: rate of switching between the two epigenomic
+                states 0 and 1.
+              </div>
+              <div>
+                <strong><span class="equation"><em>&#960;</em><sub>A</sub></span></strong>, <strong><span
+                    class="equation"><em>&#960;</em><sub>C</sub></span></strong>,
+                <strong><span class="equation"><em>&#960;</em><sub>G</sub></span></strong> and <strong><span
+                    class="equation"><em>&#960;</em><sub>T</sub></span></strong>: equilibrium
+                probabilities of the four nucleotide bases.
+              </div>
+              <div>
+                <strong><span class="equation"><em>&#960;</em><sub>1</sub></span></strong>: equilibrium probability of the
+                epigenomic state 1.
+              </div>
+            </div>
+            <div><a href="manualParam.html" target="_blank">More information ...</a>
             </div>
           </div>
           <div class="flexRow flexCenter flexWrap">
@@ -406,7 +432,7 @@
           </div>
           <div class="errorMessage" v-show="formError.weightError">
             <i class="material-icons iconAtLeft">warning</i>
-            <span>Please use non-negative numbers for both weights (preferably between 0 and 1).</span>
+            <span>Please use non-negative numbers for the epigenome weight (preferably less than 0.15).</span>
           </div>
           <button type="button" class="selfAlignStart" @click="toggleShowParam">
             {{ showMoreParamText }}

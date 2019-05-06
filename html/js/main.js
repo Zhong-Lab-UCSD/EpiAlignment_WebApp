@@ -672,21 +672,24 @@ var app = new Vue({
       if (!this.formParams.alignMode) {
         console.log('Please select an align mode first!')
       }
-      this.selectedEntryDescHtml = '<strong>ChIP-Seq (H3K4me3)</strong>' +
-        ' on <strong>round spermatids</strong>'
-      this.selectedEntryDesc = 'ChIP-Seq (H3K4me3) on round spermatids'
       if (this.formParams.alignMode === 'promoter') {
+        this.selectedEntryDescHtml = '<strong>ChIP-Seq (H3K4me3)</strong>' +
+          ' on <strong>adult B-lymphocytes</strong>'
+        this.selectedEntryDesc = 'ChIP-Seq (H3K4me3) on adult B-lymphocytes'
         this.selectedExperimentIds = {
-          human: 'GSM1673960',
-          mouse: 'GSM1674016'
+          human: 'ENCSR057BWO',
+          mouse: 'ENCSR000CGK'
         }
         this.formParams.genomeAssembly.splice(
           0, this.formParams.genomeAssembly.length, 'hg38', 'mm10')
-        this.formParams.speciesText.splice(0, 1, 'PCDHB5')
-        this.clusterText = 'Cluster_1491'
+        this.formParams.speciesText.splice(0, 1, 'SLCO4A1')
+        this.clusterText = 'Cluster_6635'
         this.formParams.searchRegionMode = 'genecluster'
       } else {
         // enhancer mode
+        this.selectedEntryDescHtml = '<strong>ChIP-Seq (H3K4me3)</strong>' +
+          ' on <strong>round spermatids</strong>'
+        this.selectedEntryDesc = 'ChIP-Seq (H3K4me3) on round spermatids'
         this.selectedExperimentIds = {
           human: 'GSM1673960',
           mouse: 'GSM1674016'

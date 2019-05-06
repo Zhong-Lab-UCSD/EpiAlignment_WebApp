@@ -167,7 +167,8 @@ var app = new Vue({
         width: 'auto'
       },
       {
-        text: 'Epi Score',
+        text: '',
+        html: '<div class="tblHeaderText">EpiAlignment Score</div>',
         value: 'scoreE',
         align: 'right',
         sortable: true,
@@ -175,7 +176,8 @@ var app = new Vue({
         width: 'auto'
       },
       {
-        text: 'Seq Score',
+        text: '',
+        html: '<div class="tblHeaderText">Sequence-only Score</div>',
         value: 'scoreS',
         align: 'right',
         sortable: true,
@@ -190,7 +192,7 @@ var app = new Vue({
         sortable: true,
         class: ['dataTableCell', 'dataTableCellNoGap'],
         width: 'auto',
-        tooltip: 'Whether the EpiAlign hit is different from the SeqOnly hit.'
+        tooltip: 'Whether the EpiAlignment hit is different from the Sequence-only hit.'
       }
     ],
     dataEntries: [],
@@ -627,14 +629,14 @@ var app = new Vue({
       // remove epi score and seq score
       this.headers.splice(5, 2)
       this.headers.splice(5, 0, {
-        text: 'EpiAlign hit coordinate',
+        text: 'EpiAlignment hit coordinate',
         value: 'scoreE',
         align: 'left',
         sortable: true,
         class: 'dataTableCell',
         width: 'auto'
       }, {
-        text: 'SeqOnly hit coordinate',
+        text: 'Sequence-only hit coordinate',
         value: 'scoreS',
         align: 'left',
         sortable: true,

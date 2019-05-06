@@ -478,7 +478,7 @@
         <p>In both modes, EpiAlignment will return two types of alignment results, yielded with (<em>w</em> = 0) 
           and without (<em>w</em> = 0) epigenomic information. 
           For each query region, best matches identified in the two alignments 
-          are named “EpiAlign hit” and “SeqOnly hit” respectively.
+          are named “EpiAlignment hit” and “Sequence-only hit” respectively.
           All scores are calibrated to 1,000 bp (i.e., alignment score per kilobase), 
           and are thus comparable across alignment results of different region pairs.</p> 
           
@@ -506,7 +506,7 @@
           (see "Filtering the results" below).</p>
         <ul>
           <li><p><strong>Overview</strong>: the highest alignment scores achieved with and without epigenomic information. 
-            A badge saying "The EpiAlign hit is different from the SeqOnly hit" 
+            A badge saying "The EpiAlignment hit is different from the Sequence-only hit" 
             will be displayed if the coordinates of the two hits don’t overlap, 
             suggesting that another location overtakes the best sequence match due to higher epigenomic similarity.</p></li>     
           <li>
@@ -533,7 +533,7 @@
         </ul>
         
         <p>Note: if you set epigenomic weight to zero during input, the EpiAlignment score is equivalent to
-          sequence-only alignment score, and no "SeqOnly" result will be reported.</p>
+          sequence-only alignment score, and no "Sequence-only" result will be reported.</p>
         <div class="manualImg">
           <img alt="Expandable data table for one-vs-one mode" src="assets/images/oneManualResult.png">
         </div>

@@ -562,12 +562,12 @@ def ExeEpiAlignment(alignMode, searchRegionMode, bed1, bed2, genAssem, of_name, 
   Execute EpiAlignment
   '''
   seq_stat = os.path.isfile(of_name + "parameters_seq_" + runid)
-  cmd_list = ["python", "EpiAlignment.py", of_name + "Input_" + runid] +\
+  cmd_list = ["python3", "EpiAlignment_3.py", of_name + "Input_" + runid] +\
     ["-e", of_name + "parameters_" + runid] +\
     ["-p", "140"] +\
     ["-o", of_name + "epialign_res_" + runid]
 
-  cmd_list_seq = ["python", "EpiAlignment.py", of_name + "Input_" + runid] +\
+  cmd_list_seq = ["python3", "EpiAlignment_3.py", of_name + "Input_" + runid] +\
     ["-e", of_name + "parameters_seq_" + runid] +\
     ["-p", "140"] +\
     ["-o", of_name + "seqalign_res_" + runid]

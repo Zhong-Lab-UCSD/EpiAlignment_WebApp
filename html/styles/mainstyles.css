@@ -1828,6 +1828,10 @@ div.section div.manualImg > img {
 	max-width: 100%;
 }
 
+div.section div.manualImg > div {
+	font-size: 0.875em;
+}
+
 span.equation {
 	white-space: nowrap;
 	font-family: 'Times New Roman', Times, serif;

@@ -29,6 +29,11 @@
           <ul>
             <li>
               <a href="#weight" @click="clickOnNav">Epigenome weight <span class="equation"><em>w</em></span></a>
+              <ul>
+                <li>
+                  <a href="#selectWeight" @click="clickOnNav">Selection of the epigenome weight</a>
+                </li>
+              </ul>
             </li>
             <li>
               <a href="#alignmentParameters" @click="clickOnNav">Alignment parameters</a>
@@ -63,51 +68,181 @@
       <div class="section">
         <!-- Weight -->
         <h2>Epigenome weight <span class="equation"><em>w</em></span></h2>
-        <p> The weight parameter <em>w</em> represents the relative weight of the epigenome to the sequence.
-          EpiAlignment considers sequence only when <em>w</em> = 0,
-          while it increasingly relies on epigenomic information as <em>w</em> rises.
-          When using a larger <em>w</em>, regions with larger sequence differences (i.e., more mismatches and indels) but
+        <p> The weight parameter <span class="equation"><em>w</em></span> represents the relative weight of the epigenome to the sequence.
+          EpiAlignment considers sequence only when <span class="equation"><em>w</em> = 0</span>,
+          while it increasingly relies on epigenomic information as <span class="equation"><em>w</em></span> rises.
+          When using a larger <span class="equation"><em>w</em></span>, regions with larger sequence differences (i.e., more mismatches and indels) but
           similar
           epigenomic states may overtake regions with similar sequences but different epigenomic states. Additionally,
           a region pair with a larger overlap of epigenomic peaks is more likely to gain a higher
-          alignment score. You may increase w to include hits with lower sequence similarities,
-          or decrease w to limit the results to hits with <em>S</em> scores comparable to the best sequence matches. Sequence
+          alignment score. You may increase <span class="equation"><em>w</em></span> to include hits with lower sequence similarities,
+          or decrease <span class="equation"><em>w</em></span> to limit the results to hits with <span class="equation"><em>S</em></span> scores comparable to the best sequence matches. Sequence
           and epigenomic similarities
           between each pair of regions
           can be further scrutinized on the result page.</p>
+        <h3 ref="selectWeight">Selection of the epigenome weight</h3>
+        <p>  Users may adjust the epigenome weight (<span class="equation"><em>w</em></span>) to leverage DNA sequence and epigenomic information in the alignment. The
+          algorithm considers only sequence when <span class="equation"><em>w</em> = 0</span>, while it increasingly relies on epigenomic information as <span class="equation"><em>w</em></span> rises.
+          A major consideration of selecting the weight is to what extent the epigenomic contribution entirely overrides the
+          sequence contribution. Specifically, even with completely different epigenomic modification patterns, regions with
+          highly conserved sequences are not expected to be aligned to random locations with consistent epigenomic patterns
+          (random epigenomic peak). We simulated this case to study the effects of various weights (Supplementary Methods). We
+          identified mouse genomic regions marked by H3K4me3, H3K27ac or H3K4me1 in all tissue types included in our pairwise
+          ChIP-seq experiment database, among which around 50% had their human orthologues identified using liftOver. For each
+          histone mark, 5,000 mouse regions were randomly selected as queries for the analysis, and their human orthologues were
+          extended to define target regions. We assigned simulated epigenomic signals (“1”s) to each mouse region, whereas no
+          signal (“0”s) to its human orthologous counterpart. We also assigned epigenomic signals (“1”s) to a random location near
+          the human orthologue, namely a “decoy”, to simulate a random peak within the human target region (See Panel A of the figure below).</p>
+        <p>
+          We first assessed the sequence similarities of each mouse query to its human orthologue and the decoy with sequence-only
+          alignment (<span class="equation"><em>w</em> = 0</span>). We denoted the sequence alignment score (<span class="equation"><em>S</em></span> score) between the mouse query and its human orthologue by
+          <span class="equation"><em>S</em><sub>ortho</sub></span>, and the <span class="equation"><em>S</em></span> score between the mouse query and the decoy as <span class="equation"><em>S</em><sub>decoy</sub></span>. The <span class="equation"><em>S</em><sub>ortho</sub></span> distributions were similar among
+          mouse sequences marked by the three histone modifications, with the first quartiles overlapping with the background
+          distribution generated with random mouse and human sequences (See Panel B of the figure below).
+        </p>
+        <p>
+          We then asked with what <span class="equation"><em>w</em></span> value, the decoys would overtake the orthologues. Toward this goal, we ran EpiAlignment with <span class="equation"><em>w</em></span>
+          varying from 0.01 to 0.3. With each <span class="equation"><em>w</em></span>, we defined a mouse query region as “misaligned” if the decoy rather than the
+          orthologue was identified as the best EpiAlignment hit. When <span class="equation"><em>w</em></span> was close to 0, only the least conserved mouse regions
+          were aligned to the decoys. As <span class="equation"><em>w</em></span> increased, more conserved mouse regions with higher <span class="equation"><em>S</em><sub>ortho</sub></span> scores started to be
+          misaligned, and the differences between their <span class="equation"><em>S</em><sub>ortho</sub></span> and <span class="equation"><em>S</em><sub>decoy</sub></span> scores enlarged. When <span class="equation"><em>w</em></span> exceeded 0.15, mouse regions
+          with <span class="equation"><em>S</em><sub>ortho</sub></span> scores above the medians began to be misaligned (See Panel C of the figure below). Thus, <span class="equation"><em>w</em></span> values larger than 0.15
+          are not recommended.
+        </p>
+        <div class="manualImg large">
+          <img class="large" alt="Weight selection" src="assets/images/selectWeight.png">
+          <div>
+            <strong>Simulation tests for epigenome weight selection.</strong> (A) Structure of a region pair generated in the
+            simulation test. Red boxes: a selected mouse region (above, used as the query region) and its human orthologous region
+            (below), with the red shading showing the orthologous relationship between them. Gray band: the flanking region of the
+            human orthologue, used as the target region. Blue bars: simulated epigenomic signals assigned to the mouse query region
+            and a random region other than the human orthologue, namely a “decoy” (dotted). (B) Distributions of sequence alignment
+            scores (<span class="equation"><em>S</em></span> score) between mouse regions marked by H3K4me3, H3K27ac or H3K4me1 and
+            their human orthologues (<span class="equation"><em>S</em><sub>ortho</sub></span> score)
+            as well as random human genomic regions. (C) Sequence-only alignment scores <span
+              class="equation"><em>S</em><sub>ortho</sub></span> and <span class="equation"><em>S</em><sub>decoy</sub></span> of
+            misaligned mouse
+            regions under different weights (<span class="equation"><em>w</em></span>). Each <span
+              class="equation"><em>w</em></span> corresponds to an individual set of
+            misaligned mouse regions. The
+            distributions of <span class="equation"><em>S</em><sub>ortho</sub></span> (red) and <span
+              class="equation"><em>S</em><sub>decoy</sub></span> (blue) scores of the misaligned regions are plotted on y-axis.
+            Solid colored
+            lines represent medians of the <span class="equation"><em>S</em></span> scores, and shaded areas represent the ranges of
+            <span class="equation"><em>S</em></span> scores between the 10th and 90th
+            percentiles. <span class="equation"><em>S</em></span> scores of all mouse-human orthologous region pairs (black) and
+            random region pairs (gray) are plotted for
+            reference, with solid lines and dotted lines representing the medians, the 25th and the 75th percentiles of the <span
+              class="equation"><em>S</em></span>
+            scores, respectively.
+          </div>
+        </div>
+        <p>
+          In real analysis, <span class="equation"><em>w</em></span> also determines whether a location with lower sequence identity but higher epigenomic similarity
+          will overtake the best sequence match when epigenomic information is incorporated. The user may increase <span class="equation"><em>w</em></span> to include
+          hits with lower sequence similarities, or decrease <span class="equation"><em>w</em></span> to limit the results to hits with <span class="equation"><em>S</em></span> scores comparable to the best
+          sequence matches. For each alignment result, the contribution of sequence and epigenomic similarity can be further
+          scrutinized with metrics provided on the result page to filter out hits undesired.
+        </p>
       </div>
       <div class="section">
         <!-- Alignment parameters -->
         <h2 ref="alignmentParameters">Alignment parameters </h2>
-        <ul id="paralist">
-          <li><strong><span class="equation"><em>s</em></span></strong>: sequence substitution rate. With a smaller <span
-              class="equation"><em>s</em></span>,
-            a larger reward score
-            will be assigned to a pair of matched bases, and a larger penalty score will be assigned to a pair of
-            mismatched bases.</li>
-          <li><strong><span class="equation"><em>&#956;</em></span></strong>: sequence deletion rate. A larger gap penalty will
-            be assigned to
-            insertions
-            and deletions with a smaller <span class="equation"><em>&#956;</em></span>.</li>
-          <li><strong><span class="equation"><em>&#954;</em></span></strong>: rate of switching between the two epigenomic
-            states 0 and 1. With a
-            smaller
-            <span class="equation"><em>&#954;</em></span>, a larger reward score will be assigned to a pair of matched
-            epigenomic states, and a
-            larger
-            penalty score will be assigned to a pair of mismatched epigenomic states.</li>
-          <li><strong><span class="equation"><em>&#960;</em><sub>A</sub></span></strong>, <strong><span
-                class="equation"><em>&#960;</em><sub>C</sub></span></strong>,
-            <strong><span class="equation"><em>&#960;</em><sub>G</sub></span></strong> and <strong><span
-                class="equation"><em>&#960;</em><sub>T</sub></span></strong>: equilibrium
-            probabilities of the four nucleotide bases.</li>
-          <li><strong><span class="equation"><em>&#960;</em><sub>1</sub></span></strong>: equilibrium probability of the
-            epigenomic state 1, that is,
-            the
-            probability of having the epigenomic modification on genomic locations.</li>
-        </ul>
+        <table>
+          <tr>
+            <td>
+              <strong>Parameter</strong>
+            </td>
+            <td>
+              <strong>Description</strong>
+            </td>
+            <td>
+              <strong>Theoretical range</strong>
+            </td>
+            <td>
+              <strong>Default value</strong>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong><span class="equation"><em>s</em></span></strong>
+            </td>
+            <td>
+              DNA base substitution rate. With a smaller <span class="equation"><em>s</em></span>, larger reward and penalty scores will be assigned to
+                matched and mismatched DNA bases, respectively.
+            </td>
+            <td>
+              (0, +&infin;)
+            </td>
+            <td>
+              0.3
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong><span class="equation"><em>&#956;</em></span></strong>
+            </td>
+            <td>
+              DNA base deletion rate. With a smaller <span class="equation"><em>&#956;</em></span>, a larger penalty will be assigned to insertions and
+                deletions.
+            </td>
+            <td>
+              (0, +&infin;)
+            </td>
+            <td>
+              0.3
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong><span class="equation"><em>&#954;</em></span></strong>
+            </td>
+            <td>
+              Switching rate between the binary epigenomic states 0 and 1. With a smaller <span class="equation"><em>&#954;</em></span>, larger reward and
+                penalty scores will be assigned to matched and mismatched epigenomic states, respectively.
+            </td>
+            <td>
+              (0, +&infin;)
+            </td>
+            <td>
+              0.5
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong><span class="equation"><em>&#960;</em><sub>A</sub></span></strong>, <strong><span
+                  class="equation"><em>&#960;</em><sub>C</sub></span></strong>,
+              <strong><span class="equation"><em>&#960;</em><sub>G</sub></span></strong>, <strong><span
+                  class="equation"><em>&#960;</em><sub>T</sub></span></strong>
+            </td>
+            <td>
+              Equilibrium probabilities of the four nucleotide bases.
+            </td>
+            <td>
+              (0, 1)
+            </td>
+            <td>
+              0.25
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <strong><span class="equation"><em>&#960;</em><sub>1</sub></span></strong>
+            </td>
+            <td>
+              Equilibrium probability of the epigenomic state &ldquo;1&rdquo;, i.e. the probability of having epigenomic
+                state &ldquo;1&rdquo; on a genomic location.
+            </td>
+            <td>
+              (0, 1)
+            </td>
+            <td>
+              0.1
+            </td>
+          </tr>
+        </table>
       </div>
-      <div class="section">
+      <div class="section flex">
         <p><a href="manual.html">Click here to go back to manual.</a></p>
       </div>
       <div id="footer" class="flexRow flexWrap flexCenter noFlex justifyEnd">

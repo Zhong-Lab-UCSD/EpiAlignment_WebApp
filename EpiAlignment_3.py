@@ -1,3 +1,5 @@
+# This is the version for EpiAlignment Web Service
+
 import argparse
 import sys
 import copy
@@ -19,7 +21,9 @@ class HomoRegion:
         self.L = 0
         self.name = ""
         self.averagedL = 0
-        self.loc = -1
+        self.loc2 = -1
+        self.loc1 = -1
+        self.start_point = 0
         self.prob = []
         self.S1_path = ""
         self.S2_path = ""
@@ -67,10 +71,13 @@ def ReadInput(fin_name):
     flag = 0
     with open(fin_name, "r") as fin:
         S = []
+        s1_maxlen = 0
+        s2_maxlen = 0
+        s1_avelen = 0
+        s2_avelen = 0
         line = fin.readline().strip()
         if "@" not in line:
-            print("The input file is not FASTQ", file=sys.stderr)
-            exit()
+            raise Exception(301, "The first line of the input file does not start with @.")
         flag = 1
         while True:
             line = fin.readline().strip()
@@ -79,9 +86,14 @@ def ReadInput(fin_name):
                     Sobj.S2 = S
                     Slist.append(Sobj)
                     s2_count += 1
+                    if len(Sobj.S1) > s1_maxlen:
+                        s1_maxlen = len(Sobj.S1)
+                    if len(Sobj.S2) > s2_maxlen:
+                        s2_maxlen = len(Sobj.S2)
+                    s1_avelen += len(Sobj.S1)
+                    s2_avelen += len(Sobj.S2)
                 else:
-                    print("The number of sequences are different!", file=sys.stderr)
-                    exit()
+                    raise Exception(302, "The number of sequences are different!")
                 break
             if line == "+":
                 i = 0
@@ -92,6 +104,12 @@ def ReadInput(fin_name):
                     Sobj.S2 = S
                     Slist.append(Sobj)
                     s2_count += 1
+                    if len(Sobj.S1) > s1_maxlen:
+                        s1_maxlen = len(Sobj.S1)
+                    if len(Sobj.S2) > s2_maxlen:
+                        s2_maxlen = len(Sobj.S2)
+                    s1_avelen += len(Sobj.S1)
+                    s2_avelen += len(Sobj.S2)
                 else:
                     Sobj = HomoRegion()
                     Sobj.name = line[1:]
@@ -102,11 +120,11 @@ def ReadInput(fin_name):
                 continue
             if flag == 1:
                 line = line.upper()
-                S += [(x,) for x in line]
+                S += [(x, "") for x in line]
             else:
-                S = S[0:i] + [a + (b,) for a, b in zip(S[i:(i + len(line))], line)] + S[(i + len(line)):]
+                S = S[0:i] + [(a[0], a[1] + b) for a, b in zip(S[i:(i + len(line))], line)] + S[(i + len(line)):]
                 i += len(line)
-    return Slist
+    return Slist, s1_maxlen, s2_maxlen, s1_avelen / len(Slist), s2_avelen / len(Slist)
 
 
 def ReadParameters(f_name):
@@ -149,20 +167,112 @@ def ReadParameters(f_name):
                 x.append(float(line[0]))
     return x, weights, equil_dict, log_equil_dict
 
+# def Log_sum(lnA, lnB, lnC, lnD):
+#   '''
+#   tmp=[logA, logB, logC, logD]
+#   return log(A+B+C-D)
+#   '''
 
-def Mod_equilibrium(e_dict, log_e_dict, weights):
-    '''
-    Scale the equilibrium probabilities for DNA bases by sequence weight.
-    e_dict, log_e_dict: dictionaries of equilibrium probabilities on the linear and log scales. equil_dict and log_equil_dict returned by ReadParameters.
-    weights: the weights vector returned by ReadParameters.
-    return: None. The function will modify the dictionaries directly.
-    '''
-    for b in "A", "C", "G", "T":
-        e_dict[b] = e_dict[b]**weights[0]
-        log_e_dict[b] = log_e_dict[b] * weights[0]
+#   tm = max(lnA, lnB, lnC, lnD)
+#   sm = exp(lnA - tm) + exp(lnB - tm) + exp(lnC - tm) - exp(lnD - tm)
+
+#   try:
+#     return tm + log(sm)
+#   except:
+#     return float("-Inf")
+
+# def Log_sum3(lnA, lnB, lnC):
+#   '''
+#   only for path_len_mat
+#   tmp=[logA, logB, logC]
+#   return log(A+B+C)
+#   '''
+
+#   tm = max(lnA, lnB, lnC)
+#   sm = exp(lnA - tm) + exp(lnB - tm) + exp(lnC - tm)
+
+#   try:
+#     return tm + log(sm)
+#   except:
+    return float("-Inf")
 
 
-def Epi_equilibrium(e_dict, log_e_dict, n_epi, weights):
+# def Path_matrix(mlen1, mlen2, mu, lamb, beta, link_p, log_link_p):
+#     '''
+#     Pre-compute the path matrix for normalization.
+#     mlen1, mlen2: maximal lengths of ancestral and descendent regions.
+#     mu, lamb, beta, link_p: parameters
+#     return: a mlen1 * mlen2 matrix.
+#     '''
+#     if mlen1 > mlen2:
+#         tmp = mlen2
+#         mlen2 = mlen1
+#         mlen1 = tmp
+#     if mlen1 > mlen2:
+#         mlen2 = mlen1
+#     else:
+#         mlen1 = mlen2
+#     path_mat3 = [[Na] * (mlen2 + 1) for i in xrange(mlen1 + 1)]
+#     path_mat2 = [[Na] * (mlen2 + 1) for i in xrange(mlen1 + 1)]
+
+#     link_p12 = max(link_p[1], link_p[2])
+#     log_link_p12 = log(link_p12)
+#     log_lamb_mu = log(lamb / mu)
+#     lamb_beta = lamb * beta
+#     log_lamb_beta = log(lamb_beta)
+
+    
+#     path_mat3[0][0] = log_link_p[3] + log(Gamma(0,lamb,mu))
+#     path_mat3[1][0] = log_link_p[3] + log_link_p[0] + log(Gamma(0,lamb,mu)) + log_lamb_mu
+
+#     path_mat3[0][1] = log_link_p[3] + log_lamb_beta + log(Gamma(0,lamb,mu))
+#     path_mat2[0][1] = log_link_p[3] + log_lamb_beta + log(Gamma(0,lamb,mu))
+
+#     # First row
+#     for i in xrange(2, mlen2 + 1):
+#         path_mat3[0][i] = path_mat3[0][i-1] + log_lamb_beta
+#         path_mat2[0][i] = path_mat2[0][i-1] + log_lamb_beta
+#     # First column
+#     for i in xrange(2, mlen1 + 1):
+#         path_mat3[i][0] = path_mat3[i-1][0] + log_link_p[0] + log_lamb_mu
+#     for i in xrange(1, (mlen1 + 1)):
+#         for j in xrange(1, (mlen2 + 1)):
+
+#             ent0 = log_lamb_mu + log_link_p[0] + path_mat3[i - 1][j]
+#             ent1 = log_link_p12 + log_lamb_mu + path_mat3[i - 1][j - 1]
+#             ent2 = log_lamb_beta + path_mat2[i][j - 1]
+
+#             max_v3, max_v2, tup_ind1, tup_ind2 = Maximum(ent0, ent1, ent2, j)
+#             #print "max"
+#             #print max_v3, max_v2
+#             #print path_mat3
+#             #print path_mat2
+#             #print "\n"
+
+#             path_mat3[i][j] = max_v3
+#             path_mat2[i][j] = max_v2
+
+
+# #    for line in path_mat3:
+# #        print " ".join([str(f) for f in line])
+# #    print "\n"
+#     return path_mat3
+
+
+
+# def Mod_equilibrium(e_dict, log_e_dict, weights):
+#     '''
+#     Scale the equilibrium probabilities for DNA bases by sequence weight.
+#     e_dict, log_e_dict: dictionaries of equilibrium probabilities on the linear and log scales. equil_dict and log_equil_dict returned by ReadParameters.
+#     weights: the weights vector returned by ReadParameters.
+#     return: None. The function will modify the dictionaries directly.
+#     '''
+#     for b in "A", "C", "G", "T":
+#         e_dict[b] = e_dict[b]**weights[0]
+#         log_e_dict[b] = log_e_dict[b] * weights[0]
+
+
+def Epi_equilibrium(n_epi, equil_dict, log_equil_dict, weights):
     '''
     Products of the equilibrium probabilities of epigenetic marks.
     The function will iterate all possible combinations of '1's and '0's (k) and compute the equilibrium probability of observing the combination.
@@ -179,12 +289,26 @@ def Epi_equilibrium(e_dict, log_e_dict, n_epi, weights):
         v = 1.0
         lv = 0.0
         for j in range(0, n_epi):
-            v = v * (e_dict[j + 1][int(k[j])]) ** weights[j + 1]
-            lv += weights[j + 1] * log_e_dict[j + 1][int(k[j])]
+            v = v * (equil_dict[j + 1][int(k[j])]) ** weights[j + 1]
+            lv += weights[j + 1] * log_equil_dict[j + 1][int(k[j])]
         S_epi[k] = v
         log_S_epi[k] = lv
 
     return S_epi, log_S_epi
+
+
+def Equilibrium_matrix(log_equil_dict, log_S_epi, weights):
+    '''
+    Products of the equilibrium probabilities of bases and epigenetic marks.
+    The base equilibrium probabilities are scaled by sequence-weights.
+    return: a dictionary. Keys: base - epi-state. Values: scaled equilibrium probabilities.
+    '''
+    log_equil_mat = {}
+    for base in "A", "C", "G", "T":
+        log_equil_mat[base] = {}
+        for epi in log_S_epi:
+            log_equil_mat[base][epi] = log_equil_dict[base] * weights[0] + log_S_epi[epi]
+    return log_equil_mat
 
 
 def Link_prob(prime, n, b, lam, mu):
@@ -198,9 +322,9 @@ def Link_prob(prime, n, b, lam, mu):
     if prime == 1 and n == 0:
         return mu * b
     elif prime == 0 and n == 1:
-        return math.exp(-1 * mu) * (1 - lam * b)
+        return exp(-1 * mu) * (1 - lam * b)
     elif prime == 1 and n == 1:
-        return (1 - math.exp(-1 * mu) - mu * b) * (1 - lam * b)
+        return (1 - exp(-1 * mu) - mu * b) * (1 - lam * b)
     elif prime == 2 and n == 1:
         return (1 - lam * b)
 
@@ -214,14 +338,14 @@ def Transition_f(s, base1, base2, e_dict):
     e_dict: the dictionary of equilibrium probability.
     return: transition probability between base 1 and 2, which is the value of function f.
     '''
-    e = math.exp(-s)
+    e = exp(-s)
     if base1 == base2:
         return e + e_dict[base2] * (1 - e)
     else:
         return e_dict[base2] * (1 - e)
 
 
-def Transition_g(i, e1, e2, k, e_dict):
+def Transition_g(i, e1, e2, k, equil_dict):
     '''
     The transition probability function g between epigenomic states.
     i: the index of epi mark (the i-th epi mark).
@@ -232,9 +356,9 @@ def Transition_g(i, e1, e2, k, e_dict):
     '''
     e = exp(-k)
     if e1 == e2:
-        return e + e_dict[i][int(e2)] * (1 - e)
+        return e + equil_dict[i][int(e2)] * (1 - e)
     else:
-        return e_dict[i][int(e2)] * (1 - e)
+        return equil_dict[i][int(e2)] * (1 - e)
 
 
 def Trans_matrix(n_epi, x, e_dict, weights):
@@ -267,20 +391,35 @@ def Trans_matrix(n_epi, x, e_dict, weights):
                 log_trans_dic[i][e1][e2] = log(Transition_g(i, e1, e2, x[1 + i], e_dict)) * weights[i]
     return log_trans_dic
 
+def Combine_epi_trans(log_trans_dic, log_S_epi):
+    '''
+    Combine the epi trans matrix.
+    '''
+    log_trans_prod = {}
+    for epi1 in log_S_epi:
+        log_trans_prod[epi1] = {}
+        for epi2 in log_S_epi:
+            g = 0
+            for i in range(1, len(epi1) + 1):
+                g += log_trans_dic[i][epi1[i - 1]][epi2[i - 1]]
+            log_trans_prod[epi1][epi2] = g
+    return log_trans_prod
 
-def Transition_g_sum(tuple1, tuple2, log_trans_dic, log_S_epi, hypN):
-    '''
-    Compute the transition probabilities between two sets of epigenomic states.
-    tuple1, 2: the epigenomic states at a specific position (for example, the m-th position in S1 and the n-th position in S2).
-    log_trans_dic: the dictionary containing transition probabilities on log scale, constructed by Trans_matrix.
-    '''
-    g = 0.0
-    if hypN == 1 or tuple1[0] == tuple2[0]:
-        for i in range(1, len(tuple1)):
-            g = g + log_trans_dic[i][tuple1[i]][tuple2[i]]
-        return g
-    else:
-        return log_S_epi["".join(tuple2[1:])]
+
+
+# def Transition_g_sum(tuple1, tuple2, log_trans_dic):
+#     '''
+#     Compute the transition probabilities between two sets of epigenomic states.
+#     tuple1, 2: the epigenomic states at a specific position (for example, the m-th position in S1 and the n-th position in S2).
+#     log_trans_dic: the dictionary containing transition probabilities on log scale, constructed by Trans_matrix.
+#     '''
+#     g = 0.0
+#     if hypN == 1 or tuple1[0] == tuple2[0]:
+#         for i in xrange(1, len(tuple1)):
+#             g = g + log_trans_dic[i][tuple1[i]][tuple2[i]]
+#         return g
+#     else:
+#         return log_S_epi["".join(tuple2[1:])]
 
 
 def Backtrack_mat(ind, ind2, bt, i, j, sp):
@@ -303,14 +442,14 @@ def Backtrack_mat(ind, ind2, bt, i, j, sp):
         bt[i][j] = "l"
 
 
-def Recons_path(S, bt, j_start):
+def Recons_path(S, bt, j_start, i_start):
     '''
     Reconstruct the optimal alignment path from the backtrack matrix.
     S: a HomoRegion object.
     bt: the backtrack matrix.
     j_start: the index at which the maximal alignment score is found.
     '''
-    if len(S.S1) < len(S.S2):
+    if len(S.S1) <= len(S.S2):
         S1 = S.S1
         S2 = S.S2
     else:
@@ -325,12 +464,12 @@ def Recons_path(S, bt, j_start):
         S1_epi_path[k] = ""
         S2_epi_path[k] = ""
 
-    i = len(bt) - 1  # S1
+    i = i_start  # S1
     j = j_start  # S2
 
     S1_align = ""
     S2_align = ""
-    while i != 0:
+    while i != 0 and j != 0:
         if bt[i][j] == "d":
             S1_align += S1[i - 1][0]
             S2_align += S2[j - 1][0]
@@ -426,62 +565,52 @@ def Print_path(S0, fout2):
     print("", file=fout2)
 
 
-def Maxima(m_list, pl_list):
+def Maximum(m0, m1, m2, j):
     '''
-    m_list: manh0, manh1, manh2
-    pl_list: path lengths
-    The m_list will be normalized by the pl_list. The index of the maximum of the normalized list, mi3,
-    as well as the index of the maximum of the last two elements, mi2 will be found.
-    return: m_list[mi3], m_list[mi2], mi3, mi2+1
+    Return the maximal value in m0, m1 and m2 and the maximal value in m1, m2.
     '''
-    plen_list = [(1.0 if f == 0 else f) for f in pl_list]
-    norm_list = [f1 / f2 for f1, f2 in zip(m_list, plen_list)]
 
-    if norm_list[1] >= norm_list[2]:
+    if m1 >= m2:
         # manh1>manh2
-        if norm_list[0] >= norm_list[1]:
+        if m0 >= m1:
             # manh0>manh1
-            return m_list[0], m_list[1], 0, 1
+            return m0, m1, 0, j
         else:
             # manh1 is the largest
-            return m_list[1], m_list[1], 1, 1
+            return m1, m1, 0, (j - 1)
     else:
-        # manh2<manh1
-        if norm_list[0] >= norm_list[2]:
+        # manh2>manh1
+        if m0 >= m2:
             #manh0 > manh2
-            return m_list[0], m_list[2], 0, 2
+            return m0, m2, 0, j
         else:
             # manh2 is the largest
-            return m_list[2], m_list[2], 2, 2
+            return m2, m2, 1, (j - 1)
 
 
-def LocalPi(S1, log_trans_dic):
+
+def Gamma(n, lam, mu):
+  '''
+  Equilibrium probability of a sequence of length n
+  '''
+  return (1 - lam / mu) * math.pow(lam / mu,n)
+
+
+
+def Path_norm_delta(start_point, prev_point, current_point):
     '''
-    Compute local equilibrium probabilities.
-    S1: a genomic region, the S1 or S2 attribute of a HomoRegion object.
-    log_trans_dic: the dictionary containing transition probabilities on log scale, constructed by Trans_matrix.
-    return: a dictionary, in which the keys are combinations of '1's and '0's, and the values are local equilibrium probabilities.
+    Find the normalization delta.
+    start_point, prev_point, current_point: tuples. 
+    return: delta. path_nmat[prev_point - start_point] - path_nmat[current_point - start_point]
     '''
-    epi_n = len(S1[0][1:])
-    log_SS_epi = {}
-    phi_list = []
-    m = len(S1) * 1.0
+    prev_delta = max(prev_point[0] - start_point[0], prev_point[1] - start_point[1])
+    current_delta = max(current_point[0] - start_point[0], current_point[1] - start_point[1])
+    if prev_delta == current_delta:
+        return 0
+    else:
+        return (- diag_norm)
 
-    for i in range(1, epi_n + 1):
-        s = sum([1 for b in S1 if b[i] == '1'])
-        phi_list.append([1 - s / m, s / m])
-
-    for i in range(pow(2, epi_n)):
-        k = bin(i)[2:].zfill(epi_n)
-        v = 1.0
-        for j in range(0, epi_n):
-            v = v * phi_list[j][0] * exp(log_trans_dic[j + 1]['0'][k[j]]) + phi_list[j][1] * exp(log_trans_dic[j + 1]['1'][k[j]])
-        log_SS_epi[k] = log(v)
-
-    return log_SS_epi
-
-
-def Manhattan(S, X, log_trans_dic, log_equil_dict, params):
+def Manhattan(S, X):
     '''
     Initialize and fill the matrices in dynamic programming for alignment score computation.
     S: a HomoRegion object.
@@ -490,8 +619,7 @@ def Manhattan(S, X, log_trans_dic, log_equil_dict, params):
     Note that the argument to be distributed to different processes should be the first one.
     return: the updated S.
     '''
-    Na = float('-Inf')
-    if len(S.S1) < len(S.S2):
+    if len(S.S1) <= len(S.S2):
         S1 = S.S1
         S2 = S.S2
     else:
@@ -500,26 +628,10 @@ def Manhattan(S, X, log_trans_dic, log_equil_dict, params):
     m = len(S1)
     n = len(S2)
     s = X[0]
-    mu = X[1]
     kappa = X[2:]
-    lamb = mu * (n + m) / (n + m + 2)
 
     # Initialization
-    beta = (1 - math.exp(lamb - mu)) / (mu - lamb * math.exp(lamb - mu))
-    link_p = [Link_prob(1, 0, beta, lamb, mu), Link_prob(0, 1, beta, lamb, mu), Link_prob(1, 1, beta, lamb, mu), Link_prob(2, 1, beta, lamb, mu)]
-    if (1 - exp(-mu) - mu * beta) < 0:
-        return float('Inf')
-
-    log_link_p = [log(lp) for lp in link_p]
-
-    log_lamb_mu = log(lamb / mu)
-    log_lamb_beta = log(lamb * beta)
-
-    log_S1_epi = LocalPi(S1, log_trans_dic)
-    log_S2_epi = LocalPi(S2, log_trans_dic)
-    log_S_epi = params['log_S_epi']
-
-    if params['align_path']:
+    if align_path:
         # backtrack matrix: upper, left, diagonal
         backtrack0 = [[0] * (n + 1) for i in range(m + 1)]
         backtrack0[0] = ["l"] * (n + 1)
@@ -529,52 +641,56 @@ def Manhattan(S, X, log_trans_dic, log_equil_dict, params):
     # maximum of three values (manh0, manh1, manh2), maximum of two values (manh1, manh2)
     manh3 = [[Na] * (n + 1) for i in range(2)]
     manh2 = [[Na] * (n + 1) for i in range(2)]
-    # path lengths
-    manh3_plen = [[0] * (n + 1) for i in range(2)]
-    manh2_plen = [[0] * (n + 1) for i in range(2)]
+    # Start point. The first row and column: all start from the position itself.
+    manh3_st = [[Na] * (n + 1) for i in range(2)]
+    # last column
+    last_col = [Na] * (m + 1)
+    # last colum start point
+    last_col_st = [Na] * (m + 1)
 
     # 0,0
-    ent0 = 0
+    init0 = 0
+    # init0 = log_link_p[3] + log(Gamma(0,lamb,mu))
 
     for i in range(0, n + 1):
-        manh3[0][i] = ent0
-        manh2[0][i] = ent0
+        manh3[0][i] = init0
+        manh2[0][i] = init0
+        manh3_st[0][i] = (0, i)
 
     # 1,0
-    manh3[1][0] = ent0 + log_lamb_mu + log_equil_dict[S1[0][0]] + log_link_p[0] + log_S2_epi["".join(S1[0][1:])]
-    manh3_plen[1][0] += 1
+    manh3[1][0] = init0
+    manh3_st[1][0] = (1, 0)
+
+    ent0_comp = log_lamb_mu + log_link_p[0]
 
     # Dynamic programming starts
     for i in range(1, (m + 1)):
         for j in range(1, (n + 1)):
-            tmp_seq = [log_trans_dic[S1[i - 1][0]][S2[j - 1][0]] + log_link_p[1], log_equil_dict[S2[j - 1][0]] + log_link_p[2]]
-            tmp = [tmp_seq[0] + log_S_epi["".join(S1[i - 1][1:])] + Transition_g_sum(S1[i - 1], S2[j - 1], log_trans_dic, log_S_epi, params['hypN']),
-                   tmp_seq[1] + log_S1_epi["".join(S2[j - 1][1:])] + log_S2_epi["".join(S1[i - 1][1:])]]
-            max_t = max(tmp)
+            tmp0 = Log_transition_dic[S1[i - 1][0]][S2[j - 1][0]] + log_link_p[1] + Log_trans_prod[S1[i - 1][1]][S2[j - 1][1]]
+            tmp1 = log_link_p[2] + log_equil_mat[S2[j - 1][0]][S2[j - 1][1]]
 
-            tmp0 = log_lamb_mu + log_equil_dict[S1[i - 1][0]] + log_link_p[0]
-            tmp1 = log_lamb_mu + log_equil_dict[S1[i - 1][0]]
-            tmp2 = log_equil_dict[S2[j - 1][0]] + log_lamb_beta
+            max_t = max(tmp0, tmp1)
 
-            ent0 = tmp0 + log_S2_epi["".join(S1[i - 1][1:])] + manh3[0][j]
-            ent1 = tmp1 + max_t + manh3[0][j - 1]
-            ent2 = tmp2 + log_S1_epi["".join(S2[j - 1][1:])] + manh2[1][j - 1]
+            ent0 = ent0_comp + manh3[0][j] - half_diag_norm
 
-            plen_v0 = manh3_plen[0][j] + 1
-            plen_v1 = manh3_plen[0][j - 1] + 1
-            plen_v2 = manh2_plen[1][j - 1] + 1
+            ent2 = log_lamb_beta + manh2[1][j - 1] - half_diag_norm
 
-            max_v3, max_v2, index_v3, index_v2 = Maxima([ent0, ent1, ent2], [plen_v0, plen_v1, plen_v2])
+            ent1 = log_lamb_mu + max_t + manh3[0][j - 1] - log_equil_mat[S2[j - 1][0]][S2[j - 1][1]] - diag_norm
+
+            max_v3, max_v2, tup_ind1, tup_ind2 = Maximum(ent0, ent1, ent2, j)
 
             manh3[1][j] = max_v3
             manh2[1][j] = max_v2
-            plen_ulist = [plen_v0, plen_v1, plen_v2]
-            manh3_plen[1][j] = plen_ulist[index_v3]
-            manh2_plen[1][j] = plen_ulist[index_v2]
+            manh3_st[1][j] = manh3_st[tup_ind1][tup_ind2]
 
-            if params['align_path']:
+            if align_path:
                 max_it = tmp.index(max_t)
+                index_v3 = [ent0, ent1, ent2].index(max_v3)
                 Backtrack_mat(index_v3, max_it, backtrack0, i, j, 0)
+
+
+        last_col[i] = manh3[1][-1]
+        last_col_st[i] = manh3_st[1][-1]
 
         manh3[0] = manh3[1]
         manh3[1] = [Na] * (n + 1)
@@ -582,113 +698,134 @@ def Manhattan(S, X, log_trans_dic, log_equil_dict, params):
         manh2[0] = manh2[1]
         manh2[1] = [Na] * (n + 1)
 
-        manh3_plen[0] = manh3_plen[1]
-        manh3_plen[1] = [0] * (n + 1)
+        manh3_st[0] = manh3_st[1]
+        manh3_st[1] = [Na] * (n + 1)
+        #print manh3_st[0]
 
-        manh2_plen[0] = manh2_plen[1]
-        manh2_plen[1] = [0] * (n + 1)
         if i < m:
-            manh3[1][0] = manh3[0][0] + log_lamb_mu + log_equil_dict[S1[i][0]] + log_S2_epi["".join(S1[i][1:])] + log_link_p[0]
-            manh3_plen[1][0] = manh3_plen[0][0] + 1
+            manh3[1][0] = init0
 
-    norm_max_list = [m1 / m2 for m1, m2 in zip(manh3[0], manh3_plen[0])]
+            manh3_st[1][0] = (i + 1, 0)
 
-    S.L = max(norm_max_list)
-    j_start = norm_max_list.index(S.L)
-    S.loc = j_start
-    S.averagedL = sum(norm_max_list) / float(len(norm_max_list))
-    if params['all_prob']:
-        S.prob = norm_max_list
-    if params['align_path']:
-        Recons_path(S, backtrack0, j_start)
+
+  #  print norm_max_list
+  #  print plen_flist
+  #  print last_col
+    last_row_max = max(manh3[0][1:])
+    last_col_max = max(last_col[1:])
+
+
+    S.L = max(last_row_max, last_col_max)
+    if last_row_max >= last_col_max:
+        i_start = m
+        j_start = manh3[0].index(last_row_max)
+        S.start_point = manh3_st[0][j_start]
+    else:
+        i_start = last_col.index(last_col_max)
+        j_start = n
+        S.start_point = last_col_st[i_start]
+
+    #for line in backtrack0:
+    #    print >> sys.stderr, " ".join(line)
+    S.loc2 = j_start
+    S.loc1 = i_start
+    S.averagedL = sum(manh3[0][1:] + last_col[1:]) / float(m + n)
+    if all_prob:
+        S.prob = manh3[0][1:] + last_col[1:]
+    if align_path:
+        Recons_path(S, backtrack0, j_start, i_start)
     return S
 
-def manhattanWrapper(arg):
-    return Manhattan(arg['S'], arg['X'], arg['log_trans_dic'], arg['log_equil_dict'], arg['params'])
 
-def prepareManhattanParams(x, S, log_trans_dic, log_equil_dict, params):
-    jobs = []
-    for entry in S:
-        job = dict()
-        job['X'] = copy.deepcopy(x)
-        job['S'] = entry
-        job['log_trans_dic'] = copy.deepcopy(log_trans_dic)
-        job['log_equil_dict'] = copy.deepcopy(log_equil_dict)
-        job['params'] = copy.deepcopy(params)
-        jobs.append(job)
-    return jobs
-
-def Manhattan_obj(x, S, e_dict_norm, weights, log_equil_dict, p_num, params):
-    '''Distribute region pairs to difference processes for parallel computing.
-
-    Args:
-        x: the parameter vector.
-        S: the list of region pairs. Each element is a HomoRegion object.
-        e_dict_norm: the dictionary of equilibrium probabilities (not adjusted by weight).
-        weights: the weights vector.
-        log_equil_dict: the dictionary of log equilibrium probabilities (adjusted by weight).
-        p_num: maximal number of processes to run.
-        params: additional parameters that need to be passed to the worker.
-
-    Returns:
-        None. The function will update the S list directly.
+def Manhattan_obj(x, S):
     '''
-    if min(x) < 0:
-        print("minus p", file=sys.stderr)
-        return float("inf")
-    Log_transition_dic = Trans_matrix(len(S[0].S1[0]) - 1, x, e_dict_norm, weights)
-    jobs = prepareManhattanParams(x, S, Log_transition_dic, log_equil_dict, params)
-
-    with get_context("spawn").Pool(p_num) as p:
-        mp_queue = p.map(manhattanWrapper, jobs)
+    Distribute region pairs to difference processes for parallel computing.
+    x: the parameter vector.
+    S: the list of region pairs. Each element is a HomoRegion object.
+    e_dict: the dictionary of equilibrium probabilities.
+    weights: the weights vector.
+    return: None. The function will update the S list directly.
+    '''
+    try:
+        p = Pool(p_num)
+        mp_queue = p.map(partial(Manhattan, X=x), S)
         S[:] = mp_queue
         p.close()
         p.join()
+    except Exception as err:
+        p.terminate()
+        print(err.args[1], file=sys.stderr)
+        sys.exit(err.args[0])
+    # Manhattan(S[0], x)
     return
 
 
 def Main():
     args = ParseArg()
-    S = ReadInput(args.Input)
+    S, maxlen1, maxlen2, ave1, ave2 = ReadInput(args.Input)
 
-    params = dict()
-    params['hypN'] = 1
+    global hypN
+    hypN = 1
 
+    global p_num
     p_num = args.process_num
 
+    global all_prob
+    all_prob = args.out_allvec
+
+    global align_path
+    align_path = args.align_path
+
     x, weights, equil_dict, log_equil_dict = ReadParameters(args.equil_file)
-    equil_dict_norm = copy.deepcopy(equil_dict)
-    Mod_equilibrium(equil_dict, log_equil_dict, weights)
-    print(weights, file=sys.stderr)
 
-    # global S_epi, log_S_epi
-    params['S_epi'], params['log_S_epi'] = Epi_equilibrium(equil_dict, log_equil_dict, len(S[0].S1[0]) - 1, weights)
+    global Na
+    Na = float('-Inf')
 
-    params['all_prob'] = args.out_allvec
-    params['align_path'] = args.align_path
+    global mu, lamb, beta, log_link_p
+    mu = x[1]
+    lamb = mu * (ave1 + ave2) / (ave1 + ave2 + 2)
+    beta = (1 - exp(lamb - mu)) / (mu - lamb * exp(lamb - mu))
+    if (1 - exp(-mu) - mu * beta) < 0:
+        raise Exception(206, "Invalid parameters.")
+    link_p = [Link_prob(1, 0, beta, lamb, mu), Link_prob(0, 1, beta, lamb, mu), Link_prob(1, 1, beta, lamb, mu), Link_prob(2, 1, beta, lamb, mu)]
+    log_link_p = [log(p) for p in link_p]
 
-    t0 = time()
+    global diag_norm, half_diag_norm, log_lamb_mu, log_lamb_beta
+    log_lamb_mu = log(lamb / mu)
+    log_lamb_beta = log(lamb * beta)
+    diag_norm = max(log_link_p[1], log_link_p[2]) + log_lamb_mu
+    half_diag_norm = 0.5 * diag_norm
 
-    Manhattan_obj(x, S, equil_dict_norm, weights, log_equil_dict, p_num, params)
-    t1 = time()
-    print("Done mapping input sequences.", file=sys.stderr)
-    if params['all_prob']:
+    # Equilibrium probabilities
+    global log_equil_mat
+    S_epi, log_S_epi = Epi_equilibrium(len(S[0].S1[0]) - 1, equil_dict, log_equil_dict, weights)
+    log_equil_mat = Equilibrium_matrix(log_equil_dict, log_S_epi, weights)
+
+    # Transition_matrix
+    global Log_transition_dic, Log_trans_prod
+    Log_transition_dic = Trans_matrix(len(S[0].S1[0]) - 1, x, equil_dict, weights)
+    Log_trans_prod = Combine_epi_trans(Log_transition_dic, log_S_epi)
+
+
+    # t0 = time()
+    Manhattan_obj(x, S)
+    # t1 = time()
+    if all_prob:
         with open(args.output, "w") as fout, open(args.out_allvec, "w") as fout2:
-            for s in S:
-                print("\t".join([s.name, str(s.L), str(s.averagedL), str(s.loc)]), file=fout)
-                print(",".join([str(f) for f in [s.name] + s.prob]), file=fout2)
+            for pair in S:
+                print("\t".join([pair.name, str(pair.L), str(pair.averagedL), str(pair.start_point[0]), str(pair.loc1), str(pair.start_point[1]), str(pair.loc2)]), file=fout)
+                print(",".join([str(f) for f in [pair.name] + pair.prob]), file=fout2)
     else:
         with open(args.output, "w") as fout:
-            for s in S:
-                print("\t".join([s.name, str(s.L), str(s.averagedL), str(s.loc)]), file=fout)
+            for pair in S:
+                print("\t".join([pair.name, str(pair.L), str(pair.averagedL), str(pair.start_point[0]), str(pair.loc1), str(pair.start_point[1]), str(pair.loc2)]), file=fout)
 
-    if params['align_path']:
-        with open(params['align_path'], "w") as fout2:
-            for s in S:
-                Print_path(s, fout2)
+    if align_path:
+        with open(align_path, "w") as fout2:
+            for pair in S:
+                Print_path(pair, fout2)
 
-    print("Time:%f" % ((t1 - t0) / 60), file=sys.stderr)
+    # print >>sys.stderr, "Time:%f" % ((t1 - t0) / 60)
 
 
-if __name__ == "__main__":
-    Main()
+Main()

@@ -79,6 +79,9 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
+# VS code related
+.vscode/
+
 # Generated assets/json files
 html/assets/encodeData.json
 html/assets/publicData.json

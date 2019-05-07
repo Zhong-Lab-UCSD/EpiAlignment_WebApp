@@ -826,8 +826,6 @@ def Main():
 
     param = dict()
 
-    param['hypN'] = 1
-
     p_num = args.process_num
 
     param['all_prob'] = args.out_allvec

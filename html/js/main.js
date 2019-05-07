@@ -199,7 +199,7 @@ var app = new Vue({
 
     expectedRunTime: function () {
       return this.formParams.alignMode === 'enhancer'
-        ? '2 minutes' : '10 seconds'
+        ? '2 minutes' : '20 seconds'
     },
 
     presetButtonText: function () {

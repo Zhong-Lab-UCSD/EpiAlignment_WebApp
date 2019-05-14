@@ -78,15 +78,16 @@ def Plot_ScoreDist(epi_list, seq_list, ind, of_name, runid, xtitle, start, stop,
     if seq_stat:
       seq_array = seq_array[::-1]
   
-  coorRange = list(range(int(start - qlen / 2), int(stop + qlen / 2)))
+  coorRange = list(range(int(start - qlen / 2), int(ceil(stop + qlen / 2.0))))
 
   # Separate partial overlap (first and last `qlen` length) with full overlap
+  
   if not seq_stat:
     df = {
       "value": FloatVector(reduceList(epi_array, reduceBy, averageList)),
       "coordinate": IntVector(reduceList(coorRange, reduceBy, averageList)),
       "mode": StrVector(
-        reduceList(["EpiAlign"] * (tlen + qlen), reduceBy, centerOfList)
+        reduceList(["EpiAlignment"] * (tlen + qlen), reduceBy, centerOfList)
       )
     }
   else:
@@ -99,6 +100,7 @@ def Plot_ScoreDist(epi_list, seq_list, ind, of_name, runid, xtitle, start, stop,
         reduceList(["EpiAlignment"] * (tlen + qlen), reduceBy, centerOfList) +
         reduceList(["Sequence-only"] * (tlen + qlen), reduceBy, centerOfList))
     }
+ 
   if qlen < tlen:
     colorVec = [GRAY_COLOR] * qlen + [BLACK_COLOR] * (tlen - qlen) +\
       [GRAY_COLOR] * qlen
@@ -142,12 +144,14 @@ def Main():
   ind = int(json_dict["index"])
   imgFormat = json_dict["format"]
   reduceBy = json_dict["reduceBy"]
+ 
 
   out_folder = allpath_res + "/tmp_" + runid + "/"
 
   # Extract 
   xtitle, start, stop, strand = Extract_name(out_folder + "AlignResults_" + runid + ".txt", ind)
   tlen = stop - start
+ 
 
   fename = out_folder + "epi_scores_" + runid
   if not os.path.isfile(fename):

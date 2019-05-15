@@ -226,6 +226,19 @@ def PairCutPromoter(input1, input2, intype1, intype2, promoterUp, promoterDown, 
 
   return input1 + ".bed", input2 + ".bed"
 
+def PairNameEnhancer(input1, input2):
+  '''
+  pair names of the two regions.
+  '''
+  with open(input1, "r") as fin1, open(input2, "r") as fin2, \
+    open(input2 + ".bed", "w") as fout2:
+    for bed1, bed2 in izip(fin1, fin2):
+      bed1 = bed1.strip().split()
+      bed2 = bed2.strip().split()
+      print >> fout2, "\t".join(bed2[0:3] + [bed1[3]] + bed2[4:])
+  return input1, input2 + ".bed"
+
+
 def PairCutEnhancer(input1, input2, promoterUp, promoterDown, genAssem):
   '''
   Pair promoters (multiple) and bed regions in the enhancer mode when
@@ -442,7 +455,7 @@ def CreateInputBeds(of_name, json_dict, runid):
           sys.exit(201)
         else:
           if intype1 == "bed":
-            return input1, input2, intype1, intype2
+            bed1, bed2 = PairNameEnhancer(input1, input2)
           elif intype1 == "name":
             bed1, bed2 = PairCutEnhancer(input1, input2, promoterUp, promoterDown, genAssem)
     else:

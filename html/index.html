@@ -360,7 +360,7 @@
                   <div class="flexRow flexStart flexWrap">
                     <div class="subElemLabel">or upload a file:</div>
                     <input ref="speciesInputFile2" :disabled="!genomeRegionSelected" class="flex" type="file" name="speciesInput2"
-                      @change="inputFileChanged($event, 0)">
+                      @change="inputFileChanged($event, 1)">
                   </div>
                   <div class="errorMessage" v-show="formError.inputError[1]">
                     <i class="material-icons iconAtLeft">warning</i>

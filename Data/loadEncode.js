@@ -419,11 +419,33 @@ async function processExperimentFileObj (
     )
   )
 
-  // For bwFiles, anything involving p-value is not included for now
+  // For bwFiles, anything involving p-value is not included
+  // Anything deriving other files are not used
+  // Anything whose `derived_from` is a subset of something else are not used
   let bwFiles = availableFiles.filter(file => (
     file.file_format.toLowerCase() === 'bigwig' &&
     !file.output_type.includes('p-value')
   ))
+  bwFiles = bwFiles.filter(
+    file => bwFiles.every(
+      fileToCompare => (
+        !fileToCompare.derived_from ||
+        fileToCompare.derived_from.every(
+          derivedTerm => !derivedTerm.includes(file.accession)
+        )
+      )
+    )
+  ).filter(
+    file => bwFiles.every(
+      fileToCompare => (
+        !file.derived_from || !fileToCompare.derived_from ||
+        file['@id'] === fileToCompare['@id'] ||
+        file.derived_from.some(
+          derivedId => fileToCompare.derived_from.indexOf(derivedId) < 0
+        )
+      )
+    )
+  )
 
   let experimentResult = null
 

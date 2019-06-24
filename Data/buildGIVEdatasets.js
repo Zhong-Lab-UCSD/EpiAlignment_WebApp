@@ -33,6 +33,8 @@ const MILLISECONDS_IN_A_DAY = 1000 * 60 * 60 * 24
 
 var mysqlPass = process.argv[2]
 const giveLoadingPath = '/home/xcao3/Github/GIVe/GIVE-Toolbox/'
+const removeDataScript = 'remove_data.sh'
+const createGroupScript = 'add_trackGroup.sh'
 const loadBedScript = 'add_track_bed.sh'
 const loadBigWigScript = 'add_track_bigWig.sh'
 const mysqlParam = ' -u cpwriter -p ' + mysqlPass + ' -g epialign'
@@ -64,6 +66,14 @@ function parseResult (resultObj, expDict, result) {
       ) {
         if (!result.hasOwnProperty(species)) {
           result[species] = []
+          let removeDataCommand = giveLoadingPath + removeDataScript + mysqlParam
+          removeDataCommand += ' -r ' + references[species]
+          result[species].push(removeDataCommand)
+          
+          let createGroupCommand = giveLoadingPath + createGroupScript + mysqlParam
+          createGroupCommand += ' -r ' + references[species] +
+            ' -l "EpiAlignment Preset Data" -o 50 -s 0' 
+          result[species].push(createGroupCommand)
         }
         tissue[species].experiments.forEach(experiment => {
           let loadingCommandBed, loadingCommandBigWig
@@ -126,6 +136,7 @@ Promise.all([
 ]).then(() => {
   for (let species in references) {
     // console.log(species)
+    console.log()
     result[species].forEach(entry => console.log(entry))
   }
 })

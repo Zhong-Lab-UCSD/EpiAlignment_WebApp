@@ -507,8 +507,11 @@
         <ul>
           <li><p><strong>Overview</strong>: the highest alignment scores achieved with and without epigenomic information. 
             A badge saying "The EpiAlignment hit is different from the Sequence-only hit" 
-            will be displayed if the coordinates of the two hits don’t overlap, 
-            suggesting that another location overtakes the best sequence match due to higher epigenomic similarity.</p></li>     
+            will be displayed if (1) the coordinates of the two hits don’t overlap, and 
+            (2) the EpiAlignment score of the EpiAlignment hit 
+            is 10 larger than that of the Sequence-only hit. </p>
+            <p>We suggest that the user only consider hits with the badge 
+            when looking for cases in which EpiAlignment and Sequence-only alignment results don't agree. </p></li>     
           <li>
             <p><strong>Sequence evaluation</strong>: an evaluation of sequence similarities between the query region and the two hits. 
             For every hit, a signal-to-noise ratio (SNR) is provided comparing its sequence alignment score (<em>S</em> score)
@@ -656,7 +659,7 @@
         <h1>Further Reading</h1>
         <ol>
           <li>
-            Xiao, S., Xie, D., Cao, X., Yu, P., Xing, X., Chen, C. C., ... &amp; Wang, T. (2012). Comparative epigenomic annotation of regulatory DNA. <em>Cell</em>, <strong>149</strong>(6), 1381-1392.
+            Xiao, S., Xie, D., Cao, X., Yu, P., Xing, X., Chen, C. C., . . . Zhong, S. (2012). Comparative epigenomic annotation of regulatory DNA. <em>Cell</em>, <strong>149</strong>(6), 1381-1392.
           </li>
           <li>
             Xiao, S., Cao, X., &amp; Zhong, S. (2014). Comparative epigenomics: defining and utilizing epigenomic variations across species, time‐course, and individuals. <em>Wiley Interdisciplinary Reviews: Systems Biology and Medicine</em>, <strong>6</strong>(5), 345-352.
@@ -676,9 +679,7 @@
         <h1>References</h1>
         <ol>
           <li>Lu J, Cao X, Zhong S (2019) EpiAlignment: alignment with both DNA sequence and epigenomic data.
-            <em>bioRxiv</em>, doi: <a
-              href="https://doi.org/10.1101/562199"
-              target="_blank">https://doi.org/10.1101/562199</a>
+            <em> Nucleic Acids Res</em>, 47(W1), W11-W19. 
           </li>
         </ol>
       </div>

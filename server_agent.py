@@ -3,6 +3,8 @@ from subprocess import Popen, PIPE
 from numpy import percentile, mean
 from scipy.stats import norm
 from itertools import izip
+from xplib.Annotation import Bed
+from collections import OrderedDict
 from GeneAnno import *
 import json
 import shutil
@@ -374,6 +376,7 @@ def ExtendBed(fname, enhUp, enhDown):
 def LiftOver(input_bed, genAssem):
   '''
   Call liftOver to remap regions.
+  genAssem: a list with genome assembly names. E.g. ["hg38", "mm10"]
   '''
   chain_name = genAssem[0] + "To" + genAssem[1].capitalize() + ".over.chain"
   cmd_list = ["liftOver", input_bed, "Annotation/AnnotationFiles/" + chain_name, input_bed + ".lift", input_bed + ".unlift" ,"-minMatch=0.1"]
@@ -385,6 +388,85 @@ def LiftOver(input_bed, genAssem):
     print >> sys.stderr, "[EpiAlignment]Failed to generate the input file. liftOver exited with code: " + str(exit_code)
     sys.exit(exit_code)
   return input_bed + ".lift"
+
+
+def Construct_dict(fname):
+  peak_dict = OrderedDict()
+  with open(fname, "r") as fin:
+    for line in fin:
+      line = line.strip().split()
+      bed = Bed(line)
+      if bed.id in peak_dict:
+        print >> sys.stderr, "Duplicated names: " + bed.id
+        sys.exit() 
+      peak_dict[bed.id] = bed
+  return peak_dict
+
+
+def Overlap(bed1, bed2, ifStrand = True):
+  if bed1.chr != bed2.chr:
+    return False
+  if ifStrand:
+    if bed1.strand != bed2.strand:
+      return False
+  if bed2.stop < bed1.start or bed1.stop < bed2.start:
+    return False
+  return True
+
+
+def Print_bed(bed, region_name = None):
+  if region_name:
+    return "\t".join([bed.chr, str(bed.start), str(bed.stop), region_name, "0", bed.strand])
+  return "\t".join([bed.chr, str(bed.start), str(bed.stop), bed.id, "0", bed.strand])
+
+
+def Extend_liftPeaks(ori_dict, lift_dict, lift_back_peak):
+  '''
+  Extend the remapped peak region if it is shorter than 0.9 * original length
+  when remapped back. Names contain $.
+  ori_dict, lift_dict: dictionaries. Names in ori_dict have no $, whereas in lift_dict have $.
+  lift_back_peak: a file with peak regions in species1 remapped back to species1.
+  '''
+  N = 0.9
+  sp1_dict = OrderedDict()
+  sp2_dict = OrderedDict()
+  ori_to_lift = {}
+
+  with open(lift_back_peak, "r") as fin:
+    for line in fin:
+      line = line.strip().split()
+      peak_name = line[3].split("$")[0]
+      back_bed = Bed(line)
+      ori_bed = ori_dict[peak_name]
+      lift_bed = lift_dict[back_bed.id]
+      if Overlap(ori_bed, back_bed, ifStrand = True):
+        # if no overlap, no need to proceed.
+        ori_len = (ori_bed.stop - ori_bed.start)
+        back_len = (back_bed.stop - back_bed.start)
+        if float(back_len / ori_len) < N:
+          left_ext_len = max(0, back_bed.start - ori_bed.start )
+          right_ext_len = max(0, ori_bed.stop - back_bed.stop )
+
+          if lift_bed.strand == ori_bed.strand:
+            lift_new_start = max(1, lift_bed.start - left_ext_len)
+            lift_new_stop = lift_bed.stop + right_ext_len + 1
+          else:
+            lift_new_start = max(1,lift_bed.start - right_ext_len)
+            lift_new_stop = lift_bed.stop + left_ext_len + 1
+
+          sp1_dict[back_bed.id] = ori_bed
+          sp2_dict[back_bed.id] = Bed([lift_bed.chr, lift_new_start, lift_new_stop, lift_bed.id, lift_bed.score, lift_bed.strand])
+        else:
+          sp1_dict[back_bed.id] = ori_bed
+          sp2_dict[back_bed.id] = lift_bed
+        
+        # add peak name and region name into ori_to_lift
+        if peak_name not in ori_to_lift:
+          ori_to_lift[peak_name] = []
+        ori_to_lift[peak_name].append(back_bed.id)
+
+  return sp1_dict, sp2_dict
+
 
 def RemoveNonlift(input_bed, lift_bed):
   '''
@@ -484,14 +566,30 @@ def CreateInputBeds(of_name, json_dict, runid):
         sys.exit(208)
       # Extend the input bed file1. extbed: extended bed file name.
       extbed = ExtendBed(ori_input, enhancerUp, enhancerDown)
+      ori_bed_dict = Construct_dict(ori_input)
+      ori_ext_dict = Construct_dict(extbed)
       # LiftOver
-      liftbed = LiftOver(extbed, genAssem)
-      # Remove non-remappable regions. Return a pair of bed file names.
-      cleanbed = RemoveNonlift(ori_input, liftbed)
-      #os.remove(extbed)
-      #os.remove(extbed + ".unlift")
-      bed1 = cleanbed
-      bed2 = liftbed
+      # lift extended species1 peaks to species2. Return a file name.
+      lift1To2_ext = LiftOver(extbed, genAssem)
+      lift_ext_dict = Construct_dict(lift1To2_ext)
+      # lift extended peak_bed1 back to species1. Return a file name with folder name.
+      lift1To2To1_ext = LiftOver(lift1To2_ext, genAssem[::-1])
+      # extend lift peaks.
+      sp1_dict, sp2_dict = Extend_liftPeaks(ori_ext_dict, lift_ext_dict, lift1To2To1_ext)
+      # output clean bed files
+      cleanBed1 = extbed + ".clean1"
+      cleanBed2 = extbed + ".clean2"
+      with open(cleanBed1, "w") as fout1, open(cleanBed2, "w") as fout2:
+        for region_name in sp2_dict:
+          peak_name = region_name.split("$")[0]
+          print >> fout1, Print_bed(ori_bed_dict[peak_name], region_name)
+          print >> fout2, Print_bed(sp2_dict[region_name])
+
+      os.remove(extbed + ".unlift")
+      os.remove(extbed + ".lift.unlift")
+
+      bed1 = cleanBed1
+      bed2 = cleanBed2
 
     return bed1, bed2, intype1, ""
 
@@ -688,11 +786,11 @@ def InitJsonObj(ind, pair_name, bed_dict1, bed_dict2, line_epi, line_seq, one_nu
     json_obj["scoreS"] = float(line_seq[1]) * 1000 / query_len
     json_obj["targetS"] = TargetRegion(bed_dict2[pair_name], line_seq[5], line_seq[6])
     # shifted or not
-    if abs(int(line_epi[6]) - int(line_seq[6])) > json_obj["queryLength"]:
-      json_obj["shifted"] = "Y"
-    else:
+    if (abs(int(line_epi[6]) - int(line_seq[6])) < json_obj["queryLength"]) or \
+      ( int(bed_dict1[pair_name][2]) > int(bed_dict2[pair_name][1]) and int(bed_dict2[pair_name][2]) > int(bed_dict1[pair_name][1]) ):
       json_obj["shifted"] = "N"
-
+    else:
+      json_obj["shifted"] = "Y"
   return json_obj
 
 
@@ -813,6 +911,8 @@ def SequenceEvaluation(json_obj, line_epi, line_seq, epiScore, seqScore, s, mu, 
   mid_point = (upper + lower) / 2
   seqEval_dict["signalToNoise"]["snS"] = snCalculater(s1, mid_point, half_noise)
   seqEval_dict["signalToNoise"]["snE"] = snCalculater(s2, mid_point, half_noise)
+  if json_obj["scoreE"] - seqEval_dict["scoreE2"] < 10.0:
+    json_obj["shifted"] = "N"
   
   json_obj.update(seqEval_dict)
 
@@ -900,7 +1000,7 @@ def ParseAlignResults(bed1, bed2, intype1, intype2, alignMode, searchRegionMode,
         if alignMode == "enhancer":
           query_len = json_obj["queryLength"]
           line_epiScore = [float(f) for f in fepiScore.readline().strip().split(",")[1:]]
-          target_len = len(line_epiScore)
+          target_len = len(line_epiScore) - query_len
           line_epiScore = line_epiScore[0:target_len]
           if seq_stat:
             line_seqScore = [float(f) for f in fseqScore.readline().strip().split(",")[1:]]

@@ -30,6 +30,8 @@ def ParseArg():
   p.add_argument("--public_data", action="store_true", help="If specified, get available ENCODE/public dataset IDs and descriptions in EpiAlignment.")
   p.add_argument("--find_gene_cluster", type=str, help="Search for gene clusters containing a gene name/Ensembl id. Please provide an ensembl id or a gene name/partial name.")
   p.add_argument("--retries", type=int, default=5, help="Retry times for result submission.")
+  p.add_argument("--bypass_ssl_verification", dest="verify", action="store_false", help="If specified, PyClient will bypass SSL verification. This may be useful if you see SSL connection errors during the run.")
+  p.set_defaults(verify=True)
   if len(sys.argv) == 1:
     print(p.print_help(), file=sys.stderr)
     sys.exit(0)
@@ -156,32 +158,49 @@ class SFObject:
 
 
 class RequestsEpiAlign:
-  def __init__(self, domain):
+  def __init__(self, domain, verify):
     self.domain = domain
+    self.verify = verify
 
   def get(self, path):
-    return requests.get(self.domain + path)
+    return requests.get(self.domain + path, verify = self.verify)
 
   def post(self, path, **kwargs):
     # {runid: runid}.
-    return requests.post(self.domain + path, **kwargs)
+    return requests.post(self.domain + path, verify = self.verify, **kwargs)
 
-  def Post_sample(self, data, files):
-    try:
-      if len(files) != 0:
-        r = self.post("/backend/form_upload", data = data, files = files)
-      else:
-        r = self.post("/backend/form_upload", data = data)
-      r.raise_for_status()
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-      print("Fail to connect.", file=sys.stderr)
-      raise
-    except requests.exceptions.HTTPError:
-      print("HTTP error.", file=sys.stderr)
-      raise
-    else:
-      runid_dict = json.loads(r.text)
-      return runid_dict["runid"]
+  def Post_sample(self, data, files, maxRetries):
+    numOfRetries = 0
+    while numOfRetries == 0 or numOfRetries < maxRetries:
+      try:
+        if len(files) != 0:
+          r = self.post("/backend/form_upload", data = data, files = files)
+        else:
+          r = self.post("/backend/form_upload", data = data)
+        r.raise_for_status()
+        runid_dict = json.loads(r.text)
+        return runid_dict["runid"]
+      except requests.exceptions.SSLError:
+        print("SSL connection error.")
+        print("There may be a misconfiguration on EpiAlignment server, " +
+        "please contact zhonglabadmin@ucsd.edu to get the issue resolved.")
+        print("Meanwhile, you may add the flag --bypass_ssl_verification in the command line" +
+        "to bypass the SSL verification.")
+        raise
+      except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        print("Fail to connect.", file=sys.stderr)
+        numOfRetries += 1
+        if numOfRetries >= maxRetries:
+          raise
+        else:
+          sleep(randint(500, 3000) / 1000)
+      except requests.exceptions.HTTPError:
+        print("HTTP error.", file=sys.stderr)
+        numOfRetries += 1
+        if numOfRetries >= maxRetries:
+          raise
+        else:
+          sleep(randint(500, 3000) / 1000)
 
   def Get_sample(self, runid, maxRetries, gap=10, total_wait=172800):
     '''
@@ -219,6 +238,13 @@ class RequestsEpiAlign:
           print("Job finished with error. Error code: " + str(json_dict["status"]), file=sys.stderr)
           return
 
+      except requests.exceptions.SSLError:
+        print("SSL connection error.")
+        print("There may be a misconfiguration on EpiAlignment server, " +
+        "please contact zhonglabadmin@ucsd.edu to get the issue resolved.")
+        print("Meanwhile, you may add the flag --bypass_ssl_verification in the command line" +
+        "to bypass the SSL verification.")
+        raise
       except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
         print("Fail to connect.", file=sys.stderr)
         numOfRetries += 1
@@ -418,7 +444,7 @@ def ParseClusterInfo(json_dict, search_str):
 def Main():
   args = ParseArg()
   # Create a RequestsEpiAlign object to send http post and get requests.
-  session = RequestsEpiAlign(EpiAligment_URL)
+  session = RequestsEpiAlign(EpiAligment_URL, args.verify)
   if args.Input: 
     # Send jobs to Epialignment.
     fin_name = args.Input
@@ -437,15 +463,10 @@ def Main():
     for data, files in SampleForm:
       # Send a post requests to transfer data and files to EpiAlignment.
       # This function will return the runid
-      numOfRetries = 0
       runid = None
-      while runid is None and (numOfRetries == 0 or numOfRetries < args.retries):
-        try:
-          runid = session.Post_sample(data, files)
-        except:
-          sleep(randint(500, 3000) / 1000)
-          numOfRetries += 1
-      if runid is None:
+      try:
+        runid = session.Post_sample(data, files, args.retries)
+      except:
         sys.exit(1)
       print(runid)
       # Get the result when the job is done. 

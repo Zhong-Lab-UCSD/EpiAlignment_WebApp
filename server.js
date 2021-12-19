@@ -494,7 +494,7 @@ function sendEmail (runInfo) {
       from: 'EpiAlignment Notification <messenger@' +
         getMailDomain(hostName.includes('beta')) + '>',
       to: email,
-      replyTo: 'x9cao@eng.ucsd.edu'
+      replyTo: 'zhonglabadmin@ucsd.edu'
     }
     let header = 'Dear user,\n\n'
     let footer = '\n\nThe EpiAlignment Team from Zhong Lab @ UC San Diego\n' +
@@ -523,8 +523,7 @@ function sendEmail (runInfo) {
         'Details of your run: \n\n' +
         runInfo.toString('email') + '\n' +
         'If the error keeps happening, please let us know by replying to ' +
-        'this email, or sending an email to Jia Lu<jil430@eng.ucsd.edu> ' +
-        'or Xiaoyi Cao <x9cao@eng.ucsd.edu>. \n\n ' +
+        'this email, or sending an email to zhonglabadmin@ucsd.edu. \n\n ' +
         'Thank you for trying EpiAlignment!' + footer
     } else {
       // Normal email
@@ -538,8 +537,7 @@ function sendEmail (runInfo) {
         'Details of your run: \n\n' +
         runInfo.toString('email') + '\n' +
         'If you have any questions, please let us know by replying to ' +
-        'this email, or sending an email to Jia Lu<jil430@eng.ucsd.edu> ' +
-        'or Xiaoyi Cao <x9cao@eng.ucsd.edu>. \n\n' +
+        'this email, or sending an email to zhonglabadmin@ucsd.edu. \n\n' +
         'Thank you for using EpiAlignment!' + footer
     }
     transporter.sendMail(message)

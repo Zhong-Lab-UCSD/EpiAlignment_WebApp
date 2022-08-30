@@ -14,7 +14,7 @@
     "cookie-parser": "^1.4.3",
     "express": "^4.16.4",
     "mkdirp": "^0.5.1",
-    "moment-timezone": "^0.5.23",
+    "moment-timezone": "^0.5.35",
     "multer": "^1.4.1",
     "nodemailer": "^6.6.1"
   },
